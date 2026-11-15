@@ -20,7 +20,7 @@ import java.util.List;
  */
 public final class SelfTest {
     private static final boolean ON = new File("aqua-selftest.flag").exists();
-    private static int tick, stage, idx, wait;
+    private static int tick, stage, idx, wait, retry;
     private static final List<String> FAIL = new ArrayList<>();
 
     private SelfTest() {}
@@ -95,7 +95,11 @@ public final class SelfTest {
                 Method create = null;
                 for (Class<?> c = s.getClass(); c != null && create == null; c = c.getSuperclass())
                     for (Method m : c.getDeclaredMethods()) if (m.getName().equals("createLevel") && m.getParameterCount() == 0) create = m;
-                if (create == null) { log("no createLevel on " + s.getClass().getName()); stage = 99; return; }
+                if (create == null) {
+                    // в старых версиях экран создания мира открывается не сразу — ждём до 30 секунд
+                    if (++retry < 30) { wait = 20; return; }
+                    log("no createLevel on " + s.getClass().getName()); stage = 99; return;
+                }
                 create.setAccessible(true);
                 create.invoke(s);
                 log("createLevel invoked");
