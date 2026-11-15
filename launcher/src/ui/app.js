@@ -60,6 +60,8 @@ async function safe(fn, okMsg) {
   try { const r = await fn(); if (okMsg) toast(okMsg, 'ok'); return r === undefined ? true : r; } catch (e) { toast(e.message, 'err'); return undefined; }
 }
 
+/** Аккаунт без купленной игры — подсказка про демо-режим. */
+function demoNote() { setTimeout(() => { const a = selectedAccount(); if (a && a.demo) toast(t('demo_note'), 'ok'); }, 600); }
 function modal(html, cls = '') {
   const root = $('#modal-root');
   root.innerHTML = `<div class="backdrop"><div class="modal glass ${cls}">${html}</div></div>`;
@@ -334,7 +336,7 @@ function accountsModal() {
   const draw = () => {
     $('#acc-list', m.el).innerHTML = S.accounts.length ? S.accounts.map((a) => `
       <div class="acc ${a.id === S.selectedAccount ? 'on' : ''}" data-id="${esc(a.id)}">
-        <img src="${avatar(a)}" alt=""><div class="grow"><b class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${isOwner(a) ? '🐢 ' : ''}${esc(a.name)}</b><small>${a.type === 'microsoft' ? 'Microsoft' : t('offline')}</small></div>
+        <img src="${avatar(a)}" alt=""><div class="grow"><b class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${isOwner(a) ? '🐢 ' : ''}${esc(a.name)}</b><small>${a.type === 'microsoft' ? (a.demo ? 'Microsoft · Demo' : 'Microsoft') : t('offline')}</small></div>
         <button class="btn danger small" data-del="${esc(a.id)}">✕</button></div>`).join('') : `<p class="note">${t('no_accounts')}</p>`;
     $$('.acc', m.el).forEach((el) => el.onclick = (e) => {
       if (e.target.dataset.del) safe(() => aqua.removeAccount(e.target.dataset.del)).then(draw);
@@ -348,6 +350,7 @@ function accountsModal() {
     const b = $('#ms-login', m.el), label = b.lastElementChild;
     b.disabled = true; label.textContent = t('ms_wait');
     await safe(() => aqua.loginMicrosoft(), t('signed_in'));
+    demoNote();
     b.disabled = false; label.textContent = t('ms_login');
     draw();
   };
@@ -468,6 +471,7 @@ function welcome(show) {
   $('#w-ms').onclick = async () => {
     const b = $('#w-ms'); b.disabled = true; b.textContent = t('ms_wait');
     const ok = await safe(() => aqua.loginMicrosoft(), t('signed_in'));
+    demoNote();
     b.disabled = false; b.textContent = t('ms_login');
     if (ok || S.accounts.length) welcome(false);
   };

@@ -44,7 +44,7 @@ async function signIn(mode, name, password) {
 async function tokenFor(acc, fresh = false) {
   if (!acc) throw new Error(L('Сначала войдите в аккаунт', 'Sign in first'));
   if (acc.aquaToken && !fresh) return store.unseal(acc.aquaToken);
-  if (acc.type === 'microsoft') {
+  if (acc.type === 'microsoft' && !acc.demo) {
     const mc = await auth.authorizationFor(acc);
     const j = await api('/api/account/ms', { method: 'POST', body: { accessToken: mc.access_token } });
     acc.aquaToken = store.seal(j.token);
@@ -63,7 +63,7 @@ async function withToken(fn) {
   try {
     return await fn(await tokenFor(acc));
   } catch (e) {
-    if (e.status === 401 && acc && acc.type === 'microsoft') return fn(await tokenFor(acc, true));
+    if (e.status === 401 && acc && acc.type === 'microsoft' && !acc.demo) return fn(await tokenFor(acc, true));
     if (e.status === 401 && acc) { acc.aquaToken = null; store.save(); }
     throw e;
   }
@@ -87,7 +87,7 @@ async function leaderboard() {
 async function heartbeat(status) {
   if (!base()) return null;
   const acc = selected();
-  if (!acc || (!acc.aquaToken && acc.type !== 'microsoft')) return null;
+  if (!acc || (!acc.aquaToken && (acc.type !== 'microsoft' || acc.demo))) return null;
   try { return await withToken((token) => api('/api/friends/status', { method: 'POST', body: { status, level: level().level }, token })); } catch { return null; }
 }
 

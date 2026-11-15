@@ -99,7 +99,7 @@ function publicState() {
   const s = load();
   return {
     ...s,
-    accounts: s.accounts.map(({ refresh, mclc, aquaToken, ...a }) => ({ ...a, aqua: !!aquaToken || a.type === 'microsoft' })),
+    accounts: s.accounts.map(({ refresh, mclc, aquaToken, ...a }) => ({ ...a, aqua: !!aquaToken || (a.type === 'microsoft' && !a.demo) })),
   };
 }
 

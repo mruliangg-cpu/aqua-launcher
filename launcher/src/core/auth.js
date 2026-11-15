@@ -15,9 +15,27 @@ function offlineUuid(name) {
 }
 
 async function fromXbox(xbox) {
-  const mc = await xbox.getMinecraft();
-  if (mc.isDemo()) throw new Error(L('На этом аккаунте Microsoft нет купленной Minecraft: Java Edition.', 'This Microsoft account does not own Minecraft: Java Edition.'));
-  return { profile: mc.profile, mclc: mc.mclc(), refresh: xbox.save() };
+  let mc = null, err = null;
+  try { mc = await xbox.getMinecraft(); } catch (e) { err = e; }
+  if (mc && !mc.isDemo()) return { profile: mc.profile, mclc: mc.mclc(), refresh: xbox.save(), demo: false };
+  // Нет купленной игры → официальный демо-режим Minecraft (как в обычном лаунчере Mojang).
+  try { return await demoFrom(xbox); } catch { throw err || new Error(L('Не удалось войти в Minecraft через этот аккаунт Microsoft.', 'Could not sign in to Minecraft with this Microsoft account.')); }
+}
+
+/** Вход в демо-версию: аккаунт Microsoft без покупки получает токен Minecraft и играет с флагом --demo. */
+async function demoFrom(xbox) {
+  const identityToken = await xbox.xAuth('rp://api.minecraftservices.com/');
+  const r = await fetch('https://api.minecraftservices.com/authentication/login_with_xbox', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ identityToken }),
+  });
+  if (!r.ok) throw new Error('login_with_xbox ' + r.status);
+  const j = await r.json();
+  const uuid = offlineUuid('AquaDemo:' + j.username);
+  const mclc = {
+    access_token: j.access_token, client_token: crypto.randomUUID(), uuid: uuid.replace(/-/g, ''), name: 'Player', user_properties: {},
+    meta: { type: 'msa', demo: true, exp: Date.now() + Math.max(600, (j.expires_in || 86400) - 300) * 1000 },
+  };
+  return { profile: { id: uuid, name: 'Player' }, mclc, refresh: xbox.save(), demo: true };
 }
 
 async function loginMicrosoft() {
@@ -27,13 +45,13 @@ async function loginMicrosoft() {
   const s = store.state;
   const id = res.profile.id;
   const account = {
-    id, type: 'microsoft', name: res.profile.name, uuid: id,
-    refresh: store.seal(res.refresh), mclc: res.mclc, updated: Date.now(),
+    id: res.demo ? 'demo-' + id : id, type: 'microsoft', name: res.demo ? 'Demo' : res.profile.name, uuid: id,
+    refresh: store.seal(res.refresh), mclc: res.mclc, updated: Date.now(), ...(res.demo ? { demo: true } : {}),
   };
-  s.accounts = s.accounts.filter((a) => a.id !== id);
+  s.accounts = s.accounts.filter((a) => a.id !== account.id);
   s.accounts.push(account);
-  s.selectedAccount = id;
-  s.ownershipVerified = true; // подтвердили лицензию — офлайн-профили разблокированы
+  s.selectedAccount = account.id;
+  if (!res.demo) s.ownershipVerified = true; // подтвердили лицензию — офлайн-профили разблокированы
   store.save();
   return account;
 }
@@ -76,7 +94,7 @@ async function authorizationFor(account) {
   const res = await fromXbox(xbox);
   account.mclc = res.mclc;
   account.refresh = store.seal(res.refresh);
-  account.name = res.profile.name;
+  if (!res.demo) account.name = res.profile.name;
   account.updated = Date.now();
   store.save();
   return res.mclc;

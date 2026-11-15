@@ -112,6 +112,12 @@ async function launch(instanceId, emit, joinServer) {
 
     progress({ task: L('Вход в аккаунт', 'Signing in'), done: 0, total: 1 });
     opts.authorization = await auth.authorizationFor(account);
+    if (account.demo || (opts.authorization.meta && opts.authorization.meta.demo)) {
+      // Демо-режим Minecraft: игра без покупки, как в официальном лаунчере (мир на 5 игровых дней).
+      opts.customLaunchArgs = [...(opts.customLaunchArgs || []), '--demo'];
+      delete opts.quickPlay;
+      log(L('[Aqua] Демо-режим Minecraft (игра не куплена на этом аккаунте)', '[Aqua] Minecraft demo mode (game not owned on this account)'));
+    }
 
     const client = new Client();
     running.client = client;
