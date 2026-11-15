@@ -138,7 +138,7 @@ public final class ExtraModules {
         // ---------------- Сеть (4)
         L.add(hud("Ping Monitor", "Пинг: средний, минимум, максимум и скачки", X, ExtraModules::pingStats, "Ping 42 · 38–55 · ±4"));
         L.add(hud("Connection Quality", "Качество соединения по пингу", X, () -> { int p = ping(); return p < 0 ? null : t("Связь: ", "Net: ") + (p < 60 ? t("отличная", "excellent") : p < 120 ? t("хорошая", "good") : p < 200 ? t("средняя", "fair") : t("плохая", "poor")); }, "Net: excellent"));
-        L.add(hud("Server Brand", "Тип сервера (Paper, Fabric…)", X, () -> { var h = mc().getNetworkHandler(); String b = h == null ? null : h.getBrand(); return b == null || mc().isInSingleplayer() ? null : t("Сервер: ", "Server: ") + b; }, "Server: Paper"));
+        L.add(hud("Server Brand", "Тип сервера (Paper, Fabric…)", X, () -> { String b = brand(); return b == null || mc().isInSingleplayer() ? null : t("Сервер: ", "Server: ") + b; }, "Server: Paper"));
         L.add(new Alert("Lag Detector", "Предупреждает, если сервер завис", () -> {
             if (mc().isInSingleplayer() || lastServerPacket == 0) return null;
             long d = System.currentTimeMillis() - lastServerPacket;
@@ -227,7 +227,20 @@ public final class ExtraModules {
     }
     private static String count(Item item, String label) { int n = p().getInventory().count(item); return n == 0 ? null : label + ": " + n; }
     private static void clip(String s) { mc().keyboard.setClipboard(s); }
-    private static void ding(float pitch) { mc().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pitch)); }
+    private static void ding(float pitch) {
+        //#if MC >= 1.21.11
+        mc().getSoundManager().play(PositionedSoundInstance.ui(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pitch));
+        //#else
+        mc().getSoundManager().play(PositionedSoundInstance.master(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, pitch));
+        //#endif
+    }
+    private static String brand() {
+        //#if MC >= 1.20.2
+        var h = mc().getNetworkHandler(); return h == null ? null : h.getBrand();
+        //#else
+        return p() == null ? null : p().getServerBrand();
+        //#endif
+    }
 
     private static int ping() {
         if (p() == null || mc().getNetworkHandler() == null || mc().isInSingleplayer()) return -1;
