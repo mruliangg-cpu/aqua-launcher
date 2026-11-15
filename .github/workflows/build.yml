@@ -117,6 +117,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win nsis portable --x64 --publish always
+      - name: Attach Aqua Client mod jars (Fabric)
+        if: ${{ steps.ver.outputs.publish == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p mods-out
+          for f in launcher/resources/clients/aqua-client-*.jar; do
+            [ -f "$f" ] || continue
+            mc=$(basename "$f" .jar); mc=${mc#aqua-client-}
+            cp "$f" "mods-out/AquaClient-$mc-fabric.jar"
+          done
+          ls mods-out
+          if ls mods-out/*.jar >/dev/null 2>&1; then gh release upload "v${{ steps.ver.outputs.version }}" mods-out/*.jar --repo "$GITHUB_REPOSITORY" --clobber; fi
       - name: Publish release
         if: ${{ steps.ver.outputs.publish == 'true' }}
         shell: bash
