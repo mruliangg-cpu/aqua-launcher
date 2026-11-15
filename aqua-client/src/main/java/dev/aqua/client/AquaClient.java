@@ -76,6 +76,7 @@ public class AquaClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (MENU.wasPressed()) client.setScreen(new ClickGuiScreen());
             ModuleManager.tick(client);
+            dev.aqua.client.module.impl.Cosmetics.pollAccountLoadout();
         });
 
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));

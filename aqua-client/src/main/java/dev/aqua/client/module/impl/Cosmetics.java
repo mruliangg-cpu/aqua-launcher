@@ -67,6 +67,16 @@ public class Cosmetics extends Module {
      * Игра запущена не из Aqua Launcher: берём гардероб аккаунта с Aqua Network по нику,
      * чтобы косметика была та же, что выбрана в лаунчере.
      */
+    private static int pollTicks;
+
+    /** Игра не из Aqua Launcher: раз в 30 секунд проверяем гардероб аккаунта, чтобы изменения из лаунчера появлялись сразу. */
+    public static void pollAccountLoadout() {
+        if (instance == null || ++pollTicks < 600) return;
+        pollTicks = 0;
+        if (Files.exists(FabricLoader.getInstance().getConfigDir().resolve("aquaclient-loadout.json"))) return;
+        instance.fetchAccountLoadout();
+    }
+
     private void fetchAccountLoadout() {
         String name = net.minecraft.client.MinecraftClient.getInstance().getSession().getUsername();
         if (name == null || name.isBlank()) return;
