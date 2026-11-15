@@ -19,9 +19,9 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
-//#if MC >= 1.21.9
+//#if MC >= 1.21.10
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
-//#else
+//#elseif MC < 1.21.9
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 //#endif
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
@@ -66,7 +66,9 @@ public class AquaClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));
         // (в 1.20.x второй аргумент — float tickDelta; лямбда подходит для обоих вариантов)
 
-        //#if MC >= 1.21.9
+        //#if MC < 1.21.9 || MC >= 1.21.10
+        // (в Fabric API для 1.21.9 событий отрисовки мира нет)
+        //#if MC >= 1.21.10
         WorldRenderEvents.START_MAIN.register(ctx -> {
         //#else
         WorldRenderEvents.START.register(ctx -> {
@@ -83,6 +85,7 @@ public class AquaClient implements ClientModInitializer {
             Waypoints wp = ModuleManager.get(Waypoints.class);
             if (wp != null) wp.render(dev.aqua.client.compat.WorldCtx.of(ctx));
         });
+        //#endif
 
         //#if MC < 1.21.9
         WorldRenderEvents.BLOCK_OUTLINE.register((ctx, outline) -> {

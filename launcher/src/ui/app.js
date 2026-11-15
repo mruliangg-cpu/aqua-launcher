@@ -380,8 +380,13 @@ function aquaForm(box, onDone) {
 
 /** Блок входа без Microsoft (зависит от лицензии и Aqua Network). */
 function offlineBlock(box, onDone) {
+  // Аккаунт Aqua (ник + пароль) доступен всем: друзья, косметика, рейтинг. Игра по нику — после лицензии.
+  if (S.settings.networkUrl) {
+    aquaForm(box, onDone);
+    if (!S.ownershipVerified) box.insertAdjacentHTML('beforeend', `<p class="note">${t('aqua_play_note')}</p>`);
+    return;
+  }
   if (!S.ownershipVerified) { box.innerHTML = `<div class="locked">${t('locked')}</div>`; return; }
-  if (S.settings.networkUrl) { aquaForm(box, onDone); return; }
   box.innerHTML = `<div class="inline"><input class="input grow" id="off-name" maxlength="16" placeholder="${t('nick_ph')}"><button class="btn primary" id="off-add">${t('add_btn')}</button></div><p class="note">${t('aqua_needs_net')}</p>`;
   const add = async () => { if (await safe(() => aqua.addOffline($('#off-name', box).value.trim()), t('profile_added')) && onDone) onDone(); };
   $('#off-add', box).onclick = add;
@@ -712,7 +717,7 @@ async function drawSkinPage() {
 }
 
 // ======================================================================= ГАРДЕРОБ
-let lockerSlot = 'cape';
+let lockerSlot = 'cape', lockerQuery = '', lockerObs = null;
 let VIEWER = null;
 async function lockerSkin() {
   const sk = SKIN.data ? SKIN : await aqua.getSkin().catch(() => ({}));
@@ -725,8 +730,11 @@ async function renderLocker() {
   const L = S.loadout || {};
   $('#locker-slots').innerHTML = COSMETICS.slots.map((s) => `<button data-s="${s}" class="${s === lockerSlot ? 'on' : ''}">${t('slot_' + s)}<i>${COSMETICS.items[s].length - 1}</i></button>`).join('');
   $$('#locker-slots button').forEach((b) => b.onclick = () => { lockerSlot = b.dataset.s; blip(480); renderLocker(); });
-  const items = COSMETICS.items[lockerSlot];
+  const q = (lockerQuery || '').trim().toLowerCase();
+  const items = COSMETICS.items[lockerSlot].filter(([id, , en, ru]) => !q || id === 'none' || en.toLowerCase().includes(q) || ru.toLowerCase().includes(q));
   const is3d = ['hat', 'face', 'wings', 'back', 'pet'].includes(lockerSlot);
+  const search = $('#locker-search');
+  if (search && !search._wired) { search._wired = true; let tm; search.oninput = () => { clearTimeout(tm); tm = setTimeout(() => { lockerQuery = search.value; renderLocker(); }, 140); }; }
   $('#locker-grid').innerHTML = items.map(([id, emoji], n) => {
     const on = (L[lockerSlot] || 'none') === id;
     let vis = `<div class="cos-emoji">${emoji}</div>`;
@@ -737,7 +745,17 @@ async function renderLocker() {
     }
     return `<button class="cos-card glass ${on ? 'on' : ''}" data-id="${id}" style="animation-delay:${Math.min(n, 20) * 22}ms">${vis}<b>${esc(cosName(lockerSlot, id))}</b><small>${on ? '✓ ' + t('equipped') : t('equip')}</small></button>`;
   }).join('');
-  if (is3d && window.AquaViewer) $$('#locker-grid canvas.cos-3d').forEach((c) => AquaViewer.thumb(c, lockerSlot, c.dataset.id));
+  if (is3d && window.AquaViewer) {
+    // миниатюры рисуем лениво — только видимые карточки (в слоте 120+ вещей)
+    if (lockerObs) lockerObs.disconnect();
+    const slot = lockerSlot;
+    lockerObs = new IntersectionObserver((ents) => ents.forEach((en) => {
+      if (!en.isIntersecting) return;
+      lockerObs.unobserve(en.target); AquaViewer.thumb(en.target, slot, en.target.dataset.id);
+    }), { root: $('#locker-grid'), rootMargin: '200px' });
+    $$('#locker-grid canvas.cos-3d').forEach((c) => lockerObs.observe(c));
+  }
+  if (!items.length || (items.length === 1 && q)) $('#locker-grid').insertAdjacentHTML('beforeend', `<p class="note">${t('locker_nothing')}</p>`);
   $$('#locker-grid .cos-card').forEach((b) => {
     b.onmouseenter = () => { if (VIEWER) VIEWER.set({ loadout: { ...S.loadout, [lockerSlot]: b.dataset.id }, name: VIEWER.opts.name, owner: VIEWER.opts.owner }); };
     b.onmouseleave = () => { if (VIEWER) VIEWER.set({ loadout: { ...S.loadout }, name: VIEWER.opts.name, owner: VIEWER.opts.owner }); };

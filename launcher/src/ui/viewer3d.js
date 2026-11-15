@@ -199,14 +199,33 @@
     drip: ['#3ec9ff'], happy: ['#7cfc6b', '#c8ff9a'], crit: ['#fff2b0', '#ffd23f'], enchant: ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ'], cloud: ['#ffffff', '#e8eef5'], spore: ['#c86bff', '#ff9ad5'],
     ash: ['#dfe3e8', '#bfc5cc'], rain: ['#7fc8ff'],
   };
-  function auraStep(state, g, aura, dt, W, H) {
+  const PATTERNS = ['ring', 'spiral', 'halo', 'trail', 'cloud'];
+  function auraStep(state, g, full, dt, W, H) {
+    let aura = full, pat = '';
+    const us = full.lastIndexOf('_');
+    if (us > 0 && PATTERNS.includes(full.slice(us + 1))) { aura = full.slice(0, us); pat = full.slice(us + 1); }
     const pal = AURA[aura];
     if (!pal) return;
     state.p = state.p || [];
-    if (state.p.length < 40 && Math.random() < dt * 22) {
-      const fall = ['snow', 'drip', 'rain', 'cherry', 'ash'].includes(aura);
-      state.p.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.55, y: fall ? H * 0.12 : H * (0.35 + Math.random() * 0.5), vy: fall ? 18 + Math.random() * 20 : -(14 + Math.random() * 22),
-        vx: (Math.random() - 0.5) * 10, life: 1.6 + Math.random(), max: 2.4, c: pal[(Math.random() * pal.length) | 0], s: 2 + Math.random() * 3 });
+    state.t = (state.t || 0) + dt;
+    const c = () => pal[(Math.random() * pal.length) | 0], s = () => 2 + Math.random() * 3, cx = W / 2;
+    if (state.p.length < 46 && Math.random() < dt * (pat ? 30 : 22)) {
+      const T = state.t;
+      if (pat === 'ring' || pat === 'halo') {
+        const a = T * 3.2 + Math.random() * 0.3, r = pat === 'ring' ? W * 0.26 : W * 0.1, y = pat === 'ring' ? H * 0.55 : H * 0.12;
+        state.p.push({ x: cx + Math.cos(a) * r, y: y + Math.sin(a) * r * 0.22, vx: 0, vy: -3, life: 0.9, max: 0.9, c: c(), s: s() });
+      } else if (pat === 'spiral') {
+        const a = T * 5, y = H * (0.9 - ((T * 0.45) % 1) * 0.8);
+        for (const k of [0, Math.PI]) state.p.push({ x: cx + Math.cos(a + k) * W * 0.22, y, vx: 0, vy: -4, life: 1, max: 1, c: c(), s: s() });
+      } else if (pat === 'trail') {
+        state.p.push({ x: cx + (Math.random() - 0.5) * W * 0.4, y: H * 0.93, vx: (Math.random() - 0.5) * 30, vy: -6, life: 1.2, max: 1.2, c: c(), s: s() });
+      } else if (pat === 'cloud') {
+        state.p.push({ x: cx + (Math.random() - 0.5) * W * 0.4, y: H * 0.04, vx: (Math.random() - 0.5) * 6, vy: 26, life: 1.4, max: 1.4, c: c(), s: s() });
+      } else {
+        const fall = ['snow', 'drip', 'rain', 'cherry', 'ash'].includes(aura);
+        state.p.push({ x: cx + (Math.random() - 0.5) * W * 0.55, y: fall ? H * 0.12 : H * (0.35 + Math.random() * 0.5), vy: fall ? 18 + Math.random() * 20 : -(14 + Math.random() * 22),
+          vx: (Math.random() - 0.5) * 10, life: 1.6 + Math.random(), max: 2.4, c: c(), s: s() });
+      }
     }
     for (const p of state.p) {
       p.life -= dt; p.x += p.vx * dt + Math.sin(p.life * 4) * 0.3; p.y += p.vy * dt;

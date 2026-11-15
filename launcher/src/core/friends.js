@@ -36,7 +36,6 @@ async function api(path, { method = 'GET', body, token } = {}) {
 
 /** Регистрация или вход аккаунта Aqua без Microsoft → игровой профиль с этим ником. */
 async function signIn(mode, name, password) {
-  if (!store.state.ownershipVerified) throw new Error(L('Сначала один раз войдите через Microsoft с купленной Minecraft — после этого вход по нику станет доступен.', 'Sign in once with a Microsoft account that owns Minecraft — then nickname login unlocks.'));
   const j = await api(mode === 'register' ? '/api/account/register' : '/api/account/login', { method: 'POST', body: { name, password } });
   auth.addOffline(j.name, store.seal(j.token));
   return j.name;

@@ -257,7 +257,23 @@ def cape(name, face, trim):
 for name, (fn, trim) in DESIGNS.items(): cape(name, fn(0), trim)
 for f in range(8): cape(f'portal_{f}', d_portal(f), (62, 230, 200))
 cape('portal', d_portal(0), (62, 230, 200))
-print('HD capes:', len(DESIGNS) + 1)
+# варианты плащей по оттенку (из cosmetics.json)
+import sys as _s
+_data = json.load(open(f'{UI}/cosmetics.json'))
+_n = 0
+for it in _data['items']['cape']:
+    if 'base' not in it: continue
+    src = Image.open(f"{MOD}/textures/cape/{it['base']}.png").convert('RGBA')
+    hsv = np.asarray(src.convert('RGB').convert('HSV')).astype(np.float32); hsv[..., 0] = (hsv[..., 0] + it['hue'] * 255) % 255
+    rgb = np.asarray(src).astype(np.float32); mx = rgb[..., :3].max(-1); mn = rgb[..., :3].min(-1)
+    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1), 0)
+    out = np.asarray(Image.fromarray(hsv.astype(np.uint8), 'HSV').convert('RGB')).astype(np.float32)
+    keep = ((sat < 0.2) | (mx < 30))[..., None]
+    res = np.concatenate([np.where(keep, rgb[..., :3], out), rgb[..., 3:]], -1).astype(np.uint8)
+    im = Image.fromarray(res, 'RGBA')
+    for d in (f'{MOD}/textures/cape', f'{UI}/capes'): im.save(f"{d}/{it['id']}.png", optimize=True)
+    _n += 1
+print('HD capes:', len(DESIGNS) + 1, '+ variants', _n)
 
 # ---------------------------------------------------------------- значки 16×16 (Scale2x + свет/тень + контур)
 def scale2x(a):

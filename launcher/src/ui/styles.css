@@ -313,7 +313,9 @@ input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px;
 .cape-preview { width: 80px; height: 128px; background-repeat: no-repeat; background-size: 512px 256px; background-position: -8px -8px; image-rendering: pixelated; border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .4); }
 .equipped { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .slot-tabs { flex-wrap: wrap; margin-bottom: 14px; }
-.locker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.locker-search { width: 100%; margin: 10px 0 12px; padding: 10px 14px; border-radius: 12px; border: 1px solid rgba(120, 220, 255, .18); background: rgba(6, 30, 48, .55); color: inherit; font: inherit; outline: none; transition: border-color .2s, box-shadow .2s; }
+.locker-search:focus { border-color: rgba(60, 201, 255, .6); box-shadow: 0 0 0 3px rgba(60, 201, 255, .15); }
+.locker-grid { max-height: calc(100vh - 290px); overflow-y: auto; padding-right: 4px; display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
 .cos-card { padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; transition: transform .25s, border-color .25s, box-shadow .25s; animation: pop .35s ease both; }
 .cos-card:hover { transform: translateY(-4px) scale(1.02); border-color: var(--line-hi); }
 .cos-card.on { border-color: var(--aqua); box-shadow: 0 0 0 1px var(--aqua), 0 10px 30px rgba(62, 230, 255, .3); }

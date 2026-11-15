@@ -40,7 +40,9 @@ async function loginMicrosoft() {
 
 function addOffline(name, aquaToken) {
   const s = store.state;
-  if (!s.ownershipVerified) throw new Error(L('Сначала один раз войдите через Microsoft с купленной Minecraft — после этого вход по нику станет доступен.', 'Sign in once with a Microsoft account that owns Minecraft — then nickname login unlocks.'));
+  // Аккаунт Aqua (ник + пароль) добавляется всегда: друзья, косметика, рейтинг работают сразу.
+  // Без пароля Aqua (просто ник) — только после подтверждения лицензии.
+  if (!s.ownershipVerified && !aquaToken) throw new Error(L('Сначала один раз войдите через Microsoft с купленной Minecraft — после этого вход по нику станет доступен.', 'Sign in once with a Microsoft account that owns Minecraft — then nickname login unlocks.'));
   if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) throw new Error(L('Ник: 3–16 символов, латиница, цифры и _', 'Nickname: 3–16 characters, latin letters, digits and _'));
   const uuid = offlineUuid(name);
   const id = 'offline-' + uuid;
@@ -54,6 +56,8 @@ function addOffline(name, aquaToken) {
 /** Готовый объект авторизации для MCLC (с обновлением токена Microsoft). */
 async function authorizationFor(account) {
   if (account.type === 'offline') {
+    // Защита от пиратства: играть по нику можно только после одного входа через Microsoft с купленной игрой.
+    if (!store.state.ownershipVerified) throw new Error(L('Чтобы играть, один раз войди через Microsoft с купленной Minecraft. Друзья, косметика и рейтинг уже работают с аккаунтом Aqua.', 'To play, sign in once with a Microsoft account that owns Minecraft. Friends, cosmetics and leaderboard already work with your Aqua account.'));
     return {
       access_token: crypto.randomBytes(16).toString('hex'),
       client_token: account.uuid,

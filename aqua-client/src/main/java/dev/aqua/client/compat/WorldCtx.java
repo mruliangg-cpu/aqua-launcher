@@ -4,14 +4,15 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-//#if MC >= 1.21.9
+//#if MC >= 1.21.10
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-//#else
+//#elseif MC < 1.21.9
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 //#endif
 
 /** Контекст отрисовки в мире, одинаковый для всех версий Fabric API. */
 public record WorldCtx(MatrixStack matrices, VertexConsumerProvider consumers, Camera camera, float tickDelta) {
+    //#if MC < 1.21.9 || MC >= 1.21.10
     public static WorldCtx of(WorldRenderContext ctx) {
         MinecraftClient mc = MinecraftClient.getInstance();
         //#if MC >= 1.21.9
@@ -24,4 +25,5 @@ public record WorldCtx(MatrixStack matrices, VertexConsumerProvider consumers, C
         return new WorldCtx(ctx.matrixStack(), ctx.consumers(), ctx.camera(), ctx.tickDelta());
         //#endif
     }
+    //#endif
 }

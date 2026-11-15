@@ -133,14 +133,51 @@ public class Cosmetics extends Module {
             if (!AquaNet.isUser(id)) continue;
             String aura = AquaNet.cosmetic(id, Slot.AURA);
             if (aura.equals("none")) continue;
+            // id ауры: "<частица>" или "<частица>_<узор>" (ring, spiral, halo, trail, cloud)
+            String pattern = "";
+            int us = aura.lastIndexOf('_');
+            if (us > 0) { pattern = aura.substring(us + 1); aura = aura.substring(0, us); }
             ParticleEffect pe = particle(aura);
             boolean portal = pe == ParticleTypes.PORTAL || pe == ParticleTypes.ENCHANT;
-            if (!portal && (p.age + id.hashCode()) % 6 != 0) continue;
             int n = p == mc.player ? auraAmount.getInt() : 1;
-            for (int i = 0; i < n; i++) {
-                double a = Math.random() * Math.PI * 2, r = 0.5 + Math.random() * 0.3;
-                dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * r, p.getY() + Math.random() * p.getHeight(), p.getZ() + Math.sin(a) * r,
-                        0, portal ? -0.4 : 0.02, 0);
+            double t = p.age + id.hashCode() % 100, h = p.getHeight();
+            switch (pattern) {
+                case "ring" -> {
+                    if (p.age % 2 != 0) continue;
+                    for (int i = 0; i < 2 + n; i++) {
+                        double a = t * 0.25 + i * Math.PI * 2 / (2 + n);
+                        dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * 0.75, p.getY() + h * 0.45, p.getZ() + Math.sin(a) * 0.75, 0, 0, 0);
+                    }
+                }
+                case "spiral" -> {
+                    for (int i = 0; i < 2; i++) {
+                        double a = t * 0.45 + i * Math.PI, y = (t % 40) / 40.0 * h;
+                        dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * 0.6, p.getY() + y, p.getZ() + Math.sin(a) * 0.6, 0, 0.01, 0);
+                    }
+                }
+                case "halo" -> {
+                    if (p.age % 2 != 0) continue;
+                    double a = t * 0.35;
+                    dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * 0.35, p.getY() + h + 0.25, p.getZ() + Math.sin(a) * 0.35, 0, 0, 0);
+                }
+                case "trail" -> {
+                    if (p.getVelocity().horizontalLengthSquared() < 0.002 || p.age % 2 != 0) continue;
+                    for (int i = 0; i < n; i++)
+                        dev.aqua.client.compat.V.particle(pe, p.getX() + (Math.random() - 0.5) * 0.4, p.getY() + 0.05, p.getZ() + (Math.random() - 0.5) * 0.4, 0, 0.01, 0);
+                }
+                case "cloud" -> {
+                    if ((p.age + id.hashCode()) % 4 != 0) continue;
+                    for (int i = 0; i < n; i++)
+                        dev.aqua.client.compat.V.particle(pe, p.getX() + (Math.random() - 0.5) * 0.9, p.getY() + h + 0.6, p.getZ() + (Math.random() - 0.5) * 0.9, 0, -0.05, 0);
+                }
+                default -> {
+                    if (!portal && (p.age + id.hashCode()) % 6 != 0) continue;
+                    for (int i = 0; i < n; i++) {
+                        double a = Math.random() * Math.PI * 2, r = 0.5 + Math.random() * 0.3;
+                        dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * r, p.getY() + Math.random() * h, p.getZ() + Math.sin(a) * r,
+                                0, portal ? -0.4 : 0.02, 0);
+                    }
+                }
             }
         }
     }

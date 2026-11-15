@@ -349,6 +349,8 @@ for i, (id_, en, ru, e, rows, pal) in enumerate(ICONS):
     add('icon', id_, en, ru, e)
 json.dump({'providers': providers}, open(f'{MOD_ASSETS}/font/icons.json', 'w'), indent=1)
 
+exec(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gen_more.py'), encoding='utf-8').read())
+
 # ================================================================ ДОВОДКА
 for it in ITEMS['face']:   # лицо: впереди второго слоя скина (z < -4.5), дужки — снаружи головы
     for grp in it.get('g', []):
@@ -378,7 +380,7 @@ for slot in ('hat', 'face', 'wings', 'back', 'pet'):
                 if it['id'] in GLOW_ITEMS or bx[6] in GLOW_COLORS: bx.append(1)
 
 # ================================================================ ВЫВОД
-data = {'slots': list(ITEMS.keys()), 'items': ITEMS, 'icons': [i[0] for i in ICONS]}
+data = {'slots': list(ITEMS.keys()), 'items': ITEMS, 'icons': [it['id'] for it in ITEMS['icon'][1:]]}
 for s, lst in ITEMS.items(): print(s, len(lst) - 1)
 os.makedirs('/tmp/wingsprites', exist_ok=True)
 for k, im in SPRITES.items(): im.resize((im.width * 2, im.height * 2), Image.NEAREST).save(f'/tmp/wingsprites/{k}.png')
