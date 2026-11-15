@@ -40,10 +40,10 @@
     const d = lang === 'ru' ? RU : EN;
     $$('[data-t]').forEach((el) => { if (d[el.dataset.t]) el.textContent = d[el.dataset.t]; });
     document.documentElement.lang = lang;
-    $('#lang').textContent = lang === 'ru' ? 'EN' : 'RU';
+    $$('.langsw button').forEach((b) => b.classList.toggle('on', b.dataset.l === lang));
     fillDate();
   }
-  $('#lang').onclick = () => { lang = lang === 'ru' ? 'en' : 'ru'; try { localStorage.setItem('aqua-lang', lang); } catch {} applyLang(); };
+  $$('.langsw button').forEach((b) => b.onclick = () => { lang = b.dataset.l; try { localStorage.setItem('aqua-lang', lang); } catch {} applyLang(); });
 
   // ---------------------------------------------------------------- последняя версия с GitHub
   const FALLBACK_MC = ['1.21.11', '1.21.10', '1.21.9', '1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21',
