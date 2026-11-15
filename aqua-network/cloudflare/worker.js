@@ -71,13 +71,6 @@ async function view(db, key) {
   return { name: a.name, type: a.type, online: online(a), status: online(a) ? a.status || '' : '', seen: a.seen || 0, level: lv ? lv.level : 1, owner: /^mrulian_gg$/i.test(a.name) };
 }
 
-async function proxy(url, headers) {
-  const r = await fetch(url, { headers, redirect: 'follow' });
-  const out = new Response(r.body, r);
-  Object.entries(CORS).forEach(([k, v]) => out.headers.set(k, v));
-  return out;
-}
-
 export default {
   async fetch(req, env) {
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
@@ -90,7 +83,7 @@ export default {
     try {
       if (p === '/' || p === '/api/status') {
         const c = await db.prepare('SELECT COUNT(*) AS n FROM accounts').first();
-        return json({ name: 'Aqua Network', ok: true, accounts: c ? c.n : 0});
+        return json({ name: 'Aqua Network', ok: true, accounts: c ? c.n : 0, loadouts: true });
       }
 
       // ---------- присутствие в игре, косметика, скины ----------
@@ -170,7 +163,6 @@ export default {
         return json({ token: await issueToken(db, acc), name: acc.name, type: acc.type });
       }
 
-      // ---------- друзья ----------
       // ---------- гардероб аккаунта: лаунчер сохраняет, мод забирает по нику (одна косметика везде)
       if (p === '/api/loadout' && req.method === 'GET') {
         const name = String(url.searchParams.get('name') || '').toLowerCase().slice(0, 16);
@@ -188,6 +180,7 @@ export default {
         return json({ ok: true });
       }
 
+      // ---------- друзья ----------
       if (p.startsWith('/api/friends')) {
         const me = await authAcc(db, req);
         if (!me) return err(401, 'auth', 'Sign in to Aqua Network');
