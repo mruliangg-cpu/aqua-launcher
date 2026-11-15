@@ -45,8 +45,16 @@ jobs:
         run: |
           V=$(node -p "require('./launcher/package.json').version")
           echo "version=$V" >> "$GITHUB_OUTPUT"
-          D=$(gh release view "v$V" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft 2>/dev/null || echo missing)
-          if [ "$D" = "false" ]; then echo "publish=false" >> "$GITHUB_OUTPUT"; else echo "publish=true" >> "$GITHUB_OUTPUT"; fi
+          R="--repo $GITHUB_REPOSITORY"
+          if gh release view "v$V" $R >/dev/null 2>&1; then
+            if [ "$(gh release view "v$V" $R --json isDraft -q .isDraft)" = "false" ] && gh release view "v$V" $R --json assets -q '.assets[].name' | grep -qx latest.yml; then
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "Release v$V is incomplete — recreating"; gh release delete "v$V" $R --yes --cleanup-tag; echo "publish=true" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Build (check)
         if: ${{ steps.ver.outputs.publish != 'true' }}
         working-directory: launcher
