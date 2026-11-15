@@ -12,7 +12,7 @@ const FOLDER = { mod: 'mods', resourcepack: 'resourcepacks', shader: 'shaderpack
 
 /** Моды для максимального FPS — ставятся автоматически, если включён «FPS Boost». */
 const FPS_PACK = {
-  fabric: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling', 'badoptimizations', 'krypton'],
+  fabric: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling', 'cloth-config', 'badoptimizations', 'krypton'],
   quilt: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'badoptimizations'],
   forge: ['embeddium', 'ferrite-core', 'entityculling', 'modernfix', 'immediatelyfast'],
   neoforge: ['sodium', 'ferrite-core', 'entityculling', 'modernfix', 'immediatelyfast'],
@@ -97,9 +97,11 @@ async function installModrinth(inst, projectId, type, meta, seen, installed, onL
   installed.push(meta[file.filename].title);
   onLog && onLog(L(`[Моды] Установлен ${meta[file.filename].title} ${version.version_number}`, `[Mods] Installed ${meta[file.filename].title} ${version.version_number}`));
   for (const dep of version.dependencies || []) {
-    if (dep.dependency_type === 'required' && dep.project_id) {
-      await installModrinth(inst, dep.project_id, 'mod', meta, seen, installed, onLog, false);
-    }
+    if (dep.dependency_type !== 'required') continue;
+    let pid = dep.project_id;
+    // некоторые моды указывают зависимость только номером версии — узнаём по нему проект
+    if (!pid && dep.version_id) pid = await getJson(`${MR}/version/${encodeURIComponent(dep.version_id)}`).then((v) => v.project_id).catch(() => null);
+    if (pid) await installModrinth(inst, pid, 'mod', meta, seen, installed, onLog, false).catch((e) => onLog && onLog(`[Mods] ${pid}: ${e.message}`));
   }
 }
 

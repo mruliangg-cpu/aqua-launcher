@@ -2,7 +2,7 @@
 import json, os, sys, urllib.request, urllib.parse
 
 MC = sys.argv[1]
-SLUGS = ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling', 'badoptimizations', 'krypton']
+SLUGS = ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling', 'cloth-config', 'badoptimizations', 'krypton']
 SKIP = {'P7dR8mSH'}  # fabric-api уже есть в dev-окружении
 os.makedirs('run/mods', exist_ok=True)
 
@@ -23,7 +23,9 @@ def install(pid, required):
     urllib.request.urlretrieve(f['url'], os.path.join('run/mods', f['filename']))
     print(f"FPSPACK {pid} -> {f['filename']}")
     for d in v.get('dependencies', []):
-        if d.get('dependency_type') == 'required' and d.get('project_id'): install(d['project_id'], True)
+        if d.get('dependency_type') != 'required': continue
+        pid2 = d.get('project_id') or (get(f"https://api.modrinth.com/v2/version/{d['version_id']}")['project_id'] if d.get('version_id') else None)
+        if pid2: install(pid2, True)
 
 for s in SLUGS:
     try: install(get(f'https://api.modrinth.com/v2/project/{s}')['id'], False)
