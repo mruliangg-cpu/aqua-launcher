@@ -33,7 +33,6 @@ contextBridge.exposeInMainWorld('aqua', {
   onState: (cb) => on('state', cb),
 
   loginMicrosoft: () => call('account:microsoft'),
-  addOffline: (name) => call('account:offline', name),
   selectAccount: (id) => call('account:select', id),
   removeAccount: (id) => call('account:remove', id),
 
@@ -55,7 +54,6 @@ contextBridge.exposeInMainWorld('aqua', {
   onGameState: (cb) => on('game:state', cb),
   onStarted: (cb) => on('game:started', cb),
 
-  aquaSignIn: (mode, name, password) => call('aqua:signin', mode, name, password),
   friends: () => call('friends:list'),
   friendAction: (kind, name) => call('friends:action', kind, name),
   onIncoming: (cb) => on('friends:incoming', cb),

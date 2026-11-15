@@ -171,7 +171,6 @@ app.whenReady().then(() => {
 
   // ---------- аккаунты ----------
   handle('account:microsoft', async () => { await auth.loginMicrosoft(); pushState(); return true; });
-  handle('account:offline', (name) => { auth.addOffline(name); pushState(); return true; });
   handle('account:select', (id) => { store.state.selectedAccount = id; store.save(); pushState(); });
   handle('account:remove', (id) => {
     const st = store.state;
@@ -237,7 +236,6 @@ app.whenReady().then(() => {
 
   // ---------- друзья (Aqua Network) ----------
   const friends = require('./src/core/friends');
-  handle('aqua:signin', async (mode, name, password) => { const n = await friends.signIn(mode, name, password); pushState(); return n; });
   handle('friends:list', () => friends.list());
   handle('friends:action', (kind, name) => friends.action(kind, name));
   let lastIncoming = 0;
