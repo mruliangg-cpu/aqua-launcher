@@ -141,6 +141,9 @@ public final class ModuleManager {
         add(new DeathCoords(), false);
         add(new FpsBooster(), true);
         add(new UnfocusedFps(), true);
+
+        // ---------- ещё 100 модулей ----------
+        for (Module m : ExtraModules.all()) add(m, false);
     }
 
     private static void add(Module m, boolean enabledByDefault) {

@@ -53,6 +53,7 @@ public class AquaClient implements ClientModInitializer {
         SNAPLOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.snaplook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, CATEGORY));
 
         ModuleManager.init();
+        dev.aqua.client.module.impl.ExtraModules.registerEvents();
         ConfigManager.load();
         // гардероб и скин, выбранные в Aqua Launcher
         dev.aqua.client.module.impl.Cosmetics cos = ModuleManager.get(dev.aqua.client.module.impl.Cosmetics.class);
@@ -77,6 +78,7 @@ public class AquaClient implements ClientModInitializer {
             while (MENU.wasPressed()) client.setScreen(new ClickGuiScreen());
             ModuleManager.tick(client);
             dev.aqua.client.module.impl.Cosmetics.pollAccountLoadout();
+            dev.aqua.client.module.impl.ExtraModules.tick();
         });
 
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));

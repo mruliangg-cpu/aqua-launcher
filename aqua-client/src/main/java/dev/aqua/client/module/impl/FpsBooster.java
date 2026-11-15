@@ -23,6 +23,27 @@ public class FpsBooster extends Module {
     private final BoolSetting biomeBlend = add(new BoolSetting("Без смешивания биомов", true));
     private final BoolSetting entityDistance = add(new BoolSetting("Мобы ближе (75%)", false));
     private final BoolSetting fastGraphics = add(new BoolSetting("Быстрая графика", false));
+    private final BoolSetting smoothLight = add(new BoolSetting("Без мягкого освещения", false));
+    private final BoolSetting noVsync = add(new BoolSetting("Выключить VSync", true));
+    private final BoolSetting unlimited = add(new BoolSetting("FPS без ограничения", true));
+    private final BoolSetting fastChunks = add(new BoolSetting("Быстрая сборка чанков", true));
+    private final dev.aqua.client.setting.NumberSetting maxView = add(new dev.aqua.client.setting.NumberSetting("Макс. дальность прорисовки", 32, 4, 32, 1, " ч."));
+    private final dev.aqua.client.setting.NumberSetting cullDist = add(new dev.aqua.client.setting.NumberSetting("Не рисовать мобов дальше", 64, 16, 128, 4, " бл."));
+    private final BoolSetting cullEntities = add(new BoolSetting("Отсечение дальних мобов", true));
+
+    private static FpsBooster instance;
+    private Boolean oAo, oVsync;
+    private Integer oMaxFps, oView;
+    private Object oChunks;
+
+    /** Отсечение сущностей: дальние мобы и предметы не рисуются (игроки — всегда). */
+    public static boolean cull(net.minecraft.entity.Entity e, double camX, double camY, double camZ) {
+        FpsBooster f = instance;
+        if (f == null || !f.isEnabled() || !f.cullEntities.isOn() || e instanceof net.minecraft.entity.player.PlayerEntity) return false;
+        if (e.hasPassengers() || e.hasVehicle() || e.isGlowing()) return false;
+        double d = f.cullDist.get();
+        return e.squaredDistanceTo(camX, camY, camZ) > d * d;
+    }
 
     private CloudRenderMode oClouds;
     private ParticlesMode oParticles;
@@ -32,7 +53,7 @@ public class FpsBooster extends Module {
     private GraphicsMode oGraphics;
     private int timer;
 
-    public FpsBooster() { super("FPS Booster", "Снижает тяжёлые настройки графики ради FPS", Category.PERFORMANCE); }
+    public FpsBooster() { super("FPS Booster", "Снижает тяжёлые настройки графики ради FPS", Category.PERFORMANCE); instance = this; }
 
     @Override
     public void onTick() {
@@ -54,9 +75,20 @@ public class FpsBooster extends Module {
         apply(o.getEntityShadows(), shadows.isOn() ? Boolean.FALSE : oShadows);
         apply(o.getBiomeBlendRadius(), biomeBlend.isOn() ? Integer.valueOf(0) : oBlend);
         apply(o.getEntityDistanceScaling(), entityDistance.isOn() ? Double.valueOf(0.75) : oDistance);
+        if (oAo == null) { oAo = o.getAo().getValue(); oVsync = o.getEnableVsync().getValue(); oMaxFps = o.getMaxFps().getValue(); oView = o.getViewDistance().getValue(); oChunks = o.getChunkBuilderMode().getValue(); }
+        apply(o.getAo(), smoothLight.isOn() ? Boolean.FALSE : oAo);
+        apply(o.getEnableVsync(), noVsync.isOn() ? Boolean.FALSE : oVsync);
+        apply(o.getMaxFps(), unlimited.isOn() ? Integer.valueOf(260) : oMaxFps);
+        apply(o.getViewDistance(), Integer.valueOf(Math.min(oView, maxView.get().intValue())));
+        applyRaw(o.getChunkBuilderMode(), fastChunks.isOn() ? net.minecraft.client.render.ChunkBuilderMode.values()[0] : oChunks);
         //#if MC < 1.21.11
         apply(o.getGraphicsMode(), fastGraphics.isOn() ? GraphicsMode.FAST : oGraphics);
         //#endif
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void applyRaw(SimpleOption option, Object value) {
+        if (value != null && !value.equals(option.getValue())) option.setValue(value);
     }
 
     private static <T> void apply(SimpleOption<T> option, T value) {
@@ -75,6 +107,7 @@ public class FpsBooster extends Module {
         //#if MC < 1.21.11
         apply(o.getGraphicsMode(), oGraphics);
         //#endif
+        if (oAo != null) { apply(o.getAo(), oAo); apply(o.getEnableVsync(), oVsync); apply(o.getMaxFps(), oMaxFps); apply(o.getViewDistance(), oView); applyRaw(o.getChunkBuilderMode(), oChunks); oAo = null; }
         oClouds = null;
         timer = 0;
     }
