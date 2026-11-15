@@ -258,7 +258,7 @@ public final class V {
     public static void filledBox(MatrixStack ms, VertexConsumer vc, double x1, double y1, double z1, double x2, double y2, double z2, float r, float g, float b, float a) {
         //#if MC >= 1.21.2
         net.minecraft.client.render.VertexRendering.drawFilledBox(ms, vc, x1, y1, z1, x2, y2, z2, r, g, b, a);
-        //#else
+        //#elseif MC >= 1.20.1
         net.minecraft.client.render.WorldRenderer.renderFilledBox(ms, vc, x1, y1, z1, x2, y2, z2, r, g, b, a);
         //#endif
     }
