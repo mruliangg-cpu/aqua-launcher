@@ -78,7 +78,7 @@ public final class SelfTest {
                 log("title screen reached");
                 Class<?> cws = Class.forName("net.minecraft.client.gui.screen.world.CreateWorldScreen");
                 for (Method m : cws.getDeclaredMethods()) {
-                    if (!java.lang.reflect.Modifier.isStatic(m.getModifiers()) || !m.getName().equals("show")) continue;
+                    if (!java.lang.reflect.Modifier.isStatic(m.getModifiers()) || !(m.getName().equals("show") || m.getName().equals("create"))) continue;
                     Class<?>[] p = m.getParameterTypes();
                     if (p.length != 2 || p[0] != MinecraftClient.class) continue;
                     m.setAccessible(true);
