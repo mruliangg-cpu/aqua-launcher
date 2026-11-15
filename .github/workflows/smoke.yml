@@ -35,11 +35,14 @@ jobs:
       - name: Install virtual display and software OpenGL
         run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri >/dev/null
       - name: Prepare sources
+        env:
+          MSG: ${{ github.event.head_commit.message }}
         run: |
           python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
           cd build-${{ matrix.mc }}
           sed -i -e 's/"defaultRequire": 0/"defaultRequire": 1/' -e 's/"required": true/"required": false/' src/main/resources/aquaclient.mixins.json
           mkdir -p run/config && python3 ../tools/mc/selftest_loadout.py
+          if echo "$MSG" | grep -q '\[smoke-fps\]'; then python3 ../tools/mc/fpspack.py ${{ matrix.mc }}; fi
           mkdir -p run && echo "aqua.selftest=true" > run/aqua-selftest.flag && printf "onboardAccessibility:false\nnarrator:0\nsoundCategory_master:0\n" > run/options.txt
       - name: Run client headless
         working-directory: build-${{ matrix.mc }}
@@ -53,6 +56,8 @@ jobs:
           timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon $ARGS > run.log 2>&1 || true
           echo "===== AQUA SELFTEST ====="
           grep -a "AQUA-SELFTEST" run.log || echo "(no selftest lines)"
+          grep -a "FPSPACK\|Loading [0-9]* mods" run.log | head -5 || true
+          ls run/mods 2>/dev/null || true
           echo "===== SHOTS ====="
           grep -a "AQUA-SHOT" run.log | sed 's/.*AQUA-SHOT/AQUA-SHOT/' || true
           echo "===== MIXIN / ERRORS ====="

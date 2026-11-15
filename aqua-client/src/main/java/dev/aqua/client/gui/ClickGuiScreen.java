@@ -367,13 +367,14 @@ public class ClickGuiScreen extends Screen {
         // клавиша
         rowFrame(ctx, x, ry, w, a);
         ctx.drawText(textRenderer, Lang.tr("Клавиша"), (int) x + 8, (int) ry + 8, t2(Theme.TEXT, a), false);
-        String key = bindingModule == m ? Lang.tr("Нажмите клавишу...") : Keys.name(m.getKey());
+        String key = bindingModule == m ? Lang.tr("Нажмите клавишу или кнопку мыши...") : Keys.name(m.getKey());
         float kw = Math.max(60, textRenderer.getWidth(key) + 16), kx = x + w - kw - 8;
         boolean kh = inView && Render2D.hover(mx, my, kx, ry + 4, kw, 16);
         Render2D.roundRect(ctx, kx, ry + 4, kw, 16, 4, f2(bindingModule == m ? Theme.ACCENT_DARK : (kh ? Theme.CARD_HOVER : 0xFF0E3350), a));
         Render2D.centered(ctx, key, kx + kw / 2, ry + 8, t2(Theme.TEXT, a));
         if (inView) hit(kx, ry + 4, kw, 16, b -> bindingModule = (bindingModule == m ? null : m));
         ry += 26;
+        ry = rowBool(ctx, mx, my, x, ry, w, Lang.tr("Работает только пока зажата клавиша"), m.isHoldKey(), () -> { m.setHoldKey(!m.isHoldKey()); ConfigManager.save(); }, m.getName() + "#hold", a, inView);
 
         if (m instanceof HudModule hud) {
             rowFrame(ctx, x, ry, w, a);
@@ -633,6 +634,13 @@ public class ClickGuiScreen extends Screen {
 
     private boolean aquaClick(double mx, double my, int button) {
         if (closing) return true;
+        // привязка на кнопку мыши: колёсико или боковые кнопки
+        if (bindingModule != null && button >= 2) {
+            bindingModule.setKey(Keys.MOUSE + button);
+            bindingModule = null;
+            ConfigManager.save();
+            return true;
+        }
         for (int i = hits.size() - 1; i >= 0; i--) {
             Hit h = hits.get(i);
             if (!Render2D.hover(mx, my, h.x, h.y, h.w, h.h)) continue;

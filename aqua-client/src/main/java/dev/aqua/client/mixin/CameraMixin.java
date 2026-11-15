@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 public abstract class CameraMixin {
     @ModifyArg(method = "update", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/Camera;setRotation(FF)V", ordinal = 0), index = 0)
     private float aqua$freelookYaw(float yaw) {
+        Freelook.frame();
         return Freelook.active ? Freelook.yaw : yaw;
     }
 

@@ -55,10 +55,22 @@ public class FpsBooster extends Module {
 
     public FpsBooster() { super("FPS Booster", "Снижает тяжёлые настройки графики ради FPS", Category.PERFORMANCE); instance = this; }
 
+    private String appliedSig;
+
+    /** Подпись настроек модуля: применяем заново только когда она поменялась — не спорим с ручными настройками игрока. */
+    private String sig() {
+        StringBuilder b = new StringBuilder();
+        for (var st : getSettings()) b.append(st.getName()).append('=').append(st.get()).append(';');
+        return b.toString();
+    }
+
     @Override
     public void onTick() {
         if (timer-- > 0) return;
         timer = 20;
+        String sg = sig();
+        if (sg.equals(appliedSig)) return;
+        appliedSig = sg;
         var o = mc.options;
         if (oClouds == null) {
             oClouds = o.getCloudRenderMode().getValue();
@@ -109,6 +121,7 @@ public class FpsBooster extends Module {
         //#endif
         if (oAo != null) { apply(o.getAo(), oAo); apply(o.getEnableVsync(), oVsync); apply(o.getMaxFps(), oMaxFps); apply(o.getViewDistance(), oView); applyRaw(o.getChunkBuilderMode(), oChunks); oAo = null; }
         oClouds = null;
+        appliedSig = null;
         timer = 0;
     }
 }

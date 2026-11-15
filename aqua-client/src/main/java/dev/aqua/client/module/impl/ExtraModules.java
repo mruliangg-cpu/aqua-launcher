@@ -139,6 +139,7 @@ public final class ExtraModules {
         L.add(hud("Ping Monitor", "Пинг: средний, минимум, максимум и скачки", X, ExtraModules::pingStats, "Ping 42 · 38–55 · ±4"));
         L.add(hud("Connection Quality", "Качество соединения по пингу", X, () -> { int p = ping(); return p < 0 ? null : t("Связь: ", "Net: ") + (p < 60 ? t("отличная", "excellent") : p < 120 ? t("хорошая", "good") : p < 200 ? t("средняя", "fair") : t("плохая", "poor")); }, "Net: excellent"));
         L.add(hud("Server Brand", "Тип сервера (Paper, Fabric…)", X, () -> { String b = brand(); return b == null || mc().isInSingleplayer() ? null : t("Сервер: ", "Server: ") + b; }, "Server: Paper"));
+        L.add(new PingStabilizer());
         L.add(new Alert("Lag Detector", "Предупреждает, если сервер завис", () -> {
             if (mc().isInSingleplayer() || lastServerPacket == 0) return null;
             long d = System.currentTimeMillis() - lastServerPacket;
@@ -314,8 +315,9 @@ public final class ExtraModules {
         final BoolSetting sound = add(new BoolSetting("Звук", true));
         final boolean blink;
         boolean shown;
-        Alert(String name, String desc, Supplier<String> check, boolean blink) {
-            super(name, desc, Category.MISC);
+        Alert(String name, String desc, Supplier<String> check, boolean blink) { this(name, desc, Category.MISC, check, blink); }
+        Alert(String name, String desc, Category cat, Supplier<String> check, boolean blink) {
+            super(name, desc, cat);
             this.check = () -> p() == null ? null : check.get();
             this.blink = blink;
             ALERTS.add(this);
@@ -401,6 +403,49 @@ public final class ExtraModules {
             else if (fps > target.get() * 1.4 && v < saved) o.setValue(v + 1);
         }
         @Override protected void onDisable() { if (saved != null) mc.options.getViewDistance().setValue(saved); saved = null; }
+    }
+
+    /**
+     * Ping Stabilizer. Сам пинг (расстояние до сервера) ни один мод не уменьшит, но скачки пинга часто бывают,
+     * когда канал забит загрузкой чанков. Модуль замечает скачки и на время снижает дальность прорисовки —
+     * сервер шлёт меньше данных, соединение разгружается. Когда пинг ровный 15 секунд, дальность возвращается.
+     */
+    public static final class PingStabilizer extends Module {
+        private final NumberSetting high = add(new NumberSetting("Высокий пинг от", 150, 60, 400, 10, " ms"));
+        private final NumberSetting minView = add(new NumberSetting("Минимальная дальность", 6, 2, 16, 1, " ч."));
+        private final BoolSetting notify = add(new BoolSetting("Сообщать на экране", true));
+        private final ArrayDeque<Integer> hist = new ArrayDeque<>();
+        private Integer saved;
+        private long lastSample, calmSince;
+        PingStabilizer() { super("Ping Stabilizer", "Убирает скачки пинга: при лагах разгружает соединение (меньше чанков)", Category.MISC); }
+
+        @Override public void onTick() {
+            if (mc.player == null || mc.isInSingleplayer()) return;
+            long now = System.currentTimeMillis();
+            if (now - lastSample < 1000) return;
+            lastSample = now;
+            int cur = ping();
+            if (cur <= 0) return;
+            double avg = hist.isEmpty() ? cur : hist.stream().mapToInt(Integer::intValue).average().orElse(cur);
+            hist.addLast(cur); if (hist.size() > 15) hist.removeFirst();
+            var o = mc.options.getViewDistance();
+            boolean spike = cur > high.get() || (hist.size() > 5 && cur > Math.max(avg * 1.6, avg + 60));
+            boolean frozen = lastServerPacket > 0 && now - lastServerPacket > 2500;
+            if (spike || frozen) {
+                calmSince = now;
+                if (o.getValue() > minView.getInt()) {
+                    if (saved == null) saved = o.getValue();
+                    o.setValue(Math.max(minView.getInt(), o.getValue() - 2));
+                    if (notify.isOn()) say(t("Пинг скачет — разгружаю соединение (прорисовка ", "Ping spike — easing the connection (render ") + o.getValue() + ")");
+                }
+            } else if (saved != null && now - calmSince > 15000) {
+                calmSince = now;
+                o.setValue(Math.min(saved, o.getValue() + 1));
+                if (o.getValue() >= saved) { saved = null; if (notify.isOn()) say(t("Пинг стабилен — прорисовка возвращена", "Ping stable — render distance restored")); }
+            }
+        }
+        private void say(String s) { try { mc.player.sendMessage(Text.literal("§b[Aqua] §f" + s), true); } catch (Exception ignored) {} }
+        @Override protected void onDisable() { if (saved != null) mc.options.getViewDistance().setValue(saved); saved = null; hist.clear(); }
     }
 
     /** Ограничение FPS — меньше нагрев и шум ноутбука. */

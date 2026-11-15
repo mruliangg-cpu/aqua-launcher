@@ -43,6 +43,7 @@ public final class ConfigManager {
                     }
                 }
                 if (o.has("key")) m.setKey(o.get("key").getAsInt());
+                if (o.has("holdKey")) m.setHoldKey(o.get("holdKey").getAsBoolean());
                 if (m instanceof HudModule h) {
                     if (o.has("x")) h.x = o.get("x").getAsFloat();
                     if (o.has("y")) h.y = o.get("y").getAsFloat();
@@ -62,6 +63,7 @@ public final class ConfigManager {
             JsonObject o = new JsonObject();
             o.addProperty("enabled", m.isEnabled());
             o.addProperty("key", m.getKey());
+            o.addProperty("holdKey", m.isHoldKey());
             if (m instanceof HudModule h) {
                 o.addProperty("x", h.x);
                 o.addProperty("y", h.y);

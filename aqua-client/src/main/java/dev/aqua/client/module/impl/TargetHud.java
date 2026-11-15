@@ -16,6 +16,8 @@ import net.minecraft.entity.LivingEntity;
 
 public class TargetHud extends HudModule {
     private final BoolSetting onLook = add(new BoolSetting("При наведении", true));
+    private final BoolSetting armor = add(new BoolSetting("Броня цели в %", true));
+    private static final net.minecraft.entity.EquipmentSlot[] SLOTS = {net.minecraft.entity.EquipmentSlot.HEAD, net.minecraft.entity.EquipmentSlot.CHEST, net.minecraft.entity.EquipmentSlot.LEGS, net.minecraft.entity.EquipmentSlot.FEET};
     private final Anim health = new Anim(1);
     private long lastNs = System.nanoTime();
 
@@ -38,8 +40,8 @@ public class TargetHud extends HudModule {
         health.to(pct);
         health.update(dt, 8);
 
-        width = Math.max(120, 36 + mc.textRenderer.getWidth(name) + 8);
-        height = 34;
+        width = Math.max(armor.isOn() ? 132 : 120, 36 + mc.textRenderer.getWidth(name) + 8);
+        height = armor.isOn() ? 50 : 34;
         drawBackground(ctx, width, height);
         if (target instanceof AbstractClientPlayerEntity p) {
             dev.aqua.client.compat.V.drawHead(ctx, p, 4, 4, 26);
@@ -59,5 +61,28 @@ public class TargetHud extends HudModule {
             String d = String.format(Lang.t("%.1fм", "%.1fm"), Math.sqrt(mc.player.squaredDistanceTo(target)));
             Render2D.textScaled(ctx, d, bx, 27, 0.6f, 0xFFAAAAAA, false);
         }
+        if (armor.isOn()) drawArmor(ctx, target);
+    }
+
+    /** Четыре вещи брони цели: иконка и процент прочности; справа — общий процент. */
+    private void drawArmor(DrawContext ctx, LivingEntity target) {
+        int cur = 0, max = 0, x = 4;
+        for (int i = 0; i < 4; i++, x += 22) {
+            net.minecraft.item.ItemStack st = target != null ? target.getEquippedStack(SLOTS[i])
+                    : new net.minecraft.item.ItemStack(new net.minecraft.item.Item[]{net.minecraft.item.Items.DIAMOND_HELMET, net.minecraft.item.Items.DIAMOND_CHESTPLATE, net.minecraft.item.Items.IRON_LEGGINGS, net.minecraft.item.Items.DIAMOND_BOOTS}[i]);
+            if (st.isEmpty()) { Render2D.roundRect(ctx, x + 1, 36, 10, 10, 2, 0x30FFFFFF); continue; }
+            dev.aqua.client.compat.V.push(ctx);
+            dev.aqua.client.compat.V.translate(ctx, x, 35);
+            dev.aqua.client.compat.V.scale(ctx, 0.7f);
+            ctx.drawItem(st, 0, 0);
+            dev.aqua.client.compat.V.pop(ctx);
+            int pc = PvpModules.pct(st);
+            if (pc >= 0) { cur += st.getMaxDamage() - st.getDamage(); max += st.getMaxDamage(); }
+            if (target == null) pc = new int[]{92, 78, 41, 15}[i];
+            Render2D.textScaled(ctx, pc < 0 ? "—" : pc + "%", x + 12, 39, 0.55f, PvpModules.pctColor(pc), false);
+        }
+        int total = target == null ? 57 : max == 0 ? -1 : cur * 100 / max;
+        String s = Lang.t("Броня ", "Armor ") + (total < 0 ? "—" : total + "%");
+        Render2D.textScaled(ctx, s, width - Render2D.width(s) * 0.7f - 5, 38.5f, 0.7f, PvpModules.pctColor(total), false);
     }
 }

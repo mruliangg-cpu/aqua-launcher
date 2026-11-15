@@ -144,6 +144,9 @@ public final class ModuleManager {
 
         // ---------- ещё 100 модулей ----------
         for (Module m : ExtraModules.all()) add(m, false);
+
+        // ---------- 50 PvP-модулей ----------
+        for (Module m : PvpModules.all()) add(m, false);
     }
 
     private static void add(Module m, boolean enabledByDefault) {
@@ -182,7 +185,19 @@ public final class ModuleManager {
             }
             if (m.getKey() > 0) {
                 boolean down = mc.currentScreen == null && Keys.isKeyDown(m.getKey());
-                if (down && !KEY_STATE.getOrDefault(m, false)) m.toggle();
+                boolean was = KEY_STATE.getOrDefault(m, false);
+                if (m.isHoldKey()) {
+                    // работает, только пока кнопка зажата
+                    if (down && !was) m.setEnabled(true);
+                    else if (!down && was) m.setEnabled(false);
+                } else if (down && !was) {
+                    m.toggle();
+                    if (mc.player != null) {
+                        try {
+                            mc.player.sendMessage(net.minecraft.text.Text.literal("§b" + m.getName() + (m.isEnabled() ? Lang.t(" §aвключён", " §aON") : Lang.t(" §cвыключен", " §cOFF"))), true);
+                        } catch (Exception ignored) {}
+                    }
+                }
                 KEY_STATE.put(m, down);
             }
         }

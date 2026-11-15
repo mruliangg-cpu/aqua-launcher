@@ -10,6 +10,7 @@
     "ChatHudMixin",
     "EntityMixin",
     "EntityRendererMixin",
+    "FloatingItemMixin",
     "GameRendererMixin",
     "InGameHudMixin",
     "InGameOverlayRendererMixin",

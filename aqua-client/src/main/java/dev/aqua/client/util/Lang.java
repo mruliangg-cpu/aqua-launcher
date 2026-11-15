@@ -41,7 +41,7 @@ public final class Lang {
             {"Бой", "Combat"}, {"Визуал", "Render"}, {"Движение", "Movement"}, {"Разное", "Misc"}, {"Косметика", "Cosmetics"},
             {"Все модули", "All modules"}, {"Поиск", "Search"}, {"⌕ Поиск...", "⌕ Search..."}, {"ВКЛЮЧЁН", "ENABLED"}, {"ВЫКЛЮЧЕН", "DISABLED"},
             {"‹ Назад", "‹ Back"}, {"✎ Редактор HUD", "✎ HUD Editor"}, {"Редактор HUD", "HUD Editor"}, {"Модуль включён", "Module enabled"},
-            {"Клавиша", "Keybind"}, {"Нажмите клавишу...", "Press a key..."}, {"Нет", "None"}, {"Позиция на экране", "Screen position"},
+            {"Клавиша", "Keybind"}, {"Нажмите клавишу...", "Press a key or mouse button..."}, {"Нажмите клавишу или кнопку мыши...", "Press a key or mouse button..."}, {"Работает только пока зажата клавиша", "Works only while the key is held"}, {"Нет", "None"}, {"Позиция на экране", "Screen position"},
             {"Сбросить", "Reset"}, {"Ничего не найдено", "Nothing found"}, {"нажмите, чтобы ввести", "click to type"},
             {"Оттенок", "Hue"}, {"Насыщенность", "Saturation"}, {"Яркость", "Brightness"}, {"Прозрачность", "Opacity"}, {"Хрома (радуга)", "Chroma (rainbow)"},
             {"‹ Меню модулей", "‹ Modules"}, {"Сбросить всё", "Reset all"},

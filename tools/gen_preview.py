@@ -63,24 +63,26 @@ for m in re.finditer(r'\badd\(new ([\w.]+)\((.*?)\),\s*(true|false)\);', init, r
     mods.append({'n': name, 'd': desc, 'c': cat, 'on': on, 'hud': hud, 's': all_settings(cls)})
 
 # ExtraModules: модули, собранные помощниками hud(...), Alert, OptionToggle и т.д.
-ex = open(f'{SRC}/module/impl/ExtraModules.java', encoding='utf-8').read()
-body = ex[ex.index('public static List<Module> all()'):ex.index('// =================================================================== помощники')]
-CATS = {'H': 'HUD', 'C': 'COMBAT', 'M': 'MOVEMENT', 'R': 'RENDER', 'X': 'MISC', 'P': 'PERFORMANCE'}
-for m in re.finditer(r'(hud|new Alert|new OptionToggle<>|new Volume|new ChatModule|new Action|new HoldKey|new (\w+)\(\))\(?(' + STR + r')?(?:,\s*' + STR + r')?(?:,\s*(\w)\b)?', body):
-    kind = m.group(1)
-    if m.group(2):
-        c = classes.get(m.group(2))
-        if not c or not c['sup']: continue
-        name, desc, cat = c['sup']; mods.append({'n': name, 'd': desc, 'c': cat, 'on': False, 'hud': False, 's': all_settings(m.group(2))}); continue
-    name, desc, cl = m.group(4), m.group(5), m.group(6)
-    if not name: continue
-    if kind == 'hud':
-        sample = re.search(re.escape(name) + r'.*?,\s*' + STR + r'\)\);', body[m.start():m.start() + 900], re.S)
-        mods.append({'n': name, 'd': desc, 'c': CATS.get(cl, 'HUD'), 'on': False, 'hud': True, 's': all_settings('TextHudModule'), 'x': sample.group(1) if sample else name})
-    else:
-        cat = 'MISC' if kind in ('new Alert', 'new Volume', 'new ChatModule') else CATS.get(cl, 'MISC')
-        sets = {'new Alert': [{'t': 'bool', 'n': 'Звук', 'v': True}], 'new Volume': [{'t': 'number', 'n': 'Громкость', 'v': 0, 'min': 0, 'max': 100, 'step': 5, 'u': '%'}]}.get(kind, [])
-        mods.append({'n': name, 'd': desc, 'c': cat, 'on': False, 'hud': False, 's': sets})
+for _file in ('ExtraModules', 'PvpModules'):
+  ex = open(f'{SRC}/module/impl/{_file}.java', encoding='utf-8').read()
+  body = ex[ex.index('public static List<Module> all()'):ex.index('// =================================================================== ', ex.index('public static List<Module> all()'))]
+  body = body.replace('new ExtraModules.Alert(', 'new Alert(').replace('new Simple(', 'new ChatModule(')
+  CATS = {'H': 'HUD', 'C': 'COMBAT', 'M': 'MOVEMENT', 'R': 'RENDER', 'X': 'MISC', 'P': 'PERFORMANCE'}
+  for m in re.finditer(r'(hud|new Alert|new OptionToggle<>|new Volume|new ChatModule|new Action|new HoldKey|new (\w+)\(\))\(?(' + STR + r')?(?:,\s*' + STR + r')?(?:,\s*(\w)\b)?', body):
+      kind = m.group(1)
+      if m.group(2):
+          c = classes.get(m.group(2))
+          if not c or not c['sup']: continue
+          name, desc, cat = c['sup']; mods.append({'n': name, 'd': desc, 'c': cat, 'on': False, 'hud': False, 's': all_settings(m.group(2))}); continue
+      name, desc, cl = m.group(4), m.group(5), m.group(6)
+      if not name: continue
+      if kind == 'hud':
+          sample = re.search(re.escape(name) + r'.*?,\s*' + STR + r'\)\);', body[m.start():m.start() + 900], re.S)
+          mods.append({'n': name, 'd': desc, 'c': CATS.get(cl, 'HUD'), 'on': False, 'hud': True, 's': all_settings('TextHudModule'), 'x': sample.group(1) if sample else name})
+      else:
+          cat = CATS.get(cl) if cl in CATS else ('COMBAT' if _file == 'PvpModules' else 'MISC')
+          sets = {'new Alert': [{'t': 'bool', 'n': 'Звук', 'v': True}], 'new Volume': [{'t': 'number', 'n': 'Громкость', 'v': 0, 'min': 0, 'max': 100, 'step': 5, 'u': '%'}]}.get(kind, [])
+          mods.append({'n': name, 'd': desc, 'c': cat, 'on': False, 'hud': False, 's': sets})
 
 cats = re.findall(r'(\w+)\("([^"]+)", "([^"]+)"\)', open(f'{SRC}/module/Category.java', encoding='utf-8').read())
 data = {'cats': [{'id': a, 't': b, 'i': c} for a, b, c in cats], 'mods': mods}

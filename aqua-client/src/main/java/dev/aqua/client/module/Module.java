@@ -56,4 +56,9 @@ public abstract class Module {
     public List<Setting<?>> getSettings() { return Collections.unmodifiableList(settings); }
     public int getKey() { return key; }
     public void setKey(int key) { this.key = key; }
+
+    /** true — модуль работает только пока клавиша зажата; false — клавиша включает/выключает. */
+    private boolean holdKey;
+    public boolean isHoldKey() { return holdKey; }
+    public void setHoldKey(boolean v) { holdKey = v; }
 }

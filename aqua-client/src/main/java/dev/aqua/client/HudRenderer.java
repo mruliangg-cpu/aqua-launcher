@@ -17,6 +17,7 @@ public final class HudRenderer {
         dev.aqua.client.module.impl.MoreModules.LowHealth.render(ctx);
         dev.aqua.client.module.impl.MoreModules.DurabilityAlert.render(ctx);
         dev.aqua.client.module.impl.ExtraModules.renderAlerts(ctx);
+        dev.aqua.client.module.impl.PvpModules.render(ctx);
         if (mc.currentScreen instanceof HudEditorScreen) return;
         for (HudModule h : ModuleManager.huds()) {
             if (!h.isEnabled()) continue;

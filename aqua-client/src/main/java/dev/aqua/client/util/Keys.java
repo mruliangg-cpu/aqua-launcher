@@ -22,13 +22,18 @@ public final class Keys {
         return key.getCode() > 0 && GLFW.glfwGetKey(handle, key.getCode()) == GLFW.GLFW_PRESS;
     }
 
+    /** Коды от 1000 — кнопки мыши (1002 = колёсико, 1003/1004 = боковые). */
+    public static final int MOUSE = 1000;
+
     public static boolean isKeyDown(int glfwKey) {
         if (glfwKey <= 0) return false;
+        if (glfwKey >= MOUSE) return GLFW.glfwGetMouseButton(MinecraftClient.getInstance().getWindow().getHandle(), glfwKey - MOUSE) == GLFW.GLFW_PRESS;
         return GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow().getHandle(), glfwKey) == GLFW.GLFW_PRESS;
     }
 
     public static String name(int glfwKey) {
         if (glfwKey <= 0) return Lang.tr("Нет");
+        if (glfwKey >= MOUSE) return Lang.t("МЫШЬ ", "MOUSE ") + (glfwKey - MOUSE + 1);
         return InputUtil.Type.KEYSYM.createFromCode(glfwKey).getLocalizedText().getString().toUpperCase();
     }
 }

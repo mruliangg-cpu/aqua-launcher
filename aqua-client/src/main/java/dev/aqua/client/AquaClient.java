@@ -79,6 +79,7 @@ public class AquaClient implements ClientModInitializer {
             ModuleManager.tick(client);
             dev.aqua.client.module.impl.Cosmetics.pollAccountLoadout();
             dev.aqua.client.module.impl.ExtraModules.tick();
+            dev.aqua.client.module.impl.PvpModules.tick();
         });
 
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));
@@ -115,6 +116,7 @@ public class AquaClient implements ClientModInitializer {
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
             if (world.isClient()) {
                 CombatTracker.onAttack(entity);
+                dev.aqua.client.module.impl.PvpModules.onAttack(entity);
                 HitParticles hp = ModuleManager.get(HitParticles.class);
                 if (hp != null) hp.onAttack(entity);
             }

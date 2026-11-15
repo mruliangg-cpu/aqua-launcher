@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EntityMixin {
     @Inject(method = "changeLookDirection", at = @At("HEAD"), cancellable = true)
     private void aqua$freelook(double cursorDeltaX, double cursorDeltaY, CallbackInfo ci) {
-        if (Freelook.active && (Object) this == MinecraftClient.getInstance().player) {
+        if (Freelook.capturing && (Object) this == MinecraftClient.getInstance().player) {
             Freelook.turn(cursorDeltaX, cursorDeltaY);
             ci.cancel();
         }
