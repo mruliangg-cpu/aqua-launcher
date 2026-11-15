@@ -133,8 +133,13 @@ async function launch(instanceId, emit, joinServer) {
         progress(null);
       }
     });
+    const t0 = Date.now();
     client.on('close', (code) => {
       log(L(`[Aqua] Игра закрыта (код ${code})`, `[Aqua] Game closed (code ${code})`));
+      // статистика для уровня игрока
+      const stats = store.state.stats || (store.state.stats = { playMs: 0, launches: 0 });
+      stats.playMs += Math.max(0, Date.now() - t0); stats.launches += 1;
+      store.save();
       running = null;
       progress(null);
       emit('state', { running: false, instanceId, code });

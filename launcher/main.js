@@ -15,8 +15,8 @@ let win;
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 1220,
-    height: 760,
+    width: 1360,
+    height: 820,
     minWidth: 1000,
     minHeight: 640,
     frame: false,
@@ -77,6 +77,8 @@ app.whenReady().then(() => {
     else if (action === 'max') (win.isMaximized() ? win.unmaximize() : win.maximize());
     else if (action === 'close') win.close();
   });
+  handle('player:level', () => require('./src/core/friends').level());
+  handle('leaderboard:get', () => require('./src/core/friends').leaderboard());
   handle('update:state', () => updater.state);
   handle('update:check', () => updater.check());
   handle('update:install', () => { updater.install(); return true; });

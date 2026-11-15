@@ -72,11 +72,24 @@ async function withToken(fn) {
 
 const list = () => withToken((token) => api('/api/friends', { token }));
 const action = (kind, name) => withToken((token) => api('/api/friends/' + kind, { method: 'POST', body: { name }, token }));
+/** Уровень игрока по времени в игре и числу запусков. */
+function level() {
+  const st = store.state.stats || { playMs: 0, launches: 0 };
+  const xp = Math.floor(st.playMs / 60000) * 2 + st.launches * 15;
+  const lvl = Math.floor(Math.sqrt(xp / 10)) + 1;
+  const cur = (lvl - 1) ** 2 * 10, next = lvl ** 2 * 10;
+  return { level: lvl, xp, progress: (xp - cur) / Math.max(1, next - cur), hours: st.playMs / 3600000 };
+}
+
+async function leaderboard() {
+  try { return await api('/api/leaderboard'); } catch { return null; }
+}
+
 async function heartbeat(status) {
   if (!base()) return null;
   const acc = selected();
   if (!acc || (!acc.aquaToken && acc.type !== 'microsoft')) return null;
-  try { return await withToken((token) => api('/api/friends/status', { method: 'POST', body: { status }, token })); } catch { return null; }
+  try { return await withToken((token) => api('/api/friends/status', { method: 'POST', body: { status, level: level().level }, token })); } catch { return null; }
 }
 
-module.exports = { signIn, list, action, heartbeat };
+module.exports = { signIn, list, action, heartbeat, level, leaderboard };

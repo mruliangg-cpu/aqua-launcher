@@ -59,6 +59,8 @@ contextBridge.exposeInMainWorld('aqua', {
   friends: () => call('friends:list'),
   friendAction: (kind, name) => call('friends:action', kind, name),
   onIncoming: (cb) => on('friends:incoming', cb),
+  level: () => call('player:level'),
+  leaderboard: () => call('leaderboard:get'),
   updateState: () => call('update:state'),
   checkUpdate: () => call('update:check'),
   installUpdate: () => call('update:install'),

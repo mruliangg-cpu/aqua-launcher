@@ -123,6 +123,7 @@ function go(page) {
   if (page === 'locker') renderLocker();
   if (page === 'skins') renderSkins();
   if (page === 'friends') renderFriends();
+  if (page === 'leaders') renderLeaders();
 }
 
 // ======================================================================= ТЕМА / ВНЕШНИЙ ВИД
@@ -159,22 +160,74 @@ function renderAccount() {
 
 function renderHome() {
   const n = VERSIONS ? VERSIONS.versions.length : '800+';
-  $('#hero-sub').innerHTML = t('hero_sub', { n });
-  $('#tile-ender').textContent = t('tile_ender', { n: CLIENT_MODULES });
+  if ($('#hero-sub')) $('#hero-sub').innerHTML = t('hero_sub', { n });
   const inst = selectedInstance();
-  $('#current-instance').innerHTML = inst ? `
-    <div class="inst-icon">${esc(inst.icon)}</div>
-    <div><h3>${esc(inst.name)}</h3><div class="badges">${badges(inst)}</div></div>
-    <span class="change">${t('change')}</span>` : `<div class="inst-icon">➕</div><div><h3>${t('no_profiles')}</h3><small>${t('create_first')}</small></div>`;
+  $('#current-instance').innerHTML = inst ? `<span>${esc(inst.icon)}</span><span>${esc(inst.name)} · ${esc(inst.mc)} ${LOADERS[inst.loader]}</span><span>›</span>` : `<span>➕ ${t('create_first')}</span>`;
   const q = $('#quick-instance');
-  q.innerHTML = S.instances.map((i) => `<option value="${esc(i.id)}">${esc(i.icon)} ${esc(i.name)} — ${esc(i.mc)} ${LOADERS[i.loader]}</option>`).join('');
+  q.innerHTML = S.instances.map((i) => `<option value="${esc(i.id)}">${esc(i.icon)} ${esc(i.name)} — ${esc(i.mc)}</option>`).join('');
   if (inst) q.value = inst.id;
-  const recent = [...S.instances].sort((a, b) => (b.lastPlayed || b.created) - (a.lastPlayed || a.created)).slice(0, 6);
-  $('#recent').innerHTML = recent.map((i) => `
-    <div class="mini glass" data-id="${esc(i.id)}"><div class="inst-icon">${esc(i.icon)}</div>
-    <div><b>${esc(i.name)}</b><small>${esc(i.mc)} · ${LOADERS[i.loader]}</small></div></div>`).join('');
-  $$('#recent .mini').forEach((el) => el.onclick = () => safe(() => aqua.selectInstance(el.dataset.id)));
+  renderProfileCard();
   updatePlay();
+}
+
+async function renderProfileCard() {
+  const acc = selectedAccount();
+  const name = acc ? acc.name : 'Player';
+  const owner = name.toLowerCase() === OWNER;
+  $('#pc-name').innerHTML = `<span class="${owner ? 'owner-name' : 'aqua-name'}">${esc(name)}</span>${owner ? '<span class="crown">👑</span>' : ''}`;
+  $('#pc-status').textContent = t('online');
+  $('#pc-head').src = acc ? `https://mc-heads.net/avatar/${encodeURIComponent(name)}/128` : 'assets/icons/turtle.png';
+  $('#pc-head').onerror = () => { $('#pc-head').src = 'assets/icons/turtle.png'; };
+  const lv = await aqua.level().catch(() => ({ level: 1, progress: 0 }));
+  const inst = selectedInstance();
+  const pvp = inst && inst.loader === 'fabric' && AQUA_MC.includes(inst.mc);
+  $('#pc-badges').innerHTML = [
+    pvp ? `<span class="pill">⚔️ ${t('pvp_ready')}</span>` : '',
+    acc && acc.type === 'microsoft' ? `<span class="pill gold">⚡ ${t('premium')}</span>` : acc ? '<span class="pill aqua">🐢 Aqua</span>' : '',
+    `<span class="pill gold">⭐ ${t('level', { n: lv.level })}</span>`,
+  ].join('');
+  requestAnimationFrame(() => { $('#pc-xp').style.width = Math.round(Math.max(0.04, lv.progress) * 100) + '%'; });
+}
+
+/** Правая панель «Онлайн»: друзья из Aqua Network. */
+async function renderOnline() {
+  const list = $('#op-list');
+  if (!list) return;
+  const acc = selectedAccount();
+  if (!acc || (!acc.aqua && acc.type !== 'microsoft')) { $('#op-count').textContent = ''; list.innerHTML = `<div class="op-empty">${t('op_signin')}</div>`; return; }
+  let data;
+  try { data = await aqua.friends(); } catch { list.innerHTML = `<div class="op-empty">${t('op_signin')}</div>`; return; }
+  const me = { name: data.me, online: true, owner: (data.me || '').toLowerCase() === OWNER, me: true };
+  const all = [me, ...data.friends];
+  const on = all.filter((f) => f.online).length;
+  $('#op-count').textContent = `(${on})`;
+  const shown = all.slice(0, 9);
+  list.innerHTML = shown.map((f, i) => `<div class="op-item ${f.online ? '' : 'offline'}" style="animation-delay:${i * 40}ms" data-n="${esc(f.name)}">
+      <img src="https://mc-heads.net/avatar/${encodeURIComponent(f.name)}/64" alt="">
+      <div style="min-width:0"><div class="op-n ${f.owner ? 'owner-name' : ''}">${esc(f.name)}${f.owner ? ' 👑' : ''}</div><small>${f.me ? t('lb_you') : f.online ? (esc(f.status) || t('online_now')) : t('offline_since')}</small></div></div>`).join('')
+    + (all.length > shown.length ? `<div class="op-more" id="op-more">＋ ${t('op_more', { n: all.length - shown.length })}</div>` : '')
+    + (data.friends.length ? '' : `<div class="op-empty">${t('op_none')}</div>`);
+  const more = $('#op-more'); if (more) more.onclick = () => go('friends');
+  $$('.op-item', list).forEach((el) => el.onclick = () => go('friends'));
+  setBadge(data.incoming.length);
+  $('#bell-dot').hidden = !data.incoming.length;
+}
+
+async function renderLeaders() {
+  const lv = await aqua.level().catch(() => ({ level: 1, progress: 0, hours: 0 }));
+  const acc = selectedAccount();
+  const name = acc ? acc.name : 'Player';
+  $('#lb-me').innerHTML = `<div class="lb-row" style="padding:4px 0"><div class="rank">⭐</div><img src="https://mc-heads.net/avatar/${encodeURIComponent(name)}/64" alt="">
+    <div><b>${esc(name)}</b><br><small>${t('lb_hours', { h: lv.hours.toFixed(1) })}</small></div><b>${t('level', { n: lv.level })}</b>
+    <div class="pc-xp" style="width:120px;margin:0"><i style="width:${Math.round(lv.progress * 100)}%"></i></div></div>`;
+  const box = $('#lb-table');
+  box.innerHTML = '<div class="spinner"></div>';
+  const data = await aqua.leaderboard().catch(() => null);
+  if (!data || !data.players) { box.innerHTML = `<p class="note">${t('lb_offline')}</p>`; return; }
+  box.innerHTML = data.players.map((p, i) => `<div class="lb-row glass ${i < 3 ? 'top' + (i + 1) : ''}" style="animation-delay:${i * 30}ms">
+    <div class="rank">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</div><img src="https://mc-heads.net/avatar/${encodeURIComponent(p.name)}/64" alt="">
+    <b class="${p.owner ? 'owner-name' : ''}">${esc(p.name)}${p.owner ? ' 👑' : ''}</b><b>${t('level', { n: p.level })}</b>
+    <small><i class="dot ${p.online ? 'on' : ''}"></i> ${p.online ? t('online') : ''}</small></div>`).join('');
 }
 
 function updatePlay() {
@@ -188,9 +241,11 @@ async function loadNews() {
   const box = $('#news');
   try {
     const items = await aqua.news();
-    box.innerHTML = items.map((n) => `<div class="news-card glass" data-ext="https://www.minecraft.net/en-us/updates">
-      ${n.image ? `<div class="news-img" style="background-image:url('${esc(n.image)}')"></div>` : ''}
-      <div class="news-body"><b>${esc(n.title)}</b><small>${esc(n.version || '')} · ${esc(n.type || '')}</small><p>${esc(n.text)}</p></div></div>`).join('');
+    const all = $('#news-all');
+    if (all) all.onclick = (e) => { e.preventDefault(); aqua.external('https://www.minecraft.net/en-us/articles'); };
+    box.innerHTML = items.slice(0, 3).map((n, i) => `<div class="news-row" data-ext="https://www.minecraft.net/en-us/updates" style="animation-delay:${i * 80}ms">
+      ${n.image ? `<div class="nr-img" style="background-image:url('${esc(n.image)}')"></div>` : ''}
+      <div><b>${esc(n.title)}</b><p>${esc(n.text).slice(0, 110)}</p></div><small>${esc(n.date ? new Date(n.date).toLocaleDateString(lang()) : (n.version || ''))}</small></div>`).join('');
   } catch { box.innerHTML = `<p class="note">${t('news_fail')}</p>`; }
 }
 
@@ -952,6 +1007,23 @@ async function init() {
 
   playBubbles();
   drawTurtles();
+  // новый дизайн: анимированные рисунки, кнопки шапки, правая панель
+  if (window.AquaArt) {
+    AquaArt.crown($('#hero-crown'));
+    AquaArt.squid($('#hero-squid'));
+    $$('.feat-art').forEach((c) => AquaArt.card(c, c.dataset.art));
+  }
+  $$('.feat').forEach((f) => f.onclick = () => go(f.dataset.go));
+  $('#gear-btn').onclick = () => go('settings');
+  $('#bell-btn').onclick = async () => {
+    const n = Number($('#friends-badge').textContent) || 0;
+    if (n) { go('friends'); return; }
+    if (UPD && ['ready', 'available'].includes(UPD.status)) { renderUpdate(); toast(t(UPD.status === 'ready' ? 'upd_ready' : 'upd_avail', { v: UPD.version })); return; }
+    toast(t('notif_none'));
+  };
+  $('#af-ver').textContent = 'v' + INFO.version;
+  renderOnline();
+  setInterval(renderOnline, 30000);
   renderAll();
   aqua.versions().then((v) => { VERSIONS = v; renderHome(); }).catch(() => {});
   loadNews();
@@ -998,3 +1070,9 @@ if (window.aqua && aqua.onUpdate) {
 document.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'check-upd') { updManual = true; toast(t('upd_checking')); aqua.checkUpdate().catch(() => {}); }
 });
+
+// Запасная картинка, если аватар не загрузился (inline-обработчики запрещены CSP)
+document.addEventListener('error', (e) => {
+  const img = e.target;
+  if (img && img.tagName === 'IMG' && /mc-heads\.net/.test(img.src)) img.src = 'assets/icons/turtle.png';
+}, true);

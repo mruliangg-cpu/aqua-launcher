@@ -25,6 +25,7 @@ async function init(db) {
     db.prepare('CREATE TABLE IF NOT EXISTS users (uuid TEXT PRIMARY KEY, name TEXT, cosmetics TEXT, skin_hash TEXT, model TEXT, skin TEXT, seen INTEGER)'),
     db.prepare('CREATE TABLE IF NOT EXISTS accounts (key TEXT PRIMARY KEY, name TEXT, type TEXT, uuid TEXT, salt TEXT, hash TEXT, friends TEXT, incoming TEXT, outgoing TEXT, status TEXT, seen INTEGER)'),
     db.prepare('CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, account TEXT, created INTEGER)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS levels (key TEXT PRIMARY KEY, name TEXT, level INTEGER, seen INTEGER)'),
   ]);
   ready = true;
 }
@@ -56,7 +57,8 @@ const online = (a) => a && Date.now() - (a.seen || 0) < 150000;
 async function view(db, key) {
   const a = await getAcc(db, key);
   if (!a) return { name: key, online: false };
-  return { name: a.name, type: a.type, online: online(a), status: online(a) ? a.status || '' : '', seen: a.seen || 0, owner: /^mrulian_gg$/i.test(a.name) };
+  const lv = await db.prepare('SELECT level FROM levels WHERE key = ?').bind(key).first();
+  return { name: a.name, type: a.type, online: online(a), status: online(a) ? a.status || '' : '', seen: a.seen || 0, level: lv ? lv.level : 1, owner: /^mrulian_gg$/i.test(a.name) };
 }
 
 async function proxy(url, headers) {
@@ -82,6 +84,10 @@ export default {
       }
 
       // ---------- присутствие в игре, косметика, скины ----------
+      if (p === '/api/leaderboard') {
+        const rows = await db.prepare('SELECT name, level, seen FROM levels ORDER BY level DESC, seen DESC LIMIT 50').all();
+        return json({ players: (rows.results || []).map((r) => ({ name: r.name, level: r.level, online: Date.now() - r.seen < 150000, owner: /^mrulian_gg$/i.test(r.name) })) });
+      }
       if (p === '/api/presence' && req.method === 'POST') {
         const b = await body();
         if (!UUID_RE.test(b.uuid || '') || !/^[A-Za-z0-9_]{1,16}$/.test(b.name || '')) return err(400, 'bad', 'bad player');
@@ -163,6 +169,8 @@ export default {
           const b = await body();
           me.seen = Date.now(); me.status = String(b.status || '').slice(0, 60);
           await putAcc(db, me).run();
+          const lvl = Math.max(1, Math.min(999, parseInt(b.level, 10) || 1));
+          await db.prepare('INSERT INTO levels (key, name, level, seen) VALUES (?,?,?,?) ON CONFLICT(key) DO UPDATE SET name=excluded.name, level=excluded.level, seen=excluded.seen').bind(myKey, me.name, lvl, Date.now()).run();
           return json({ ok: true, incoming: me.incoming.length });
         }
         if (p === '/api/friends' && req.method === 'GET') {

@@ -17,8 +17,12 @@
 
   <div class="app">
     <header class="titlebar">
-      <div class="brand"><canvas id="logo-turtle" width="54" height="24"></canvas><span class="brand-name">AQUA</span><span class="brand-sub">LAUNCHER</span></div>
+      <div class="brand"><span class="brand-a">A</span><div class="brand-words"><span class="brand-name">AQUA</span><span class="brand-sub">LAUNCHER</span></div><canvas id="logo-turtle" width="54" height="24" hidden></canvas></div>
       <div class="drag"></div>
+      <div class="top-actions">
+        <button class="top-btn" id="bell-btn" title="Notifications"><svg viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><b class="bell-dot" id="bell-dot" hidden></b></button>
+        <button class="top-btn" id="gear-btn" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+      </div>
       <div class="win-btns">
         <button data-win="min"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></button>
         <button data-win="max"><svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8"/></svg></button>
@@ -48,30 +52,49 @@
       <div id="page-wave"></div>
       <div id="update-bar" hidden></div>
       <section class="page active" id="page-home">
-        <div class="hero glass">
-          <div class="hero-text">
-            <h1 class="wave-title">AQUA LAUNCHER</h1>
-            <p id="hero-sub"></p>
+        <div class="home-hero">
+          <canvas id="hero-squid" width="220" height="240"></canvas>
+          <div class="hero-title">
+            <canvas id="hero-crown" width="104" height="64"></canvas>
+            <h1><span class="t-aqua">AQUA</span> <span class="t-launcher">LAUNCHER</span></h1>
+            <p class="tagline"><i></i><span data-i18n="tagline"></span><i></i></p>
           </div>
-          <div class="hero-turtle"><canvas id="hero-turtle" width="180" height="90"></canvas></div>
         </div>
-        <div class="play-row">
-          <div class="current glass" id="current-instance"></div>
-          <div class="play-box glass">
-            <select class="select" id="quick-instance"></select>
-            <button class="play" id="play-btn"><span class="play-label"></span><span class="play-bubbles"></span></button>
+        <div class="home-row">
+          <div class="profile-card glass" id="profile-card">
+            <div class="pc-ava"><img id="pc-head" alt=""></div>
+            <div class="pc-info">
+              <h2 id="pc-name"></h2>
+              <div class="pc-status"><i class="dot on"></i><span id="pc-status"></span></div>
+              <div class="pc-badges" id="pc-badges"></div>
+              <div class="pc-xp"><i id="pc-xp"></i></div>
+            </div>
+            <div class="pc-crown-wm">👑</div>
+          </div>
+          <div class="quick-card glass">
+            <div class="qc-head"><span class="qc-bolt">⚡</span><b data-i18n="quick_play"></b><select class="select mini-select" id="quick-instance"></select></div>
+            <button class="play" id="play-btn"><span class="play-ico">▶</span><span class="play-label"></span><span class="play-arrow">›</span><span class="play-bubbles"></span></button>
             <div class="progress" id="progress"><div class="bar"><i></i></div><small></small></div>
+            <div id="current-instance" class="qc-inst"></div>
           </div>
         </div>
-        <div class="tiles">
-          <div class="tile glass"><div class="tile-ic ender-ic">🐢</div><b data-i18n="tile_ender_t"></b><span id="tile-ender"></span></div>
-          <div class="tile glass"><div class="tile-ic">⚡</div><b data-i18n="tile_fps_t"></b><span data-i18n="tile_fps"></span></div>
-          <div class="tile glass"><div class="tile-ic">🐢</div><b data-i18n="tile_cos_t"></b><span data-i18n="tile_cos"></span></div>
+        <div class="feats">
+          <div class="feat glass" data-go="servers"><canvas class="feat-art" data-art="pvp" width="240" height="120"></canvas><div class="feat-ic">⚔️</div><b data-i18n="feat_pvp_t"></b><span data-i18n="feat_pvp"></span><i class="feat-go">›</i></div>
+          <div class="feat glass" data-go="mods"><canvas class="feat-art" data-art="mods" width="240" height="120"></canvas><div class="feat-ic">🧩</div><b data-i18n="feat_mods_t"></b><span data-i18n="feat_mods"></span><i class="feat-go">›</i></div>
+          <div class="feat glass" data-go="leaders"><canvas class="feat-art" data-art="leader" width="240" height="120"></canvas><div class="feat-ic">🏆</div><b data-i18n="feat_lb_t"></b><span data-i18n="feat_lb"></span><i class="feat-go">›</i></div>
         </div>
-        <h3 class="section-title" data-i18n="recent"></h3>
-        <div class="recent" id="recent"></div>
-        <h3 class="section-title" data-i18n="news"></h3>
-        <div class="news" id="news"></div>
+        <div class="news-panel glass">
+          <div class="np-head"><b>📣 <span data-i18n="news"></span></b><a href="#" id="news-all"><span data-i18n="view_all"></span> →</a></div>
+          <div class="news" id="news"></div>
+        </div>
+        <div class="tiles" hidden><span id="tile-ender"></span><div id="recent"></div><p id="hero-sub"></p></div>
+      </section>
+
+      <section class="page" id="page-leaders">
+        <div class="page-head"><div><h2>🏆 <span data-i18n="feat_lb_t"></span></h2><p class="note" data-i18n="lb_sub"></p></div></div>
+        <div class="card glass" id="lb-me"></div>
+        <h3 class="section-title" data-i18n="lb_top"></h3>
+        <div class="lb-table" id="lb-table"></div>
       </section>
 
       <section class="page" id="page-instances">
@@ -153,6 +176,12 @@
         <pre class="console glass" id="console"></pre>
       </section>
     </main>
+
+    <aside class="online-panel" id="online-panel">
+      <div class="op-head"><i class="dot on"></i><b data-i18n="online"></b> <span id="op-count">(0)</span></div>
+      <div class="op-list" id="op-list"></div>
+    </aside>
+    <footer class="app-foot"><span class="af-left">AQUA LAUNCHER <b id="af-ver"></b></span><span class="af-right">PLAY TOGETHER — BE THE BEST 👑</span></footer>
   </div>
 
   <div id="welcome" class="welcome" hidden></div>
@@ -162,6 +191,7 @@
   <script src="assets/cosmetics.js"></script>
   <script src="i18n.js"></script>
   <script src="viewer3d.js"></script>
+  <script src="art.js"></script>
   <script src="ocean.js"></script>
   <script src="app.js"></script>
 </body>
