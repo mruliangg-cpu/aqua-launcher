@@ -82,7 +82,7 @@ app.whenReady().then(() => {
   handle('update:install', () => { updater.install(); return true; });
   handle('update:page', () => { updater.page(); return true; });
   handle('app:info', () => ({ version: app.getVersion(), totalMem: java.totalMemoryMb(), platform: process.platform, root: paths.root,
-    enderJar: require('./src/core/aquaclient').status().ready }));
+    enderJar: require('./src/core/aquaclient').status().ready, aquaVersions: require('./src/core/aquaclient').supported() }));
   handle('app:open', (what, id) => {
     const dir = what === 'instance' ? paths.instanceDir(id) : what === 'mods' ? path.join(paths.instanceDir(id), 'mods') : paths.root;
     fs.mkdirSync(dir, { recursive: true });

@@ -6,7 +6,7 @@ const LOADERS = { vanilla: 'Vanilla', fabric: 'Fabric', quilt: 'Quilt', forge: '
 const ICONS = ['🐢', '🐟', '🐠', '🐡', '🐙', '🦑', '🦀', '🐬', '🐳', '🦈', '🪼', '🌊', '🪸', '🫧', '💎', '🔱', '⚓', '🏝️', '🟣', '👁️'];
 const OWNER = 'mrulian_gg';
 const CLIENT_MODULES = 80;
-const AQUA_MC = ['1.21', '1.21.1'];
+let AQUA_MC = ['1.21', '1.21.1'];
 const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n);
 
 let S = null, INFO = null, VERSIONS = null;
@@ -459,9 +459,10 @@ async function instanceModal(inst) {
   let lvToken = 0;
   const updateLoader = async () => {
     $$('#i-loader button', el).forEach((b) => b.classList.toggle('on', b.dataset.v === d.loader));
-    const enderOk = d.loader === 'fabric' && d.mc === '1.21.1';
-    $('#i-ender', el).disabled = !enderOk;
-    $('#i-ender-note', el).innerHTML = enderOk ? (INFO.enderJar ? t('ender_ready') : t('ender_build')) : t('ender_only');
+    const enderOk = d.loader === 'fabric' && AQUA_MC.includes(d.mc);
+    $('#i-ender', el).checked = true;
+    $('#i-ender', el).disabled = true;
+    $('#i-ender-note', el).innerHTML = enderOk ? t('ender_ready') : t('ender_only');
     const fix = $('#i-ender-fix', el);
     if (fix) fix.onclick = (e) => { e.preventDefault(); d.loader = 'fabric'; d.mc = '1.21.1'; d.loaderVersion = 'latest'; drawVersions(); updateLoader(); };
     $('#i-fps', el).disabled = d.loader === 'vanilla';
@@ -854,6 +855,7 @@ function playBubbles() {
 
 async function init() {
   INFO = await aqua.info();
+  if (INFO.aquaVersions && INFO.aquaVersions.length) AQUA_MC = [...new Set([...AQUA_MC, ...INFO.aquaVersions])];
   S = await aqua.getState();
   applyI18n();
 

@@ -203,7 +203,8 @@ async function prepareInstance(inst, onLog, onProgress) {
   const meta = readMeta(inst);
   const want = [];
   if (inst.fpsBoost && FPS_PACK[inst.loader]) want.push(...FPS_PACK[inst.loader]);
-  const ender = inst.loader === 'fabric' && ['1.21', '1.21.1'].includes(inst.mc); // Aqua Client всегда установлен
+  const ac = require('./aquaclient');
+  const ender = inst.loader === 'fabric' && (!!ac.jarFor(inst.mc) || ['1.21', '1.21.1'].includes(inst.mc)); // Aqua Client всегда установлен
   if (ender) want.push('fabric-api');
   const key = `${inst.mc}|${inst.loader}|${want.join(',')}`;
   if (want.length && inst.preparedFor !== key) {
@@ -223,10 +224,11 @@ async function prepareInstance(inst, onLog, onProgress) {
   }
 
   const modsDir = path.join(paths.instanceDir(inst.id), 'mods');
-  const target = path.join(modsDir, 'aqua-client-1.21.1.jar');
+  const target = path.join(modsDir, `aqua-client-${inst.mc}.jar`);
   fs.rmSync(path.join(modsDir, 'ender-client-1.21.1.jar'), { force: true }); // старое имя мода
+  try { for (const f of fs.readdirSync(modsDir)) if (/^aqua-client-.*\.jar$/.test(f) && path.join(modsDir, f) !== target) fs.rmSync(path.join(modsDir, f), { force: true }); } catch {}
   if (ender) {
-    const source = await require('./aquaclient').ensureJar(onLog, onProgress);
+    const source = ac.jarFor(inst.mc) || await ac.ensureJar(onLog, onProgress);
     fs.mkdirSync(modsDir, { recursive: true });
     const need = !fs.existsSync(target) || fs.statSync(target).size !== fs.statSync(source).size;
     if (need) fs.copyFileSync(source, target);

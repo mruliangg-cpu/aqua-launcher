@@ -11,29 +11,66 @@ permissions:
   contents: write
 
 jobs:
-  client:
+  versions:
     runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.v.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: echo "list=$(python3 tools/mc/resolve.py matrix)" >> "$GITHUB_OUTPUT"
+
+  client:
+    needs: versions
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        mc: ${{ fromJson(needs.versions.outputs.list) }}
+    name: client ${{ matrix.mc }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21' }
-      - name: Build Aqua Client
-        working-directory: aqua-client
-        run: chmod +x gradlew && ./gradlew build -x copyToLauncher --no-daemon --stacktrace
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ matrix.mc }}-${{ hashFiles('aqua-client/build.gradle', 'aqua-client/gradle/wrapper/*') }}
+          restore-keys: gradle-${{ matrix.mc }}-
+      - name: Prepare sources for ${{ matrix.mc }}
+        run: python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
+      - name: Build Aqua Client ${{ matrix.mc }}
+        working-directory: build-${{ matrix.mc }}
+        run: |
+          ARGS=$(python3 ../tools/mc/resolve.py ${{ matrix.mc }})
+          echo "$ARGS"
+          chmod +x gradlew && ./gradlew build -x copyToLauncher --no-daemon $ARGS
       - name: Collect jar
-        run: mkdir -p out && cp aqua-client/build/libs/aqua-client-*.jar out/ && ls -la out && mv "$(ls out/*.jar | grep -v sources | head -1)" out/aqua-client-1.21.1.jar.keep && rm -f out/*.jar && mv out/aqua-client-1.21.1.jar.keep out/aqua-client-1.21.1.jar
+        run: |
+          mkdir -p out
+          J=$(ls build-${{ matrix.mc }}/build/libs/*.jar | grep -v sources | head -1)
+          cp "$J" out/aqua-client-${{ matrix.mc }}.jar
       - uses: actions/upload-artifact@v4
-        with: { name: aqua-client, path: out/aqua-client-1.21.1.jar }
+        with:
+          name: aqua-client-${{ matrix.mc }}
+          path: out/aqua-client-${{ matrix.mc }}.jar
 
   launcher:
     needs: client
+    if: ${{ !cancelled() }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22', cache: npm, cache-dependency-path: launcher/package-lock.json }
       - uses: actions/download-artifact@v4
-        with: { name: aqua-client, path: launcher/resources }
+        with:
+          pattern: aqua-client-*
+          path: launcher/resources/clients
+          merge-multiple: true
       - name: Install
         working-directory: launcher
         run: npm ci

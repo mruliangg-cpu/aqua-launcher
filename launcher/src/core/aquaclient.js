@@ -38,6 +38,18 @@ function copyDir(from, to) {
   }
 }
 
+/** Готовые сборки Aqua Client под каждую версию: resources/clients/aqua-client-<версия>.jar */
+const clientsDir = () => path.join(paths.resources, 'clients');
+function supported() {
+  try { return fs.readdirSync(clientsDir()).map((f) => (f.match(/^aqua-client-(.+)\.jar$/) || [])[1]).filter(Boolean); } catch { return []; }
+}
+function jarFor(mc) {
+  const p = path.join(clientsDir(), `aqua-client-${mc}.jar`);
+  if (fs.existsSync(p)) return p;
+  if (mc === '1.21.1' || mc === '1.21') { const st = status(); if (st.ready) return st.jar; }
+  return null;
+}
+
 function status() {
   const prebuilt = path.join(paths.resources, JAR_NAME);
   if (fs.existsSync(prebuilt)) return { ready: true, jar: prebuilt, source: L('встроен', 'bundled') };
@@ -93,4 +105,4 @@ async function ensureJar(log, progress, force = false) {
   try { return await building; } finally { building = null; }
 }
 
-module.exports = { ensureJar, status, JAR_NAME };
+module.exports = { ensureJar, status, JAR_NAME, supported, jarFor };

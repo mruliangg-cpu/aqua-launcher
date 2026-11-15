@@ -16,20 +16,23 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
+def javaVersion = (project.findProperty('java_version') ?: '21') as int
+
 processResources {
-    inputs.property "version", project.version
-    filesMatching("fabric.mod.json") { expand "version": project.version }
+    def p = [version: project.version, minecraft_version: project.minecraft_version, java_version: javaVersion]
+    inputs.properties p
+    filesMatching(["fabric.mod.json", "aquaclient.mixins.json"]) { expand p }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = javaVersion
     it.options.encoding = 'UTF-8'
 }
 
 java {
     toolchain { languageVersion = JavaLanguageVersion.of(21) }
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
 }
 
 // Копируем готовый jar прямо в лаунчер
@@ -37,6 +40,6 @@ tasks.register('copyToLauncher', Copy) {
     dependsOn remapJar
     from(remapJar.archiveFile)
     into(file('../launcher/resources'))
-    rename { 'aqua-client-1.21.1.jar' }
+    rename { "aqua-client-${project.minecraft_version}.jar" }
 }
 build.finalizedBy copyToLauncher
