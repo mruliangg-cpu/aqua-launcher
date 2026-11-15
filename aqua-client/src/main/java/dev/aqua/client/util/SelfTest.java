@@ -31,6 +31,7 @@ public final class SelfTest {
 
     public static void onTick(MinecraftClient mc) {
         if (!ON) return;
+        if (tick == 0) log("started");
         tick++;
         try {
             step(mc);
@@ -44,7 +45,13 @@ public final class SelfTest {
         if (wait > 0) { wait--; return; }
         switch (stage) {
             case 0 -> { // ждём главное меню и открываем создание мира
-                if (!(mc.currentScreen instanceof TitleScreen) || tick < 100) return;
+                if (tick % 200 == 0) log("tick " + tick + " screen=" + (mc.currentScreen == null ? "null" : mc.currentScreen.getClass().getName()));
+                if (tick < 100) return;
+                if (!(mc.currentScreen instanceof TitleScreen)) {
+                    // первый запуск показывает экран «Доступность» — пропускаем его
+                    if (tick > 300 && mc.getOverlay() == null) { log("skip screen " + (mc.currentScreen == null ? "null" : mc.currentScreen.getClass().getSimpleName())); mc.setScreen(new TitleScreen()); }
+                    return;
+                }
                 log("title screen reached");
                 Class<?> cws = Class.forName("net.minecraft.client.gui.screen.world.CreateWorldScreen");
                 for (Method m : cws.getDeclaredMethods()) {

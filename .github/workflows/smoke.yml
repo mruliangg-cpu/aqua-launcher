@@ -39,7 +39,7 @@ jobs:
           python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
           cd build-${{ matrix.mc }}
           sed -i -e 's/"defaultRequire": 0/"defaultRequire": 1/' -e 's/"required": true/"required": false/' src/main/resources/aquaclient.mixins.json
-          mkdir -p run && echo "aqua.selftest=true" > run/aqua-selftest.flag
+          mkdir -p run && echo "aqua.selftest=true" > run/aqua-selftest.flag && printf "onboardAccessibility:false\nnarrator:0\nsoundCategory_master:0\n" > run/options.txt
       - name: Run client headless
         working-directory: build-${{ matrix.mc }}
         env:

@@ -11,8 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntityRenderer.class)
 public abstract class LivingEntityRendererMixin {
+    //#if MC >= 1.21.2
+    @Inject(method = "hasLabel(Lnet/minecraft/entity/LivingEntity;D)Z", at = @At("RETURN"), cancellable = true)
+    private void aqua$ownLabel(LivingEntity entity, double squaredDistance, CallbackInfoReturnable<Boolean> cir) {
+    //#else
     @Inject(method = "hasLabel(Lnet/minecraft/entity/LivingEntity;)Z", at = @At("RETURN"), cancellable = true)
     private void aqua$ownLabel(LivingEntity entity, CallbackInfoReturnable<Boolean> cir) {
+    //#endif
         MinecraftClient mc = MinecraftClient.getInstance();
         if (MoreModules.OwnNametag.ACTIVE && entity == mc.player && !mc.options.getPerspective().isFirstPerson() && !mc.options.hudHidden) cir.setReturnValue(true);
     }
