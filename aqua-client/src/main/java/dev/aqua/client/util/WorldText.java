@@ -1,6 +1,5 @@
 package dev.aqua.client.util;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.Camera;
@@ -16,8 +15,8 @@ import org.joml.Matrix4f;
 public final class WorldText {
     private WorldText() {}
 
-    public static void label(WorldRenderContext ctx, Vec3d pos, String text, int color, float scale, boolean throughWalls) {
-        MatrixStack ms = ctx.matrixStack();
+    public static void label(dev.aqua.client.compat.WorldCtx ctx, Vec3d pos, String text, int color, float scale, boolean throughWalls) {
+        MatrixStack ms = ctx.matrices();
         VertexConsumerProvider consumers = ctx.consumers();
         if (ms == null || consumers == null) return;
         Camera cam = ctx.camera();
@@ -39,8 +38,8 @@ public final class WorldText {
     }
 
     /** Вертикальный луч от точки вверх (как у маяка). */
-    public static void beam(WorldRenderContext ctx, Vec3d pos, int argb, double height) {
-        MatrixStack ms = ctx.matrixStack();
+    public static void beam(dev.aqua.client.compat.WorldCtx ctx, Vec3d pos, int argb, double height) {
+        MatrixStack ms = ctx.matrices();
         VertexConsumerProvider consumers = ctx.consumers();
         if (ms == null || consumers == null) return;
         Vec3d c = ctx.camera().getPos();
@@ -52,7 +51,7 @@ public final class WorldText {
         dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(lines.vertex(e.getPositionMatrix(), x, (float) (y + height), z).color(r, g, b, 0.1f), e, 0, 1, 0));
     }
 
-    public static void flush(WorldRenderContext ctx) {
+    public static void flush(dev.aqua.client.compat.WorldCtx ctx) {
         if (ctx.consumers() instanceof VertexConsumerProvider.Immediate imm) imm.draw();
     }
 }

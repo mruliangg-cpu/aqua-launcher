@@ -13,11 +13,20 @@ const norm = (u) => String(u || '').toLowerCase().replace(/[^0-9a-f]/g, '').repl
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 const rand = (n) => hex(crypto.getRandomValues(new Uint8Array(n)));
 const sha256 = async (s) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)));
-async function hashPass(pass, salt) {
+/* Пароли: PBKDF2-SHA256. Бесплатный Cloudflare даёт ~10 мс CPU на запрос, поэтому 4000 итераций
+   (+ уникальная соль на игрока). Формат хеша: "v2$<итерации>$<hex>"; старые хеши без префикса — 100000. */
+const ITER = 4000;
+async function pbkdf2(pass, salt, iterations) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveBits']);
-  return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations: 100000 }, key, 256));
+  return hex(await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: new TextEncoder().encode(salt), iterations }, key, 256));
 }
-
+async function hashPass(pass, salt) { return `v2$${ITER}$` + await pbkdf2(pass, salt, ITER); }
+async function checkPass(pass, salt, stored) {
+  if (!stored) return false;
+  const m = /^v2\$(\d+)\$([0-9a-f]+)$/.exec(stored);
+  const got = m ? await pbkdf2(pass, salt, Number(m[1])) : await pbkdf2(pass, salt, 100000);
+  return got === (m ? m[2] : stored);
+}
 let ready = false;
 async function init(db) {
   if (ready) return;
@@ -141,7 +150,7 @@ export default {
       if (p === '/api/account/login' && req.method === 'POST') {
         const b = await body();
         const acc = await getAcc(db, String(b.name || '').toLowerCase());
-        if (!acc || acc.type !== 'aqua' || (await hashPass(String(b.password || ''), acc.salt)) !== acc.hash) return err(401, 'auth', 'Wrong nickname or password');
+        if (!acc || acc.type !== 'aqua' || !(await checkPass(String(b.password || ''), acc.salt, acc.hash))) return err(401, 'auth', 'Wrong nickname or password');
         acc.seen = Date.now();
         await putAcc(db, acc).run();
         return json({ token: await issueToken(db, acc), name: acc.name, type: acc.type });

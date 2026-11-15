@@ -1,6 +1,5 @@
 package dev.aqua.client.compat;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.PlayerSkinDrawer;
@@ -50,16 +49,6 @@ public final class V {
         //#endif
     }
 
-    public static float tickDelta(WorldRenderContext ctx) {
-        //#if MC >= 1.21.5
-        return ctx.tickCounter().getTickProgress(true);
-        //#elseif MC >= 1.21
-        return ctx.tickCounter().getTickDelta(true);
-        //#else
-        return ctx.tickDelta();
-        //#endif
-    }
-
     public static String packId(ResourcePackProfile p) {
         //#if MC >= 1.20.5
         return p.getId();
@@ -94,7 +83,11 @@ public final class V {
     }
 
     public static void drawHead(DrawContext ctx, AbstractClientPlayerEntity p, int x, int y, int size) {
-        //#if MC >= 1.20.2
+        //#if MC >= 1.21.9
+        var nh = MinecraftClient.getInstance().getNetworkHandler();
+        var e = nh != null ? nh.getPlayerListEntry(p.getUuid()) : null;
+        if (e != null) PlayerSkinDrawer.draw(ctx, e.getSkinTextures(), x, y, size);
+        //#elseif MC >= 1.20.2
         PlayerSkinDrawer.draw(ctx, p.getSkinTextures(), x, y, size);
         //#else
         PlayerSkinDrawer.draw(ctx, p.getSkinTexture(), x, y, size);
@@ -105,7 +98,9 @@ public final class V {
     public record Skin(Identifier texture, String url, boolean slim) {}
 
     public static Skin skin(AbstractClientPlayerEntity p) {
-        //#if MC >= 1.20.2
+        //#if MC >= 1.21.9
+        return null; // 3D-слой скина для 1.21.9+ — в следующем обновлении
+        //#elseif MC >= 1.20.2
         var s = p.getSkinTextures();
         return new Skin(s.texture(), s.textureUrl(), s.model() == net.minecraft.client.util.SkinTextures.Model.SLIM);
         //#else

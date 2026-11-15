@@ -8,7 +8,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#if MC >= 1.21.2
+//#if MC >= 1.21.9
+//#elseif MC >= 1.21.2
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 //#else
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -20,13 +21,18 @@ import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerEntityRendererMixin {
+    //#if MC >= 1.21.9
+    // 1.21.9+: новая система отрисовки игроков — значки у ника и 3D-слой в следующем обновлении
+    //#else
     @Inject(method = "renderArm", at = @At("HEAD"))
     private void aqua$armStart(CallbackInfo ci) { Skin3D.FIRST_PERSON.set(true); }
 
     @Inject(method = "renderArm", at = @At("RETURN"))
     private void aqua$armEnd(CallbackInfo ci) { Skin3D.FIRST_PERSON.set(false); }
+    //#endif
 
-    //#if MC >= 1.21.2
+    //#if MC >= 1.21.9
+    //#elseif MC >= 1.21.2
     /** 1.21.2+: значок у ника, свечение и 3D-слой задаются в состоянии отрисовки игрока. */
     @Inject(method = "updateRenderState(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/client/render/entity/state/PlayerEntityRenderState;F)V", at = @At("TAIL"))
     private void aqua$state(AbstractClientPlayerEntity player, PlayerEntityRenderState state, float tickDelta, CallbackInfo ci) {

@@ -13,6 +13,11 @@ import net.minecraft.util.Identifier;
 import java.util.UUID;
 
 /** Рисует 3D-косметику на игроках Aqua Launcher. */
+//#if MC >= 1.21.9
+/** 1.21.9+: 3D-косметика в следующем обновлении (новая система команд отрисовки). */
+public class CosmeticFeatureRenderer {
+}
+//#else
 //#if MC >= 1.21.2
 public class CosmeticFeatureRenderer extends FeatureRenderer<net.minecraft.client.render.entity.state.PlayerEntityRenderState, PlayerEntityModel> {
     private static final Identifier BEVEL = dev.aqua.client.compat.V.id("aquaclient", "textures/cosmetics/bevel.png");
@@ -79,3 +84,5 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
         if (!pet.equals("none")) CosmeticRenderer.draw(CosmeticRegistry.get(Slot.PET, pet), v, t, flying);
     }
 }
+
+//#endif

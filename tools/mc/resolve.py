@@ -22,7 +22,7 @@ def props(mc):
     api = get(f'https://api.modrinth.com/v2/project/fabric-api/version?{q}')[0]['version_number']
     loader = next(l['version'] for l in get('https://meta.fabricmc.net/v2/versions/loader') if l['stable'])
     java = 21 if vkey(mc) >= (1, 20, 5) else 17
-    loom = '1.11-SNAPSHOT' if vkey(mc) >= (1, 21, 9) else '1.10-SNAPSHOT'
+    loom = '1.13-SNAPSHOT' if vkey(mc) >= (1, 21, 11) else '1.11-SNAPSHOT' if vkey(mc) >= (1, 21, 9) else '1.10-SNAPSHOT'
     return {'loom_version': loom, 'minecraft_version': mc, 'yarn_mappings': yarn, 'fabric_version': api, 'loader_version': loader, 'java_version': java}
 
 if __name__ == '__main__':

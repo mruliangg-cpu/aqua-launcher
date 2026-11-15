@@ -9,7 +9,6 @@ import dev.aqua.client.setting.BoolSetting;
 import dev.aqua.client.setting.ButtonSetting;
 import dev.aqua.client.setting.NumberSetting;
 import dev.aqua.client.util.WorldText;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
@@ -68,7 +67,7 @@ public class Waypoints extends Module {
         }
     }
 
-    public void render(WorldRenderContext ctx) {
+    public void render(dev.aqua.client.compat.WorldCtx ctx) {
         if (!isEnabled() || mc.player == null || mc.world == null) return;
         String w = worldId(), d = dim();
         Vec3d eye = mc.player.getEyePos();
@@ -86,7 +85,7 @@ public class Waypoints extends Module {
         WorldText.flush(ctx);
     }
 
-    private void draw(WorldRenderContext ctx, Vec3d pos, String name, int color, double dist) {
+    private void draw(dev.aqua.client.compat.WorldCtx ctx, Vec3d pos, String name, int color, double dist) {
         // если точка далеко — рисуем надпись ближе к камере в том же направлении
         Vec3d cam = ctx.camera().getPos();
         Vec3d target = pos.add(0, 1.6, 0);

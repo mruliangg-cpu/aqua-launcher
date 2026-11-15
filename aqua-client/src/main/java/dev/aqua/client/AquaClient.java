@@ -19,7 +19,11 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.minecraft.client.render.entity.PlayerEntityRenderer;
+//#if MC >= 1.21.9
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+//#else
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+//#endif
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
@@ -48,9 +52,11 @@ public class AquaClient implements ClientModInitializer {
         dev.aqua.client.module.impl.Cosmetics cos = ModuleManager.get(dev.aqua.client.module.impl.Cosmetics.class);
         if (cos != null) cos.applyLauncherLoadout();
 
+        //#if MC < 1.21.9
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
             if (renderer instanceof PlayerEntityRenderer per) helper.register(new dev.aqua.client.cosmetic.CosmeticFeatureRenderer(per));
         });
+        //#endif
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (MENU.wasPressed()) client.setScreen(new ClickGuiScreen());
@@ -60,7 +66,11 @@ public class AquaClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));
         // (в 1.20.x второй аргумент — float tickDelta; лямбда подходит для обоих вариантов)
 
+        //#if MC >= 1.21.9
+        WorldRenderEvents.START_MAIN.register(ctx -> {
+        //#else
         WorldRenderEvents.START.register(ctx -> {
+        //#endif
             TimeChanger t = ModuleManager.get(TimeChanger.class);
             if (t != null) t.onWorldRender();
             WeatherChanger w = ModuleManager.get(WeatherChanger.class);
@@ -69,15 +79,17 @@ public class AquaClient implements ClientModInitializer {
 
         WorldRenderEvents.AFTER_ENTITIES.register(ctx -> {
             TntTimer tnt = ModuleManager.get(TntTimer.class);
-            if (tnt != null) tnt.render(ctx);
+            if (tnt != null) tnt.render(dev.aqua.client.compat.WorldCtx.of(ctx));
             Waypoints wp = ModuleManager.get(Waypoints.class);
-            if (wp != null) wp.render(ctx);
+            if (wp != null) wp.render(dev.aqua.client.compat.WorldCtx.of(ctx));
         });
 
+        //#if MC < 1.21.9
         WorldRenderEvents.BLOCK_OUTLINE.register((ctx, outline) -> {
             BlockOutline b = ModuleManager.get(BlockOutline.class);
             return b == null || b.render(ctx, outline);
         });
+        //#endif
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
             if (world.isClient) {

@@ -5,7 +5,9 @@ import dev.aqua.client.module.Module;
 import dev.aqua.client.setting.BoolSetting;
 import dev.aqua.client.setting.ColorSetting;
 import dev.aqua.client.util.ColorUtil;
+//#if MC < 1.21.9
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+//#endif
 import net.minecraft.block.ShapeContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -27,6 +29,7 @@ public class BlockOutline extends Module {
     }
 
     /** @return true — рисовать ванильную обводку, false — заменить своей. */
+    //#if MC < 1.21.9
     public boolean render(WorldRenderContext ctx, WorldRenderContext.BlockOutlineContext bo) {
         if (!isEnabled() || ctx.world() == null) return true;
         MatrixStack ms = ctx.matrixStack();
@@ -61,4 +64,5 @@ public class BlockOutline extends Module {
         });
         return false;
     }
+    //#endif
 }

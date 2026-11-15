@@ -3,7 +3,7 @@ package dev.aqua.client.mixin;
 import dev.aqua.client.module.impl.Cosmetics;
 import dev.aqua.client.net.AquaNet;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-//#if MC >= 1.20.2
+//#if MC >= 1.20.2 && MC < 1.21.9
 import net.minecraft.client.util.SkinTextures;
 //#endif
 import net.minecraft.util.Identifier;
@@ -18,7 +18,9 @@ import java.util.UUID;
 public abstract class AbstractClientPlayerEntityMixin {
     private UUID aqua$id() { return ((AbstractClientPlayerEntity) (Object) this).getGameProfile().getId(); }
 
-    //#if MC >= 1.20.2
+    //#if MC >= 1.21.9
+    // 1.21.9+: скины и плащи Aqua — в следующем обновлении (новая система ассетов скинов)
+    //#elseif MC >= 1.20.2
     /** Плащи Aqua Client и скины из Aqua Launcher — для вас и других игроков лаунчера. */
     @Inject(method = "getSkinTextures", at = @At("RETURN"), cancellable = true)
     private void aqua$skinAndCape(CallbackInfoReturnable<SkinTextures> cir) {
