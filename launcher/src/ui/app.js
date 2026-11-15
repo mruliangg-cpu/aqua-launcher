@@ -796,13 +796,49 @@ async function renderLocker() {
     };
   });
   updateEquipped();
+  wireTitle();
   const canvas = $('#locker-3d');
   if (!VIEWER || VIEWER.canvas !== canvas) VIEWER = window.AquaViewer ? new AquaViewer.Viewer(canvas) : null;
   if (VIEWER) {
     const { img, slim } = await lockerSkin();
     const name = selectedAccount()?.name || 'Player';
-    VIEWER.set({ skin: img, slim, loadout: { ...S.loadout }, name, owner: name.toLowerCase() === OWNER });
+    VIEWER.set({ skin: img, slim, loadout: { ...S.loadout }, name, owner: name.toLowerCase() === OWNER, title: S.loadout?.title || '', titleColor: S.loadout?.titleColor || 'gold' });
   }
+}
+/** Свой титул над ником: ввод, цвет, проверка запрещённых слов и предпросмотр. */
+function wireTitle() {
+  const box = $('#title-edit'); if (!box || !window.AquaTitle) return;
+  const inp = $('#title-in'), msg = $('#title-msg'), name = selectedAccount()?.name || '';
+  const owner = name.toLowerCase() === OWNER;
+  let color = AquaTitle.color(S.loadout?.titleColor);
+  const colors = $('#title-colors');
+  const paint = () => {
+    colors.innerHTML = AquaTitle.COLORS.map((c) => `<button data-c="${c}" class="${c === color ? 'on' : ''} ${c === 'rainbow' ? 'rainbow' : ''}" style="${c === 'rainbow' ? '' : 'background:' + AquaTitle.HEX[c]}" title="${c}"></button>`).join('');
+    $$('#title-colors button').forEach((b) => b.onclick = () => { color = b.dataset.c; blip(520); paint(); preview(); });
+  };
+  const preview = () => {
+    const r = AquaTitle.check(inp.value);
+    inp.classList.toggle('bad', !r.ok);
+    msg.classList.toggle('bad', !r.ok);
+    msg.textContent = owner ? t('title_owner') : r.ok ? (r.title ? t('title_ok') : '') : t('title_' + r.reason);
+    if (VIEWER) VIEWER.set({ title: r.ok ? r.title : '', titleColor: color });
+  };
+  if (!box._wired) {
+    box._wired = true;
+    inp.oninput = preview;
+    $('#title-save').onclick = async () => {
+      const r = AquaTitle.check(inp.value);
+      if (!r.ok) { toast(t('title_' + r.reason), 'err'); return; }
+      const next = { ...S.loadout, title: r.title, titleColor: color };
+      S.loadout = next;
+      blip(620);
+      await safe(() => aqua.saveLocker(next));
+      toast(r.title ? t('title_saved') : t('title_removed'), 'ok');
+    };
+  }
+  inp.value = S.loadout?.title || '';
+  inp.disabled = owner; $('#title-save').disabled = owner;
+  paint(); preview();
 }
 function updateEquipped() {
   const L = S.loadout || {};

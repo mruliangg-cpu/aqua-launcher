@@ -650,3 +650,15 @@ body.reduce-motion .home-hero *, body.reduce-motion .feat, body.reduce-motion .p
 .pv-str { width: 190px; padding: 5px 9px; border-radius: 8px; border: 1px solid #1b4a6b; background: rgba(4, 20, 34, .7); color: #e9fbff; font: inherit; font-size: 12.5px; }
 .pv-empty { color: #8ec4d8; padding: 20px; text-align: center; grid-column: 1 / -1; }
 .nav-badge[hidden], [hidden] { display: none !important; }
+
+/* ---- титул над ником ---- */
+.title-edit { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.title-edit label { font-weight: 700; font-size: 13px; opacity: .9; }
+.title-row { display: flex; gap: 6px; }
+.title-row input { flex: 1; min-width: 0; padding: 7px 10px; border-radius: 10px; border: 1px solid rgba(127, 219, 255, .25); background: rgba(4, 22, 40, .6); color: inherit; font: inherit; font-weight: 700; letter-spacing: .5px; }
+.title-row input.bad { border-color: #ff5566; }
+.title-colors { display: flex; gap: 6px; flex-wrap: wrap; }
+.title-colors button { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.title-colors button.on { border-color: #fff; transform: scale(1.15); }
+.title-colors button.rainbow { background: conic-gradient(#ff5566, #ffc83d, #5cff8a, #3fe0ff, #b57cff, #ff5566); }
+#title-msg.bad { color: #ff7a8a; }

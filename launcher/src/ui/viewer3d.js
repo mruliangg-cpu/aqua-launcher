@@ -271,6 +271,7 @@
     }
     async set(o) {
       Object.assign(this.opts, o);
+      if (!o.loadout) return; // только ник/титул — плащ и значок не трогаем
       const cape = o.loadout?.cape;
       this.capeFrames = null; this.opts.capeImg = null;
       if (cape && cape !== 'none') {
@@ -284,14 +285,26 @@
       const head = info.proj([0, -8, 0]);
       const y = head[1] - info.scale * 6;
       g.font = '600 13px Nunito, sans-serif';
-      const name = this.opts.name, tw = g.measureText(name).width + (this.iconImg ? 18 : 0);
+      const name = this.opts.name, owner0 = this.opts.owner;
+      const tt = owner0 ? 'OWNER' : (this.opts.title || '');
+      g.font = '800 13px Nunito, sans-serif';
+      const ttw = tt ? g.measureText(tt + ' ').width : 0;
+      g.font = '600 13px Nunito, sans-serif';
+      const tw = g.measureText(name).width + (this.iconImg ? 18 : 0) + ttw;
       const x = this.canvas.width / 2 - tw / 2;
       g.fillStyle = 'rgba(0,0,0,.38)'; g.fillRect(x - 6, y - 13, tw + 12, 19);
       if (this.iconImg) g.drawImage(this.iconImg, x, y - 10, 13, 13);
+      if (tt) {
+        const hex = { gold: '#FFC83D', aqua: '#3FE0FF', blue: '#4D8DFF', green: '#5CFF8A', red: '#FF5566', pink: '#FF7AD9', purple: '#B57CFF', white: '#FFFFFF' };
+        g.font = '800 13px Nunito, sans-serif';
+        g.fillStyle = owner0 ? '#1CA7EC' : this.opts.titleColor === 'rainbow' ? `hsl(${(this.t * 120) % 360},90%,70%)` : (hex[this.opts.titleColor] || hex.gold);
+        g.fillText(tt, x + (this.iconImg ? 18 : 0), y + 1);
+        g.font = '600 13px Nunito, sans-serif';
+      }
       const owner = this.opts.owner, pulse = 0.5 + 0.5 * Math.sin(this.t * 2.4);
       g.shadowColor = owner ? '#2ecc71' : '#1ca7ec'; g.shadowBlur = 6 + pulse * 6;
       g.fillStyle = owner ? `rgb(${46 + pulse * 94},${204 + pulse * 51},${113 + pulse * 63})` : `rgb(${28 + pulse * 99},${167 + pulse * 52},${236 + pulse * 19})`;
-      g.fillText(name, x + (this.iconImg ? 18 : 0), y + 1);
+      g.fillText(name, x + (this.iconImg ? 18 : 0) + ttw, y + 1);
       g.shadowBlur = 0;
     }
     static img(src) { return new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; }); }

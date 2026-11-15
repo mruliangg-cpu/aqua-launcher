@@ -51,6 +51,10 @@ public final class NameTags {
         MutableText out = Text.empty();
         if (!"none".equals(ic) || owner) out.append(icon(ic)).append(Text.literal(" "));
         if (owner) out.append(Text.literal("OWNER ").styled(s -> s.withColor(OCEAN_BLUE).withBold(true)));
+        else {
+            String[] tt = AquaNet.title(id);
+            if (tt != null) { int tc = TitleRules.rgb(tt[1]); out.append(Text.literal(tt[0] + " ").styled(s -> s.withColor(tc).withBold(true))); }
+        }
         return out.append(nameText);
     }
 }

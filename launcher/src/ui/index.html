@@ -144,6 +144,12 @@
             <canvas id="locker-3d" width="300" height="380"></canvas>
             <div class="viewer-hint" data-i18n="viewer_hint"></div>
             <div class="equipped" id="locker-equipped"></div>
+            <div class="title-edit" id="title-edit">
+              <label for="title-in" data-i18n="title_label"></label>
+              <div class="title-row"><input id="title-in" maxlength="12" spellcheck="false" autocomplete="off" data-i18n-ph="title_ph" placeholder="PRO"><button class="btn primary sm" id="title-save" data-i18n="title_save"></button></div>
+              <div class="title-colors" id="title-colors"></div>
+              <small class="note" id="title-msg"></small>
+            </div>
           </div>
           <div class="locker-main">
             <div class="seg slot-tabs" id="locker-slots"></div>
@@ -197,6 +203,7 @@
 
   <script src="assets/cosmetics.js"></script>
   <script src="i18n.js"></script>
+  <script src="title.js"></script>
   <script src="viewer3d.js"></script>
   <script src="art.js"></script>
   <script src="ocean.js"></script>

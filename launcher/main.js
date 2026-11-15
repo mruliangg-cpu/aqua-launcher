@@ -128,6 +128,13 @@ app.whenReady().then(() => {
   handle('locker:save', (loadout) => {
     const slots = ['cape', 'hat', 'face', 'wings', 'back', 'pet', 'aura', 'icon'];
     for (const k of slots) if (typeof loadout[k] === 'string') store.state.loadout[k] = loadout[k].slice(0, 32);
+    if (loadout.title !== undefined) {
+      const T = require('./src/ui/title.js');
+      const r = T.check(loadout.title);
+      if (!r.ok) throw new Error('title_' + r.reason);
+      store.state.loadout.title = r.title;
+      store.state.loadout.titleColor = T.color(loadout.titleColor);
+    }
     store.state.loadoutStamp = String(Date.now());
     store.save(); pushState();
     require('./src/core/friends').pushLoadout();

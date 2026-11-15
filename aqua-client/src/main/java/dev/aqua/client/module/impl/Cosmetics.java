@@ -38,10 +38,18 @@ public class Cosmetics extends Module {
     private final BoolSetting elytra = add(new BoolSetting("Узор на элитрах", true));
     private final NumberSetting auraAmount = add(new NumberSetting("Сила ауры", 2, 1, 6, 1));
     private final StringSetting appliedStamp = add(new StringSetting("stamp", "", 64), () -> false);
+    private final StringSetting title = add(new StringSetting("Титул над ником", "", 12));
+    private final ModeSetting titleColor = add(new ModeSetting("Цвет титула", "gold", dev.aqua.client.cosmetic.TitleRules.COLORS.toArray(new String[0])));
 
     public Cosmetics() {
         super("Cosmetics", "Плащ Aqua Client и аура частиц", Category.COSMETIC);
         instance = this;
+        titleColor.withDisplay(v -> {
+            int i = dev.aqua.client.cosmetic.TitleRules.COLORS.indexOf(v);
+            String[] ru = {"Золотой", "Аква", "Синий", "Зелёный", "Красный", "Розовый", "Фиолетовый", "Белый", "Радуга"};
+            String[] en = {"Gold", "Aqua", "Blue", "Green", "Red", "Pink", "Purple", "White", "Rainbow"};
+            return i < 0 ? v : (Lang.isRu() ? ru[i] : en[i]);
+        });
         String[] defaults = {"aqua", "none", "none", "none", "none", "turtle", "bubbles", "turtle"};
         Slot[] order = Slot.values();
         for (int i = 0; i < order.length; i++) {
@@ -105,6 +113,8 @@ public class Cosmetics extends Module {
             if (net != null && o.has("shareSkin")) net.setShareSkin(o.get("shareSkin").getAsBoolean());
             String stamp = o.has("stamp") ? o.get("stamp").getAsString() : "";
             if (stamp.equals(appliedStamp.get())) return;
+            if (o.has("title")) title.set(o.get("title").getAsString());
+            if (o.has("titleColor")) titleColor.set(dev.aqua.client.cosmetic.TitleRules.color(o.get("titleColor").getAsString()));
             for (Slot s : Slot.values()) {
                 if (o.has(s.key) && CosmeticRegistry.get(s, o.get(s.key).getAsString()) != null) slots.get(s).set(o.get(s.key).getAsString());
             }
@@ -120,9 +130,19 @@ public class Cosmetics extends Module {
         return instance.slots.get(s).get();
     }
 
+    /** Свой титул {текст, цвет} или null. */
+    public static String[] localTitle() {
+        if (instance == null || !instance.isEnabled()) return null;
+        String t = dev.aqua.client.cosmetic.TitleRules.clean(instance.title.get());
+        return t == null ? null : new String[]{t, dev.aqua.client.cosmetic.TitleRules.color(instance.titleColor.get())};
+    }
+
     public static JsonObject loadoutJson() {
         JsonObject o = new JsonObject();
         for (Slot s : Slot.values()) o.addProperty(s.key, local(s));
+        String[] tt = localTitle();
+        o.addProperty("title", tt == null ? "" : tt[0]);
+        o.addProperty("title_color", tt == null ? "gold" : tt[1]);
         return o;
     }
 

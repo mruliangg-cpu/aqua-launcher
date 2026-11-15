@@ -3,6 +3,30 @@
  * Привязки: D1 база "DB".
  */
 const SLOTS = ['cape', 'hat', 'face', 'wings', 'back', 'pet', 'aura', 'icon'];
+
+// ---- титул над ником (те же правила, что в лаунчере и моде) ----
+const COLORS = ['gold', 'aqua', 'blue', 'green', 'red', 'pink', 'purple', 'white', 'rainbow'];
+const HEX = { gold: '#FFC83D', aqua: '#3FE0FF', blue: '#4D8DFF', green: '#5CFF8A', red: '#FF5566', pink: '#FF7AD9', purple: '#B57CFF', white: '#FFFFFF', rainbow: '#FFFFFF' };
+const CYR2LAT = { А: 'A', В: 'B', Е: 'E', Ё: 'E', К: 'K', М: 'M', Н: 'H', О: 'O', Р: 'P', С: 'C', Т: 'T', Х: 'X', У: 'Y', Д: 'D', И: 'N', Ш: 'W', Л: 'L', Г: 'R', З: 'E', П: 'N', Ч: 'A', Б: 'B' };
+const LEET = { 0: 'O', 1: 'I', 3: 'E', 4: 'A', 5: 'S', 6: 'G', 7: 'T', 8: 'B', 9: 'G', '!': 'I', L: 'I' };
+const LAT2CYR = { A: 'А', B: 'В', E: 'Е', K: 'К', M: 'М', H: 'Н', O: 'О', P: 'Р', C: 'С', T: 'Т', X: 'Х', Y: 'У', 0: 'О', Ё: 'Е', N: 'И', D: 'Д' };
+const BAN_LAT = ['OWNER', 'OWNR', 'ADMIN', 'ADMN', 'MODER', 'MODR'];
+const BAN_LAT_EXACT = ['MOD', 'MODS', 'ADM', 'OWN'];
+const BAN_CYR = ['АДМИН', 'МОДЕР', 'ВЛАДЕЛ', 'ОВНЕР', 'ОУНЕР', 'ОВНР'];
+
+function check(input) {
+  const t = String(input == null ? '' : input).replace(/\s+/g, ' ').trim();
+  if (!t) return { ok: true, title: '' };
+  if (t.length > 12) return { ok: false, reason: 'long' };
+  if (!/^[A-Za-zА-Яа-яЁё0-9 _\-!?.]+$/.test(t)) return { ok: false, reason: 'chars' };
+  const up = t.toUpperCase();
+  const lat = [...up].map((c) => CYR2LAT[c] || c).map((c) => LEET[c] || c).join('').replace(/VV/g, 'W').replace(/[^A-Z]/g, '');
+  const cyr = [...up].map((c) => LAT2CYR[c] || c).join('').replace(/[^А-Я]/g, '');
+  if (BAN_LAT.some((w) => lat.includes(w)) || BAN_LAT_EXACT.includes(lat) || BAN_CYR.some((w) => cyr.includes(w))) return { ok: false, reason: 'banned' };
+  return { ok: true, title: t };
+}
+const titleColor = (c) => (COLORS.includes(c) ? c : 'gold');
+
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
 const UUID_RE = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
@@ -97,6 +121,7 @@ export default {
         const id = norm(b.uuid);
         const cos = {};
         for (const s of SLOTS) if (b.cosmetics && typeof b.cosmetics[s] === 'string') cos[s] = b.cosmetics[s].slice(0, 32);
+        if (b.cosmetics) { const tt = check(b.cosmetics.title); if (tt.ok && tt.title && !/^mrulian_gg$/i.test(b.name || '')) { cos.title = tt.title; cos.title_color = titleColor(b.cosmetics.title_color); } }
         let skin = null, skinHash = null, model = null;
         if (typeof b.skin === 'string' && b.skin.length < 200000 && atob(b.skin).slice(1, 4) === 'PNG') {
           skin = b.skin; skinHash = await sha256(b.skin); model = b.model === 'slim' ? 'slim' : 'classic';
@@ -175,6 +200,7 @@ export default {
         const b = await body(), out = {};
         for (const s of [...SLOTS, 'skinModel', 'stamp']) if (typeof b[s] === 'string') out[s] = b[s].slice(0, 32);
         if (typeof b.shareSkin === 'boolean') out.shareSkin = b.shareSkin;
+        if (b.title !== undefined) { const tt = check(b.title); if (!tt.ok) return err(400, 'title_' + tt.reason, 'This title is not allowed'); out.title = tt.title; out.titleColor = titleColor(b.titleColor); }
         await db.prepare('INSERT INTO loadouts (key, name, data, updated) VALUES (?,?,?,?) ON CONFLICT(key) DO UPDATE SET name=excluded.name, data=excluded.data, updated=excluded.updated')
           .bind(me.name.toLowerCase(), me.name, JSON.stringify(out), Date.now()).run();
         return json({ ok: true });

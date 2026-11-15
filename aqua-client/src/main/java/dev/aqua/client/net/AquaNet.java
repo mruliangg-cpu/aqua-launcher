@@ -165,6 +165,16 @@ public final class AquaNet {
         return USERS.containsKey(id);
     }
 
+    /** Титул игрока {текст, цвет} или null. */
+    public static String[] title(UUID id) {
+        if (id == null) return null;
+        if (id.equals(self())) return Cosmetics.localTitle();
+        Remote r = USERS.get(id);
+        if (r == null) return null;
+        String t = dev.aqua.client.cosmetic.TitleRules.clean(r.cosmetics.get("title"));
+        return t == null ? null : new String[]{t, dev.aqua.client.cosmetic.TitleRules.color(r.cosmetics.get("title_color"))};
+    }
+
     public static String cosmetic(UUID id, Slot slot) {
         if (id == null) return "none";
         if (id.equals(self())) return Cosmetics.local(slot);
