@@ -646,7 +646,11 @@ public class ClickGuiScreen extends Screen {
     }
 
     @Override
+    //#if MC >= 1.20.2
     public boolean mouseScrolled(double mx, double my, double horizontal, double vertical) {
+    //#else
+    public boolean mouseScrolled(double mx, double my, double vertical) {
+    //#endif
         scrollTarget -= (float) vertical * 28;
         scrollTarget = Math.max(0, Math.min(scrollTarget, Math.max(0, contentHeight - viewHeight)));
         return true;

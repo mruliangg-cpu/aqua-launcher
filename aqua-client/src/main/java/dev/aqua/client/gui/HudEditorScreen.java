@@ -28,7 +28,11 @@ public class HudEditorScreen extends Screen {
     public HudEditorScreen() { super(Text.literal("Aqua HUD Editor")); }
 
     @Override
+    //#if MC >= 1.20.2
     public void renderBackground(DrawContext ctx, int mouseX, int mouseY, float delta) {
+    //#else
+    public void renderBackground(DrawContext ctx) {
+    //#endif
         // без размытия — видно реальную игру
     }
 
@@ -153,7 +157,11 @@ public class HudEditorScreen extends Screen {
     }
 
     @Override
+    //#if MC >= 1.20.2
     public boolean mouseScrolled(double mx, double my, double horizontal, double vertical) {
+    //#else
+    public boolean mouseScrolled(double mx, double my, double vertical) {
+    //#endif
         HudModule h = at(mx, my);
         if (h != null) {
             h.setScale(h.getScale() + (vertical > 0 ? 0.05 : -0.05));

@@ -51,7 +51,9 @@ public final class V {
     }
 
     public static float tickDelta(WorldRenderContext ctx) {
-        //#if MC >= 1.21
+        //#if MC >= 1.21.5
+        return ctx.tickCounter().getTickProgress(true);
+        //#elseif MC >= 1.21
         return ctx.tickCounter().getTickDelta(true);
         //#else
         return ctx.tickDelta();
@@ -74,8 +76,13 @@ public final class V {
         //#endif
     }
 
-    public static Sprite effectSprite(StatusEffectInstance e) {
-        return MinecraftClient.getInstance().getStatusEffectSpriteManager().getSprite(e.getEffectType());
+    /** Иконка эффекта зелья. */
+    public static void drawEffect(DrawContext c, StatusEffectInstance e, int x, int y, int size) {
+        //#if MC >= 1.21.6
+        c.drawGuiTexture(net.minecraft.client.gl.RenderPipelines.GUI_TEXTURED, net.minecraft.client.gui.hud.InGameHud.getEffectTexture(e.getEffectType()), x, y, size, size);
+        //#else
+        sprite(c, MinecraftClient.getInstance().getStatusEffectSpriteManager().getSprite(e.getEffectType()), x, y, size, size);
+        //#endif
     }
 
     public static int enchantCount(ItemStack st) {
