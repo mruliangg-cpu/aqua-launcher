@@ -29,6 +29,29 @@ public final class SelfTest {
 
     private static void log(String s) { System.out.println("AQUA-SELFTEST " + s); }
 
+    private static final List<String> SHOTS = new ArrayList<>();
+
+    /** Снимок экрана (уменьшенный вдвое) — потом печатается в лог, чтобы посмотреть результат теста. */
+    private static void shot(MinecraftClient mc, String name) {
+        //#if MC >= 1.21.9
+        try {
+            net.minecraft.client.util.ScreenshotRecorder.saveScreenshot(mc.runDirectory, name + ".png", mc.getFramebuffer(), 2, t -> {});
+            SHOTS.add(name);
+            log("shot " + name);
+        } catch (Throwable t) { log("shot fail " + name + " " + t); }
+        //#endif
+    }
+
+    private static void dumpShots() {
+        for (String n : SHOTS) {
+            try {
+                byte[] b = java.nio.file.Files.readAllBytes(new File("screenshots", n + ".png").toPath());
+                String enc = java.util.Base64.getEncoder().encodeToString(b);
+                for (int i = 0; i < enc.length(); i += 4000) System.out.println("AQUA-SHOT " + n + " " + enc.substring(i, Math.min(enc.length(), i + 4000)));
+            } catch (Exception e) { log("dump fail " + n + " " + e); }
+        }
+    }
+
     public static void onTick(MinecraftClient mc) {
         if (!ON) return;
         if (tick == 0) log("started");
@@ -104,22 +127,30 @@ public final class SelfTest {
                 }
                 wait = 6; // несколько кадров с включённым модулем (HUD, мир)
             }
-            case 4 -> { // все модули сразу + меню + редактор HUD
-                for (Module m : ModuleManager.all()) { try { m.setEnabled(true); } catch (Throwable ignored) {} }
-                mc.setScreen(new ClickGuiScreen());
-                log("ClickGui opened");
-                stage = 5; wait = 60;
+            case 4 -> { // все модули сразу (кроме мешающих обзору) → снимки
+                for (Module m : ModuleManager.all()) {
+                    String n = m.getName();
+                    if (n.equals("Freelook") || n.equals("Zoom") || n.equals("Snaplook") || n.equals("Chunk Borders") || n.equals("Hitboxes")) continue;
+                    try { m.setEnabled(true); } catch (Throwable ignored) {}
+                }
+                stage = 41; wait = 80;
             }
+            case 41 -> { shot(mc, "1-hud"); mc.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_FRONT); stage = 42; wait = 60; }
+            case 42 -> { shot(mc, "2-front"); mc.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK); stage = 43; wait = 60; }
+            case 43 -> { shot(mc, "3-back"); mc.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON); mc.setScreen(new ClickGuiScreen()); log("ClickGui opened"); stage = 5; wait = 60; }
             case 5 -> {
+                shot(mc, "4-menu");
                 mc.setScreen(new HudEditorScreen());
                 log("HudEditor opened");
                 stage = 6; wait = 60;
             }
             case 6 -> {
+                shot(mc, "5-hudeditor");
                 mc.setScreen(null);
                 stage = 7; wait = 100;
             }
             case 7 -> {
+                dumpShots();
                 log("DONE modules=" + ModuleManager.all().size() + " failures=" + FAIL.size());
                 for (String f : FAIL) log("SUMMARY " + f);
                 stage = 99;

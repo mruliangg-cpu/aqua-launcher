@@ -58,7 +58,15 @@ public class AquaClient implements ClientModInitializer {
         dev.aqua.client.module.impl.Cosmetics cos = ModuleManager.get(dev.aqua.client.module.impl.Cosmetics.class);
         if (cos != null) cos.applyLauncherLoadout();
 
-        //#if MC < 1.21.9
+        //#if MC >= 1.21.9
+        LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
+            if (renderer instanceof PlayerEntityRenderer per) {
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                var ctx = (net.minecraft.client.render.entity.feature.FeatureRendererContext) per;
+                helper.register(new dev.aqua.client.cosmetic.CosmeticFeatureRenderer(ctx));
+            }
+        });
+        //#else
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
             if (renderer instanceof PlayerEntityRenderer per) helper.register(new dev.aqua.client.cosmetic.CosmeticFeatureRenderer(per));
         });

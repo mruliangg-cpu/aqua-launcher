@@ -35,6 +35,7 @@ async function init(db) {
     db.prepare('CREATE TABLE IF NOT EXISTS accounts (key TEXT PRIMARY KEY, name TEXT, type TEXT, uuid TEXT, salt TEXT, hash TEXT, friends TEXT, incoming TEXT, outgoing TEXT, status TEXT, seen INTEGER)'),
     db.prepare('CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, account TEXT, created INTEGER)'),
     db.prepare('CREATE TABLE IF NOT EXISTS levels (key TEXT PRIMARY KEY, name TEXT, level INTEGER, seen INTEGER)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS loadouts (key TEXT PRIMARY KEY, name TEXT, data TEXT, updated INTEGER)'),
   ]);
   ready = true;
 }
@@ -170,6 +171,23 @@ export default {
       }
 
       // ---------- друзья ----------
+      // ---------- гардероб аккаунта: лаунчер сохраняет, мод забирает по нику (одна косметика везде)
+      if (p === '/api/loadout' && req.method === 'GET') {
+        const name = String(url.searchParams.get('name') || '').toLowerCase().slice(0, 16);
+        const row = name ? await db.prepare('SELECT data, updated FROM loadouts WHERE key = ?').bind(name).first() : null;
+        return json(row ? { ...JSON.parse(row.data || '{}'), updated: row.updated } : {});
+      }
+      if (p === '/api/loadout' && req.method === 'POST') {
+        const me = await authAcc(db, req);
+        if (!me) return err(401, 'auth', 'Sign in to Aqua Network');
+        const b = await body(), out = {};
+        for (const s of [...SLOTS, 'skinModel', 'stamp']) if (typeof b[s] === 'string') out[s] = b[s].slice(0, 32);
+        if (typeof b.shareSkin === 'boolean') out.shareSkin = b.shareSkin;
+        await db.prepare('INSERT INTO loadouts (key, name, data, updated) VALUES (?,?,?,?) ON CONFLICT(key) DO UPDATE SET name=excluded.name, data=excluded.data, updated=excluded.updated')
+          .bind(me.name.toLowerCase(), me.name, JSON.stringify(out), Date.now()).run();
+        return json({ ok: true });
+      }
+
       if (p.startsWith('/api/friends')) {
         const me = await authAcc(db, req);
         if (!me) return err(401, 'auth', 'Sign in to Aqua Network');

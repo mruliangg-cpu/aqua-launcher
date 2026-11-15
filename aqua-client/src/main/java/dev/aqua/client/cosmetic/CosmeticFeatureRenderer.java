@@ -14,11 +14,23 @@ import java.util.UUID;
 
 /** Рисует 3D-косметику на игроках Aqua Launcher. */
 //#if MC >= 1.21.9
-/** 1.21.9+: 3D-косметика в следующем обновлении (новая система команд отрисовки). */
-public class CosmeticFeatureRenderer {
-}
-//#else
-//#if MC >= 1.21.2
+public class CosmeticFeatureRenderer extends FeatureRenderer<net.minecraft.client.render.entity.state.PlayerEntityRenderState, PlayerEntityModel> {
+    private static final Identifier BEVEL = dev.aqua.client.compat.V.id("aquaclient", "textures/cosmetics/bevel.png");
+
+    public CosmeticFeatureRenderer(FeatureRendererContext<net.minecraft.client.render.entity.state.PlayerEntityRenderState, PlayerEntityModel> context) {
+        super(context);
+    }
+
+    @Override
+    public void render(MatrixStack matrices, net.minecraft.client.render.command.OrderedRenderCommandQueue queue, int light,
+                       net.minecraft.client.render.entity.state.PlayerEntityRenderState state, float limbAngle, float limbDistance) {
+        var world = net.minecraft.client.MinecraftClient.getInstance().world;
+        if (world == null || !(world.getEntityById(state.id) instanceof AbstractClientPlayerEntity player)) return;
+        RecordingConsumers rec = new RecordingConsumers();
+        draw(player, getContextModel(), matrices, rec, light, state.age);
+        rec.submit(queue);
+    }
+//#elseif MC >= 1.21.2
 public class CosmeticFeatureRenderer extends FeatureRenderer<net.minecraft.client.render.entity.state.PlayerEntityRenderState, PlayerEntityModel> {
     private static final Identifier BEVEL = dev.aqua.client.compat.V.id("aquaclient", "textures/cosmetics/bevel.png");
 
@@ -85,4 +97,3 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
     }
 }
 
-//#endif

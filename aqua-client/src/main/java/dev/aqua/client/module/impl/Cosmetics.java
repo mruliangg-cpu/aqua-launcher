@@ -56,8 +56,39 @@ public class Cosmetics extends Module {
     public void applyLauncherLoadout() {
         Path file = FabricLoader.getInstance().getConfigDir().resolve("aquaclient-loadout.json");
         try {
-            if (!Files.exists(file)) return;
-            JsonObject o = new Gson().fromJson(Files.readString(file, StandardCharsets.UTF_8), JsonObject.class);
+            if (!Files.exists(file)) { fetchAccountLoadout(); return; }
+            applyLoadout(new Gson().fromJson(Files.readString(file, StandardCharsets.UTF_8), JsonObject.class));
+        } catch (Exception e) {
+            AquaClient.LOG.warn("Не удалось прочитать гардероб из лаунчера", e);
+        }
+    }
+
+    /**
+     * Игра запущена не из Aqua Launcher: берём гардероб аккаунта с Aqua Network по нику,
+     * чтобы косметика была та же, что выбрана в лаунчере.
+     */
+    private void fetchAccountLoadout() {
+        String name = net.minecraft.client.MinecraftClient.getInstance().getSession().getUsername();
+        if (name == null || name.isBlank()) return;
+        try {
+            var req = java.net.http.HttpRequest.newBuilder(java.net.URI.create(dev.aqua.client.net.AquaNet.api() + "/api/loadout?name="
+                    + java.net.URLEncoder.encode(name, StandardCharsets.UTF_8))).timeout(java.time.Duration.ofSeconds(8)).GET().build();
+            java.net.http.HttpClient.newHttpClient().sendAsync(req, java.net.http.HttpResponse.BodyHandlers.ofString()).thenAccept(r -> {
+                if (r.statusCode() != 200) return;
+                JsonObject o = new Gson().fromJson(r.body(), JsonObject.class);
+                if (o == null || o.size() == 0) return;
+                net.minecraft.client.MinecraftClient.getInstance().execute(() -> {
+                    applyLoadout(o);
+                    AquaClient.LOG.info("Гардероб аккаунта {} загружен из Aqua Network", name);
+                });
+            });
+        } catch (Exception e) {
+            AquaClient.LOG.warn("Не удалось загрузить гардероб аккаунта", e);
+        }
+    }
+
+    private void applyLoadout(JsonObject o) {
+        try {
             if (o == null) return;
             if (o.has("skinModel")) LocalSkin.setModel(o.get("skinModel").getAsString());
             AquaNetwork net = ModuleManager.get(AquaNetwork.class);

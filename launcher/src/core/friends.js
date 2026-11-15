@@ -92,4 +92,12 @@ async function signIn(mode, name, password) {
   return j.name;
 }
 
-module.exports = { signIn, list, action, heartbeat, level, leaderboard };
+/** Гардероб аккаунта → Aqua Network, чтобы мод показывал ту же косметику и без Aqua Launcher. */
+async function pushLoadout() {
+  const s = store.state, acc = selected();
+  if (!acc || !base() || (!acc.aquaToken && (acc.type !== 'microsoft' || acc.demo))) return false;
+  const body = { stamp: String(s.loadoutStamp), ...s.loadout, skinModel: s.skin.model, shareSkin: !!s.settings.shareSkin };
+  try { await withToken((token) => api('/api/loadout', { method: 'POST', body, token })); return true; } catch { return false; }
+}
+
+module.exports = { pushLoadout, signIn, list, action, heartbeat, level, leaderboard };

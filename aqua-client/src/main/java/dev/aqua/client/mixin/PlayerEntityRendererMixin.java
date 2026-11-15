@@ -8,8 +8,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-//#if MC >= 1.21.9
-//#elseif MC >= 1.21.2
+//#if MC >= 1.21.2
 import net.minecraft.client.render.entity.state.PlayerEntityRenderState;
 //#else
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -22,7 +21,23 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(PlayerEntityRenderer.class)
 public abstract class PlayerEntityRendererMixin {
     //#if MC >= 1.21.9
-    // 1.21.9+: новая система отрисовки игроков — значки у ника и 3D-слой в следующем обновлении
+    /** 1.21.9+: значок у ника, 3D-слой и плащ Aqua задаются в состоянии отрисовки игрока. */
+    @Inject(method = "updateRenderState(Lnet/minecraft/entity/PlayerLikeEntity;Lnet/minecraft/client/render/entity/state/PlayerEntityRenderState;F)V", at = @At("TAIL"))
+    private void aqua$state(net.minecraft.entity.PlayerLikeEntity entity, PlayerEntityRenderState state, float tickDelta, CallbackInfo ci) {
+        if (!(entity instanceof AbstractClientPlayerEntity player)) return;
+        Skin3D.hideFlatLayers(player, state);
+        java.util.UUID id = dev.aqua.client.compat.V.profileId(player.getGameProfile());
+        if (state.displayName != null)
+            state.displayName = NameTags.decorate(id, dev.aqua.client.compat.V.profileName(player.getGameProfile()), state.displayName);
+        net.minecraft.util.Identifier cape = dev.aqua.client.module.impl.Cosmetics.capeTexture(id);
+        if (cape != null && state.skinTextures != null) {
+            // «aquaclient:textures/cape/x.png» → ресурс «aquaclient:cape/x»
+            String path = cape.getPath().replaceFirst("^textures/", "").replaceFirst("\\.png$", "");
+            var asset = java.util.Optional.of(new net.minecraft.util.AssetInfo.TextureAssetInfo(dev.aqua.client.compat.V.id(cape.getNamespace(), path)));
+            state.skinTextures = state.skinTextures.withOverride(net.minecraft.entity.player.SkinTextures.SkinOverride.create(
+                    java.util.Optional.empty(), asset, dev.aqua.client.module.impl.Cosmetics.elytra() ? asset : java.util.Optional.empty(), java.util.Optional.empty()));
+        }
+    }
     //#else
     @Inject(method = "renderArm", at = @At("HEAD"))
     private void aqua$armStart(CallbackInfo ci) { Skin3D.FIRST_PERSON.set(true); }

@@ -151,7 +151,26 @@ public final class V {
 
     public static Skin skin(AbstractClientPlayerEntity p) {
         //#if MC >= 1.21.9
-        return null; // 3D-слой скина для 1.21.9+ — в следующем обновлении
+        // 1.21.9+: скин — запись SkinTextures с «ассетами»; поля читаем через компоненты записи (их имена в игре не сохраняются)
+        try {
+            Object st = ((net.minecraft.client.network.ClientPlayerLikeEntity) p).getSkin();
+            var comps = st.getClass().getRecordComponents();
+            Object body = comps[0].getAccessor().invoke(st), model = null;
+            for (var rc : comps) { Object v = rc.getAccessor().invoke(st); if (v instanceof net.minecraft.entity.player.PlayerSkinType) model = v; }
+            Identifier tex = null; String url = null;
+            if (body != null && body.getClass().isRecord()) {
+                for (var rc : body.getClass().getRecordComponents()) {
+                    rc.getAccessor().setAccessible(true);
+                    Object v = rc.getAccessor().invoke(body);
+                    if (v instanceof Identifier id && (tex == null || id.getPath().startsWith("textures/"))) tex = id;
+                    else if (v instanceof String str && str.startsWith("http")) url = str;
+                }
+            }
+            if (tex == null) return null;
+            return new Skin(tex, url, model == net.minecraft.entity.player.PlayerSkinType.byModelMetadata("slim"));
+        } catch (Throwable t) {
+            return null;
+        }
         //#elseif MC >= 1.20.2
         var s = p.getSkinTextures();
         return new Skin(s.texture(), s.textureUrl(), s.model() == net.minecraft.client.util.SkinTextures.Model.SLIM);

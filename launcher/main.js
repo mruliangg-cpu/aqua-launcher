@@ -62,7 +62,7 @@ app.whenReady().then(() => {
 
   createWindow();
   // проверяем вход Microsoft в фоне: имя покажется только после успешного входа
-  setTimeout(() => auth.validate().finally(() => pushState()), 300);
+  setTimeout(() => auth.validate().finally(() => { pushState(); require('./src/core/friends').pushLoadout(); }), 300);
 
   const send = (channel, data) => { if (win && !win.isDestroyed()) win.webContents.send(channel, data); };
   const pushState = () => send('state', store.publicState());
@@ -82,7 +82,7 @@ app.whenReady().then(() => {
   });
   handle('player:level', () => require('./src/core/friends').level());
   handle('account:offline', (name) => { auth.addOffline(name); pushState(); return true; });
-  handle('aqua:signin', async (mode, name, password) => { const n = await friends.signIn(mode, name, password); pushState(); return n; });
+  handle('aqua:signin', async (mode, name, password) => { const n = await friends.signIn(mode, name, password); pushState(); friends.pushLoadout(); return n; });
   handle('leaderboard:get', () => require('./src/core/friends').leaderboard());
   handle('update:state', () => updater.state);
   handle('update:check', () => updater.check());
@@ -130,6 +130,7 @@ app.whenReady().then(() => {
     for (const k of slots) if (typeof loadout[k] === 'string') store.state.loadout[k] = loadout[k].slice(0, 32);
     store.state.loadoutStamp = String(Date.now());
     store.save(); pushState();
+    require('./src/core/friends').pushLoadout();
     return true;
   });
 
@@ -174,7 +175,7 @@ app.whenReady().then(() => {
   });
 
   // ---------- аккаунты ----------
-  handle('account:microsoft', async () => { await auth.loginMicrosoft(); pushState(); return true; });
+  handle('account:microsoft', async () => { await auth.loginMicrosoft(); pushState(); require('./src/core/friends').pushLoadout(); return true; });
   handle('account:select', (id) => { store.state.selectedAccount = id; store.save(); pushState(); });
   handle('account:remove', (id) => {
     const st = store.state;

@@ -57,7 +57,7 @@ public class Skin3D extends Module {
         if (s.legs.isOn()) { m.leftPants.visible = false; m.rightPants.visible = false; }
     }
 
-    //#if MC >= 1.21.2 && MC < 1.21.9
+    //#if MC >= 1.21.2
     /** 1.21.2+: видимость слоёв задаётся в состоянии отрисовки. */
     public static void hideFlatLayers(AbstractClientPlayerEntity p, net.minecraft.client.render.entity.state.PlayerEntityRenderState st) {
         Skin3D s = on();
