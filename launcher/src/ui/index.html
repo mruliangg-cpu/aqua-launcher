@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self'">
+  <title>Aqua Launcher</title>
+  <link rel="stylesheet" href="../../node_modules/@fontsource/nunito/400.css">
+  <link rel="stylesheet" href="../../node_modules/@fontsource/nunito/600.css">
+  <link rel="stylesheet" href="../../node_modules/@fontsource/nunito/800.css">
+  <link rel="stylesheet" href="../../node_modules/@fontsource/nunito/900.css">
+  <link rel="stylesheet" href="../../node_modules/@fontsource/silkscreen/400.css">
+  <link rel="stylesheet" href="../../node_modules/@fontsource/silkscreen/700.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <canvas id="ocean"></canvas>
+
+  <div class="app">
+    <header class="titlebar">
+      <div class="brand"><canvas id="logo-turtle" width="54" height="24"></canvas><span class="brand-name">AQUA</span><span class="brand-sub">LAUNCHER</span></div>
+      <div class="drag"></div>
+      <div class="win-btns">
+        <button data-win="min"><svg viewBox="0 0 12 12"><path d="M2 6h8"/></svg></button>
+        <button data-win="max"><svg viewBox="0 0 12 12"><rect x="2" y="2" width="8" height="8"/></svg></button>
+        <button data-win="close" class="close"><svg viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
+      </div>
+    </header>
+
+    <nav class="sidebar">
+      <button class="nav active" data-page="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span data-i18n="nav_home"></span></button>
+      <div id="nav-glider"></div>
+      <button class="nav" data-page="instances"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span data-i18n="nav_instances"></span></button>
+      <button class="nav" data-page="servers"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span data-i18n="nav_servers"></span></button>
+      <button class="nav" data-page="mods"><svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M12 22V12M21 7l-9 5-9-5"/></svg><span data-i18n="nav_mods"></span></button>
+      <button class="nav" data-page="friends"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.6c2.8 0 4.8 1.6 5.5 4.6"/></svg><span data-i18n="nav_friends"></span><b class="nav-badge" id="friends-badge" hidden></b></button>
+      <button class="nav" data-page="locker"><svg viewBox="0 0 24 24"><path d="M12 3c-2 0-3 1.2-3 2.6 0 1 .6 1.6 1.4 2L4 12.5V15h16v-2.5l-6.4-4.9c.8-.4 1.4-1 1.4-2C15 4.2 14 3 12 3z"/><path d="M5 15v5h14v-5"/></svg><span data-i18n="nav_locker"></span></button>
+      <button class="nav" data-page="skins"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="7" rx="1"/><rect x="7" y="9" width="10" height="8" rx="1"/><path d="M9 17v5M15 17v5M7 10l-3 5M17 10l3 5"/></svg><span data-i18n="nav_skins"></span></button>
+      <button class="nav" data-page="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="nav_settings"></span></button>
+      <button class="nav" data-page="console"><svg viewBox="0 0 24 24"><path d="M4 17l6-5-6-5M12 19h8"/></svg><span data-i18n="nav_console"></span></button>
+      <div class="spacer"></div>
+      <button class="account" id="account-chip">
+        <img id="account-avatar" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+        <div><b id="account-name"></b><small id="account-type"></small></div>
+      </button>
+    </nav>
+
+    <main>
+      <div id="page-wave"></div>
+      <div id="update-bar" hidden></div>
+      <section class="page active" id="page-home">
+        <div class="hero glass">
+          <div class="hero-text">
+            <h1 class="wave-title">AQUA LAUNCHER</h1>
+            <p id="hero-sub"></p>
+          </div>
+          <div class="hero-turtle"><canvas id="hero-turtle" width="180" height="90"></canvas></div>
+        </div>
+        <div class="play-row">
+          <div class="current glass" id="current-instance"></div>
+          <div class="play-box glass">
+            <select class="select" id="quick-instance"></select>
+            <button class="play" id="play-btn"><span class="play-label"></span><span class="play-bubbles"></span></button>
+            <div class="progress" id="progress"><div class="bar"><i></i></div><small></small></div>
+          </div>
+        </div>
+        <div class="tiles">
+          <div class="tile glass"><div class="tile-ic ender-ic">🐢</div><b data-i18n="tile_ender_t"></b><span id="tile-ender"></span></div>
+          <div class="tile glass"><div class="tile-ic">⚡</div><b data-i18n="tile_fps_t"></b><span data-i18n="tile_fps"></span></div>
+          <div class="tile glass"><div class="tile-ic">🐢</div><b data-i18n="tile_cos_t"></b><span data-i18n="tile_cos"></span></div>
+        </div>
+        <h3 class="section-title" data-i18n="recent"></h3>
+        <div class="recent" id="recent"></div>
+        <h3 class="section-title" data-i18n="news"></h3>
+        <div class="news" id="news"></div>
+      </section>
+
+      <section class="page" id="page-instances">
+        <div class="page-head"><h2 data-i18n="nav_instances"></h2><button class="btn primary" id="new-instance" data-i18n="new_profile"></button></div>
+        <div class="grid" id="instances-grid"></div>
+      </section>
+
+      <section class="page" id="page-servers">
+        <div class="page-head"><h2 data-i18n="servers_title"></h2><button class="btn ghost" id="servers-refresh" data-i18n="refresh"></button></div>
+        <div class="toolbar glass">
+          <input class="input" id="srv-name" data-i18n-ph="srv_name" style="width:170px">
+          <input class="input grow" id="srv-addr" data-i18n-ph="srv_addr">
+          <button class="btn primary" id="srv-add" data-i18n="add"></button>
+        </div>
+        <p class="note" style="margin:-4px 0 12px" data-i18n="srv_note"></p>
+        <p class="note warn" id="srv-ms-warn" style="margin:-6px 0 12px" hidden data-i18n="online_only_ms"></p>
+        <div class="servers" id="servers-list"></div>
+      </section>
+
+      <section class="page" id="page-mods">
+        <div class="page-head"><h2 data-i18n="mods_title"></h2><select id="mods-instance" class="select"></select></div>
+        <div class="toolbar glass">
+          <div class="seg" id="mods-tab"><button data-v="browse" class="on" data-i18n="catalog"></button><button data-v="installed" data-i18n="installed"></button></div>
+          <div class="seg" id="mods-source"><button data-v="modrinth" class="on">Modrinth</button><button data-v="curseforge">CurseForge</button></div>
+          <div class="seg" id="mods-type"><button data-v="mod" class="on" data-i18n="t_mods"></button><button data-v="resourcepack" data-i18n="t_packs"></button><button data-v="shader" data-i18n="t_shaders"></button></div>
+          <input id="mods-search" class="input grow" data-i18n-ph="mods_search">
+        </div>
+        <div class="mods-list" id="mods-list"></div>
+        <button class="btn ghost more" id="mods-more" hidden data-i18n="show_more"></button>
+      </section>
+
+      <section class="page" id="page-friends">
+        <div class="page-head"><div><h2 data-i18n="friends_title"></h2><p class="note" id="friends-me"></p></div><button class="btn ghost" id="friends-refresh" data-i18n="refresh"></button></div>
+        <div id="friends-root"></div>
+      </section>
+
+      <section class="page" id="page-locker">
+        <div class="page-head"><div><h2 data-i18n="locker_title"></h2><p class="note" data-i18n="locker_sub"></p></div></div>
+        <div class="locker">
+          <div class="locker-preview glass">
+            <canvas id="locker-3d" width="300" height="380"></canvas>
+            <div class="viewer-hint" data-i18n="viewer_hint"></div>
+            <div class="equipped" id="locker-equipped"></div>
+          </div>
+          <div class="locker-main">
+            <div class="seg slot-tabs" id="locker-slots"></div>
+            <div class="locker-grid" id="locker-grid"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-skins">
+        <div class="page-head"><h2 data-i18n="skins_title"></h2></div>
+        <div class="skins">
+          <div class="skin-preview glass"><canvas id="skin-canvas" width="200" height="400"></canvas><p class="note" id="skin-empty" data-i18n="no_skin"></p></div>
+          <div class="skin-controls glass">
+            <label class="btn primary file-btn"><span data-i18n="upload_skin"></span><input type="file" id="skin-file" accept="image/png" hidden></label>
+            <div class="field" style="margin-top:14px"><span data-i18n="skin_by_name"></span>
+              <div class="inline"><input class="input grow" id="skin-nick" maxlength="16" data-i18n-ph="nick_ph"><button class="btn ghost" id="skin-get" data-i18n="get"></button></div></div>
+            <div class="field"><span data-i18n="model"></span><div class="seg" id="skin-model"><button data-v="classic" data-i18n="classic"></button><button data-v="slim" data-i18n="slim"></button></div></div>
+            <div class="inline" style="margin-top:6px">
+              <button class="btn primary" id="skin-save" data-i18n="skin_save_aqua"></button>
+              <button class="btn ghost" id="skin-mojang" data-i18n="skin_upload_ms"></button>
+              <button class="btn danger" id="skin-reset" data-i18n="skin_reset"></button>
+            </div>
+            <p class="note" style="margin-top:12px" data-i18n="skin_note"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="page-head"><h2 data-i18n="settings_title"></h2></div>
+        <div class="settings" id="settings-root"></div>
+      </section>
+
+      <section class="page" id="page-console">
+        <div class="page-head"><h2 data-i18n="console_title"></h2>
+          <div class="inline"><button class="btn ghost" id="log-copy" data-i18n="copy"></button><button class="btn ghost" id="log-clear" data-i18n="clear"></button><button class="btn danger" id="kill-btn" data-i18n="kill"></button></div></div>
+        <pre class="console glass" id="console"></pre>
+      </section>
+    </main>
+  </div>
+
+  <div id="welcome" class="welcome" hidden></div>
+  <div id="modal-root"></div>
+  <div id="toasts"></div>
+
+  <script src="assets/cosmetics.js"></script>
+  <script src="i18n.js"></script>
+  <script src="viewer3d.js"></script>
+  <script src="ocean.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

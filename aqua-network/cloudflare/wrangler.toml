@@ -1,0 +1,8 @@
+name = "aqua-network"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "aqua-network"
+database_id = "ВСТАВЬТЕ_ID_БАЗЫ"

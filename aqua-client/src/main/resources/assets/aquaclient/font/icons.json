@@ -1,0 +1,184 @@
+{
+ "providers": [
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/turtle.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue000"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/pearl.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue001"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/fish.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue002"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/heart.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue003"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/star.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue004"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/crown.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue005"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/shell.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue006"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/wave.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue007"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/diamond.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue008"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/flame.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue009"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/bolt.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00a"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/moon.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00b"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/sun.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00c"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/skull.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00d"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/clover.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00e"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/music.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue00f"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/snowflake.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue010"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/anchor.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue011"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/dolphin.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue012"
+   ]
+  },
+  {
+   "type": "bitmap",
+   "file": "aquaclient:font/gem.png",
+   "ascent": 7,
+   "height": 8,
+   "chars": [
+    "\ue013"
+   ]
+  }
+ ]
+}

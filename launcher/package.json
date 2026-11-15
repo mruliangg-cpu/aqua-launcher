@@ -1,0 +1,99 @@
+{
+  "name": "aqua-launcher",
+  "productName": "Aqua Launcher",
+  "version": "3.4.0",
+  "description": "Красивый лаунчер Minecraft в морском стиле: все версии, Fabric/Quilt/Forge/NeoForge, моды с Modrinth и CurseForge, Aqua Client и FPS-буст.",
+  "main": "main.js",
+  "author": "Ulian",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis portable",
+    "dist:mac": "electron-builder --mac dmg",
+    "dist:linux": "electron-builder --linux AppImage"
+  },
+  "dependencies": {
+    "@fontsource/nunito": "^5.3.0",
+    "@fontsource/silkscreen": "^5.3.0",
+    "adm-zip": "^0.6.1",
+    "electron-updater": "^6.8.11",
+    "minecraft-launcher-core": "^3.18.2",
+    "msmc": "^5.0.5",
+    "tar": "^7.5.2"
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "dev.aqua.launcher",
+    "productName": "Aqua Launcher",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources",
+        "to": "resources",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "../aqua-client",
+        "to": "resources/aqua-client-src",
+        "filter": [
+          "**/*",
+          "!build/**",
+          "!.gradle/**",
+          "!run/**"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Aqua Launcher",
+      "artifactName": "AquaLauncher-Setup-${version}.exe",
+      "createDesktopShortcut": true
+    },
+    "mac": {
+      "icon": "build/icon.png",
+      "category": "public.app-category.games"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "category": "Game"
+    },
+    "portable": {
+      "artifactName": "AquaLauncher-Portable-${version}.exe"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "mruliangg-cpu",
+        "repo": "aqua-launcher",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mruliangg-cpu/aqua-launcher.git"
+  }
+}

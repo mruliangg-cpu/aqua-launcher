@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "aquaclient",
+  "version": "${version}",
+  "name": "Aqua Client",
+  "description": "PvP / QoL клиент Aqua Launcher: меню на правый Shift, HUD-моды, зум, freelook, мини-карта, бесплатная косметика и FPS-оптимизации.",
+  "authors": [
+    "Ulian"
+  ],
+  "license": "MIT",
+  "icon": "assets/aquaclient/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.aqua.client.AquaClient"
+    ]
+  },
+  "mixins": [
+    "aquaclient.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

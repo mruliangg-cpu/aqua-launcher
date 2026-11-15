@@ -1,0 +1,8 @@
+node_modules/
+launcher/dist/
+launcher/resources/aqua-client-1.21.1.jar
+aqua-client/build/
+aqua-client/.gradle/
+aqua-client/run/
+aqua-client/javac.*.args
+*.part

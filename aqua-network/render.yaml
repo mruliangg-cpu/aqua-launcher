@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: aqua-network
+    runtime: node
+    plan: free
+    rootDir: aqua-network
+    buildCommand: echo "no build"
+    startCommand: node server.js
+    envVars:
+      - key: CF_API_KEY
+        sync: false
