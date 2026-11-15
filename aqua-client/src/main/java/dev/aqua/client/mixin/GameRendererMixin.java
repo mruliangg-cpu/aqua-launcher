@@ -14,12 +14,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class GameRendererMixin {
     /** FOV Changer + Zoom. Только для мира (changingFov), рука остаётся нормальной. */
     @Inject(method = "getFov", at = @At("RETURN"), cancellable = true)
+    //#if MC >= 1.21.2
+    private void aqua$fov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Float> cir) {
+    //#else
     private void aqua$fov(Camera camera, float tickDelta, boolean changingFov, CallbackInfoReturnable<Double> cir) {
+    //#endif
         if (!changingFov) return;
         double fov = cir.getReturnValue();
         fov *= FovChanger.factor(MinecraftClient.getInstance().options.getFov().getValue());
         double div = Zoom.fovDivisor();
         if (div != 1.0) fov /= div;
+        //#if MC >= 1.21.2
+        cir.setReturnValue((float) fov);
+        //#else
         cir.setReturnValue(fov);
+        //#endif
     }
 }
