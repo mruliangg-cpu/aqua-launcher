@@ -339,4 +339,13 @@ public final class V {
         part.rotate(ms);
         //#endif
     }
+
+    /** Точка появления мира (API сменился в 1.21.11). */
+    public static net.minecraft.util.math.BlockPos spawnPos(net.minecraft.world.World w) {
+        //#if MC >= 1.21.11
+        return w.getSpawnPoint().getPos();
+        //#else
+        return w.getSpawnPos();
+        //#endif
+    }
 }

@@ -147,6 +147,9 @@ public final class ModuleManager {
 
         // ---------- 50 PvP-модулей ----------
         for (Module m : PvpModules.all()) add(m, false);
+
+        // ---------- удобные модули ----------
+        for (Module m : QolModules.all()) add(m, false);
     }
 
     private static void add(Module m, boolean enabledByDefault) {
@@ -215,7 +218,7 @@ public final class ModuleManager {
         MinecraftClient mc = mc();
         if (mc.world == null) return null;
         if (mc.isInSingleplayer()) return Lang.t("Одиночная игра", "Singleplayer");
-        return mc.getCurrentServerEntry() != null ? mc.getCurrentServerEntry().address : null;
+        return mc.getCurrentServerEntry() != null ? dev.aqua.client.module.impl.QolModules.NickHider.maskIp(mc.getCurrentServerEntry().address) : null;
     }
 
     private static String entities() {

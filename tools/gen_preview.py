@@ -63,7 +63,7 @@ for m in re.finditer(r'\badd\(new ([\w.]+)\((.*?)\),\s*(true|false)\);', init, r
     mods.append({'n': name, 'd': desc, 'c': cat, 'on': on, 'hud': hud, 's': all_settings(cls)})
 
 # ExtraModules: модули, собранные помощниками hud(...), Alert, OptionToggle и т.д.
-for _file in ('ExtraModules', 'PvpModules'):
+for _file in ('ExtraModules', 'PvpModules', 'QolModules'):
   ex = open(f'{SRC}/module/impl/{_file}.java', encoding='utf-8').read()
   body = ex[ex.index('public static List<Module> all()'):ex.index('// =================================================================== ', ex.index('public static List<Module> all()'))]
   body = body.replace('new ExtraModules.Alert(', 'new Alert(').replace('new Simple(', 'new ChatModule(')
