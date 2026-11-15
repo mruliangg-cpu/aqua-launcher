@@ -66,7 +66,7 @@ public final class AquaNet {
 
     private static UUID self() {
         MinecraftClient mc = MinecraftClient.getInstance();
-        return mc.player != null ? mc.player.getGameProfile().getId() : mc.getSession() != null ? mc.getSession().getUuidOrNull() : null;
+        return mc.player != null ? dev.aqua.client.compat.V.profileId(mc.player.getGameProfile()) : mc.getSession() != null ? mc.getSession().getUuidOrNull() : null;
     }
 
     public static void tick() {
@@ -84,8 +84,8 @@ public final class AquaNet {
     private static void presence() {
         MinecraftClient mc = MinecraftClient.getInstance();
         JsonObject o = new JsonObject();
-        o.addProperty("uuid", mc.player.getGameProfile().getId().toString());
-        o.addProperty("name", mc.player.getGameProfile().getName());
+        o.addProperty("uuid", dev.aqua.client.compat.V.profileId(mc.player.getGameProfile()).toString());
+        o.addProperty("name", dev.aqua.client.compat.V.profileName(mc.player.getGameProfile()));
         o.addProperty("launcher", "aqua");
         o.add("cosmetics", Cosmetics.loadoutJson());
         AquaNetwork mod = ModuleManager.get(AquaNetwork.class);
@@ -108,7 +108,7 @@ public final class AquaNet {
         JsonArray ids = new JsonArray();
         List<UUID> asked = new ArrayList<>();
         for (PlayerListEntry e : mc.getNetworkHandler().getPlayerList()) {
-            UUID id = e.getProfile().getId();
+            UUID id = dev.aqua.client.compat.V.profileId(e.getProfile());
             if (id == null || id.equals(me)) continue;
             Remote r = USERS.get(id);
             Long miss = MISSES.get(id);

@@ -23,6 +23,58 @@ import net.minecraft.particle.ParticleEffect;
  * Нужный вариант выбирает препроцессор (//#if MC ...) при сборке под конкретную версию.
  */
 public final class V {
+    // ---------------- 1.21.9+: мышь/клавиатура, профили, позиции
+    /** Положение курсора в координатах интерфейса. */
+    public static double mouseX() { MinecraftClient mc = MinecraftClient.getInstance(); return mc.mouse.getX() * mc.getWindow().getScaledWidth() / Math.max(1, mc.getWindow().getWidth()); }
+    public static double mouseY() { MinecraftClient mc = MinecraftClient.getInstance(); return mc.mouse.getY() * mc.getWindow().getScaledHeight() / Math.max(1, mc.getWindow().getHeight()); }
+    //#if MC >= 1.21.9
+    public static int mods(net.minecraft.client.input.KeyInput k) {
+        return (k.hasCtrl() ? org.lwjgl.glfw.GLFW.GLFW_MOD_CONTROL : 0) | (k.hasShift() ? org.lwjgl.glfw.GLFW.GLFW_MOD_SHIFT : 0) | (k.hasAlt() ? org.lwjgl.glfw.GLFW.GLFW_MOD_ALT : 0);
+    }
+    //#endif
+    public static java.util.UUID profileId(com.mojang.authlib.GameProfile g) {
+        //#if MC >= 1.21.9
+        return g.id();
+        //#else
+        return g.getId();
+        //#endif
+    }
+    public static String profileName(com.mojang.authlib.GameProfile g) {
+        //#if MC >= 1.21.9
+        return g.name();
+        //#else
+        return g.getName();
+        //#endif
+    }
+    public static net.minecraft.util.math.Vec3d pos(net.minecraft.entity.Entity e) {
+        //#if MC >= 1.21.9
+        return e.getEntityPos();
+        //#else
+        return e.getPos();
+        //#endif
+    }
+    public static net.minecraft.util.math.Vec3d camPos(net.minecraft.client.render.Camera c) {
+        //#if MC >= 1.21.11
+        return c.getCameraPos();
+        //#else
+        return c.getPos();
+        //#endif
+    }
+    public static net.minecraft.client.render.RenderLayer entityTranslucent(Identifier tex) {
+        //#if MC >= 1.21.11
+        return net.minecraft.client.render.RenderLayers.entityTranslucent(tex);
+        //#else
+        return net.minecraft.client.render.RenderLayer.getEntityTranslucent(tex);
+        //#endif
+    }
+    public static net.minecraft.client.render.RenderLayer lines() {
+        //#if MC >= 1.21.11
+        return net.minecraft.client.render.RenderLayers.lines();
+        //#else
+        return net.minecraft.client.render.RenderLayer.getLines();
+        //#endif
+    }
+
     private V() {}
 
     public static Identifier id(String ns, String path) {
@@ -251,7 +303,9 @@ public final class V {
     }
 
     public static void filledBox(MatrixStack ms, VertexConsumer vc, double x1, double y1, double z1, double x2, double y2, double z2, float r, float g, float b, float a) {
-        //#if MC >= 1.21.2
+        //#if MC >= 1.21.11
+        // в 1.21.11 убрали готовую заливку — пропускаем
+        //#elseif MC >= 1.21.2
         net.minecraft.client.render.VertexRendering.drawFilledBox(ms, vc, x1, y1, z1, x2, y2, z2, r, g, b, a);
         //#elseif MC >= 1.20.1
         net.minecraft.client.render.WorldRenderer.renderFilledBox(ms, vc, x1, y1, z1, x2, y2, z2, r, g, b, a);

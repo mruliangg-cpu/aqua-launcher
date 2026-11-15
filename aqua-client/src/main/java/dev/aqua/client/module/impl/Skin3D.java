@@ -41,7 +41,7 @@ public class Skin3D extends Module {
         if (s == null || FIRST_PERSON.get() || p.isInvisible()) return null;
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.gameRenderer == null || mc.gameRenderer.getCamera() == null) return null;
-        double dist = mc.gameRenderer.getCamera().getPos().distanceTo(p.getPos());
+        double dist = dev.aqua.client.compat.V.camPos(mc.gameRenderer.getCamera()).distanceTo(dev.aqua.client.compat.V.pos(p));
         if (dist > s.distance.get()) return null;
         return SkinMesh.get(dev.aqua.client.compat.V.skin(p), s.thickness.get().floatValue());
     }

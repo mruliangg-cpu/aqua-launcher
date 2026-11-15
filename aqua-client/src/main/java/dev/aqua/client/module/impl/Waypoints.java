@@ -87,7 +87,7 @@ public class Waypoints extends Module {
 
     private void draw(dev.aqua.client.compat.WorldCtx ctx, Vec3d pos, String name, int color, double dist) {
         // если точка далеко — рисуем надпись ближе к камере в том же направлении
-        Vec3d cam = ctx.camera().getPos();
+        Vec3d cam = dev.aqua.client.compat.V.camPos(ctx.camera());
         Vec3d target = pos.add(0, 1.6, 0);
         Vec3d shown = dist > 96 ? cam.add(target.subtract(cam).normalize().multiply(96)) : target;
         if (beam.isOn() && dist < 512) WorldText.beam(ctx, pos, color, 256);

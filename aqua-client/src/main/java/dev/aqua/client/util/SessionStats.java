@@ -21,7 +21,7 @@ public final class SessionStats {
         if (dead && !wasDead) deaths++;
         wasDead = dead;
 
-        Vec3d pos = mc.player.getPos();
+        Vec3d pos = dev.aqua.client.compat.V.pos(mc.player);
         if (last != null) {
             double d = pos.distanceTo(last);
             if (d < 10) distance += d; // телепорты не считаем

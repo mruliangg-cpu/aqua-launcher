@@ -20,7 +20,11 @@ public final class NameTags {
     public static String glyph(String icon) { return CosmeticRegistry.glyph(icon); }
 
     public static Text icon(String id) {
+        //#if MC >= 1.21.9
+        return Text.literal(glyph(id)).styled(s -> s.withFont(new net.minecraft.text.StyleSpriteSource.Font(FONT)).withColor(0xFFFFFF));
+        //#else
         return Text.literal(glyph(id)).styled(s -> s.withFont(FONT).withColor(0xFFFFFF));
+        //#endif
     }
 
     /** Плавное «свечение» цвета ника: переливается между двумя оттенками. */

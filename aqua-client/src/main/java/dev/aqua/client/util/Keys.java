@@ -19,16 +19,16 @@ public final class Keys {
         if (key == null || key.equals(InputUtil.UNKNOWN_KEY)) return false;
         long handle = MinecraftClient.getInstance().getWindow().getHandle();
         if (key.getCategory() == InputUtil.Type.MOUSE) return GLFW.glfwGetMouseButton(handle, key.getCode()) == GLFW.GLFW_PRESS;
-        return key.getCode() > 0 && InputUtil.isKeyPressed(handle, key.getCode());
+        return key.getCode() > 0 && GLFW.glfwGetKey(handle, key.getCode()) == GLFW.GLFW_PRESS;
     }
 
     public static boolean isKeyDown(int glfwKey) {
         if (glfwKey <= 0) return false;
-        return InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), glfwKey);
+        return GLFW.glfwGetKey(MinecraftClient.getInstance().getWindow().getHandle(), glfwKey) == GLFW.GLFW_PRESS;
     }
 
     public static String name(int glfwKey) {
         if (glfwKey <= 0) return Lang.tr("Нет");
-        return InputUtil.fromKeyCode(glfwKey, 0).getLocalizedText().getString().toUpperCase();
+        return InputUtil.Type.KEYSYM.createFromCode(glfwKey).getLocalizedText().getString().toUpperCase();
     }
 }

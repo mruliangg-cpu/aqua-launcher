@@ -15,7 +15,7 @@ public final class Stats {
         MinecraftClient mc = MinecraftClient.getInstance();
         if (mc.player == null) { lastPos = null; speed = 0; sessionStart = 0; return; }
         if (sessionStart == 0) sessionStart = System.currentTimeMillis();
-        Vec3d pos = mc.player.getPos();
+        Vec3d pos = dev.aqua.client.compat.V.pos(mc.player);
         if (lastPos != null) {
             double dx = pos.x - lastPos.x, dz = pos.z - lastPos.z;
             double now = Math.sqrt(dx * dx + dz * dz) * 20.0;

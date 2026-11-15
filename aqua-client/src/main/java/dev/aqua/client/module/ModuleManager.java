@@ -245,7 +245,12 @@ public final class ModuleManager {
     private static String spawn() {
         MinecraftClient mc = mc();
         if (mc.player == null || mc.world == null) return null;
+        //#if MC >= 1.21.9
+        net.minecraft.util.math.BlockPos sp = net.minecraft.util.math.BlockPos.ORIGIN; // точка спавна больше не передаётся клиенту
+        if (true) return null;
+        //#else
         var sp = mc.world.getSpawnPos();
+        //#endif
         double d = Math.sqrt(mc.player.getBlockPos().getSquaredDistance(sp));
         return String.format(Lang.t("Спавн: %.0f м", "Spawn: %.0f m"), d);
     }

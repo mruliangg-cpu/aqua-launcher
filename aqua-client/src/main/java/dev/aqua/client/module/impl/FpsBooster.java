@@ -45,14 +45,18 @@ public class FpsBooster extends Module {
             oShadows = o.getEntityShadows().getValue();
             oBlend = o.getBiomeBlendRadius().getValue();
             oDistance = o.getEntityDistanceScaling().getValue();
+        //#if MC < 1.21.11
             oGraphics = o.getGraphicsMode().getValue();
+        //#endif
         }
         apply(o.getCloudRenderMode(), clouds.isOn() ? CloudRenderMode.OFF : oClouds);
         apply(o.getParticles(), particles.isOn() ? ParticlesMode.MINIMAL : oParticles);
         apply(o.getEntityShadows(), shadows.isOn() ? Boolean.FALSE : oShadows);
         apply(o.getBiomeBlendRadius(), biomeBlend.isOn() ? Integer.valueOf(0) : oBlend);
         apply(o.getEntityDistanceScaling(), entityDistance.isOn() ? Double.valueOf(0.75) : oDistance);
+        //#if MC < 1.21.11
         apply(o.getGraphicsMode(), fastGraphics.isOn() ? GraphicsMode.FAST : oGraphics);
+        //#endif
     }
 
     private static <T> void apply(SimpleOption<T> option, T value) {
@@ -68,7 +72,9 @@ public class FpsBooster extends Module {
         apply(o.getEntityShadows(), oShadows);
         apply(o.getBiomeBlendRadius(), oBlend);
         apply(o.getEntityDistanceScaling(), oDistance);
+        //#if MC < 1.21.11
         apply(o.getGraphicsMode(), oGraphics);
+        //#endif
         oClouds = null;
         timer = 0;
     }

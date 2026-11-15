@@ -4,5 +4,7 @@
   "key.enderclient.zoom": "Zoom",
   "key.enderclient.freelook": "Freelook",
   "key.enderclient.waypoint": "Add waypoint",
-  "key.enderclient.snaplook": "Snaplook"
+  "key.enderclient.snaplook": "Snaplook",
+  "key.category.aquaclient.main": "Aqua Client",
+  "category.aquaclient": "Aqua Client"
 }

@@ -20,7 +20,7 @@ public final class WorldText {
         VertexConsumerProvider consumers = ctx.consumers();
         if (ms == null || consumers == null) return;
         Camera cam = ctx.camera();
-        Vec3d c = cam.getPos();
+        Vec3d c = dev.aqua.client.compat.V.camPos(cam);
         TextRenderer tr = MinecraftClient.getInstance().textRenderer;
         // чем дальше — тем крупнее, чтобы надпись читалась
         float dist = (float) pos.distanceTo(c);
@@ -42,8 +42,8 @@ public final class WorldText {
         MatrixStack ms = ctx.matrices();
         VertexConsumerProvider consumers = ctx.consumers();
         if (ms == null || consumers == null) return;
-        Vec3d c = ctx.camera().getPos();
-        VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
+        Vec3d c = dev.aqua.client.compat.V.camPos(ctx.camera());
+        VertexConsumer lines = consumers.getBuffer(dev.aqua.client.compat.V.lines());
         MatrixStack.Entry e = ms.peek();
         float r = ColorUtil.red(argb) / 255f, g = ColorUtil.green(argb) / 255f, b = ColorUtil.blue(argb) / 255f;
         float x = (float) (pos.x - c.x), y = (float) (pos.y - c.y), z = (float) (pos.z - c.z);

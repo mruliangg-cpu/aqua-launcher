@@ -38,13 +38,19 @@ public class AquaClient implements ClientModInitializer {
 
     public static KeyBinding MENU, ZOOM, FREELOOK, WAYPOINT, SNAPLOOK;
 
+    //#if MC >= 1.21.9
+    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(dev.aqua.client.compat.V.id("aquaclient", "main"));
+    //#else
+    private static final String CATEGORY = "category.aquaclient";
+    //#endif
+
     @Override
     public void onInitializeClient() {
-        MENU = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, "category.aquaclient"));
-        ZOOM = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, "category.aquaclient"));
-        FREELOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.freelook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, "category.aquaclient"));
-        WAYPOINT = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.waypoint", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.aquaclient"));
-        SNAPLOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.snaplook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, "category.aquaclient"));
+        MENU = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.menu", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_RIGHT_SHIFT, CATEGORY));
+        ZOOM = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.zoom", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_C, CATEGORY));
+        FREELOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.freelook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_LEFT_ALT, CATEGORY));
+        WAYPOINT = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.waypoint", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, CATEGORY));
+        SNAPLOOK = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.aquaclient.snaplook", InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_Z, CATEGORY));
 
         ModuleManager.init();
         ConfigManager.load();
@@ -95,7 +101,7 @@ public class AquaClient implements ClientModInitializer {
         //#endif
 
         AttackEntityCallback.EVENT.register((player, world, hand, entity, hit) -> {
-            if (world.isClient) {
+            if (world.isClient()) {
                 CombatTracker.onAttack(entity);
                 HitParticles hp = ModuleManager.get(HitParticles.class);
                 if (hp != null) hp.onAttack(entity);

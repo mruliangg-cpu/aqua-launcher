@@ -72,7 +72,7 @@ public final class Voxel {
 
     /** HD-пластина крыла: основной слой + затемнённый слой позади (видна толщина). Без отсечения — видно с обеих сторон. */
     public void sprite(CosmeticRegistry.Sprite s) {
-        VertexConsumer sv = consumers.getBuffer(RenderLayer.getEntityTranslucent(s.texture()));
+        VertexConsumer sv = consumers.getBuffer(dev.aqua.client.compat.V.entityTranslucent(s.texture()));
         MatrixStack.Entry e = matrices.peek();
         Matrix4f m = e.getPositionMatrix();
         float x0 = 0, x1 = s.w() / 16f, y1 = s.y1() / 16f, y2 = s.y2() / 16f;

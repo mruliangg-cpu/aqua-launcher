@@ -38,7 +38,7 @@ public abstract class PlayerEntityRendererMixin {
     private void aqua$state(AbstractClientPlayerEntity player, PlayerEntityRenderState state, float tickDelta, CallbackInfo ci) {
         Skin3D.hideFlatLayers(player, state);
         if (state.displayName != null)
-            state.displayName = NameTags.decorate(player.getGameProfile().getId(), player.getGameProfile().getName(), state.displayName);
+            state.displayName = NameTags.decorate(dev.aqua.client.compat.V.profileId(player.getGameProfile()), dev.aqua.client.compat.V.profileName(player.getGameProfile()), state.displayName);
     }
     //#else
     @Unique private static boolean aqua$inLabel;
@@ -68,7 +68,7 @@ public abstract class PlayerEntityRendererMixin {
     private void aqua$nameIcon(AbstractClientPlayerEntity player, Text text, MatrixStack matrices, VertexConsumerProvider consumers, int light, CallbackInfo ci) {
     //#endif
         if (aqua$inLabel) return;
-        Text decorated = NameTags.decorate(player.getGameProfile().getId(), player.getGameProfile().getName(), text);
+        Text decorated = NameTags.decorate(dev.aqua.client.compat.V.profileId(player.getGameProfile()), dev.aqua.client.compat.V.profileName(player.getGameProfile()), text);
         if (decorated == text) return;
         aqua$inLabel = true;
         try {

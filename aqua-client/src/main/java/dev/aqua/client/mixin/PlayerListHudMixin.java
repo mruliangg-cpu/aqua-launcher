@@ -14,7 +14,7 @@ public abstract class PlayerListHudMixin {
     /** Значок черепахи (и OWNER) в TAB. */
     @Inject(method = "getPlayerName", at = @At("RETURN"), cancellable = true)
     private void aqua$tabIcon(PlayerListEntry entry, CallbackInfoReturnable<Text> cir) {
-        Text decorated = NameTags.decorate(entry.getProfile().getId(), entry.getProfile().getName(), cir.getReturnValue());
+        Text decorated = NameTags.decorate(dev.aqua.client.compat.V.profileId(entry.getProfile()), dev.aqua.client.compat.V.profileName(entry.getProfile()), cir.getReturnValue());
         if (decorated != cir.getReturnValue()) cir.setReturnValue(decorated);
     }
 }

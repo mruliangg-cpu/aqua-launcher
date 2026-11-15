@@ -4,5 +4,7 @@
   "key.enderclient.zoom": "Зум",
   "key.enderclient.freelook": "Свободный обзор",
   "key.enderclient.waypoint": "Поставить точку",
-  "key.enderclient.snaplook": "Взгляд спереди"
+  "key.enderclient.snaplook": "Взгляд спереди",
+  "key.category.aquaclient.main": "Aqua Client",
+  "category.aquaclient": "Aqua Client"
 }

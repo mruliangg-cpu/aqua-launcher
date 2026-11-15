@@ -1,5 +1,6 @@
 package dev.aqua.client.gui;
 
+import dev.aqua.client.compat.V;
 import dev.aqua.client.config.ConfigManager;
 import dev.aqua.client.module.HudModule;
 import dev.aqua.client.module.ModuleManager;
@@ -100,8 +101,21 @@ public class HudEditorScreen extends Screen {
         return null;
     }
 
-    @Override
-    public boolean mouseClicked(double mx, double my, int button) {
+
+    //#if MC >= 1.21.9
+    // 1.21.9+: события мыши и клавиатуры приходят объектами Click / KeyInput / CharInput
+    @Override public boolean mouseClicked(net.minecraft.client.gui.Click c, boolean doubled) { return aquaClick(V.mouseX(), V.mouseY(), c.button()) || super.mouseClicked(c, doubled); }
+    @Override public boolean mouseDragged(net.minecraft.client.gui.Click c, double dx, double dy) { return aquaDrag(V.mouseX(), V.mouseY()) || super.mouseDragged(c, dx, dy); }
+    @Override public boolean mouseReleased(net.minecraft.client.gui.Click c) { return aquaRelease() || super.mouseReleased(c); }
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyInput k) { return aquaKey(k.getKeycode(), V.mods(k)) || super.keyPressed(k); }
+    //#else
+    @Override public boolean mouseClicked(double mx, double my, int button) { return aquaClick(mx, my, button) || super.mouseClicked(mx, my, button); }
+    @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) { return aquaDrag(mx, my) || super.mouseDragged(mx, my, button, dx, dy); }
+    @Override public boolean mouseReleased(double mx, double my, int button) { return aquaRelease() || super.mouseReleased(mx, my, button); }
+    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) { return aquaKey(keyCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers); }
+    //#endif
+
+    private boolean aquaClick(double mx, double my, int button) {
         if (Render2D.hover(mx, my, width / 2f - 104, height - 28, 100, 18)) { close(); return true; }
         if (Render2D.hover(mx, my, width / 2f + 4, height - 28, 100, 18)) {
             ModuleManager.huds().forEach(HudModule::resetPosition);
@@ -109,7 +123,7 @@ public class HudEditorScreen extends Screen {
             return true;
         }
         HudModule h = at(mx, my);
-        if (h == null) return super.mouseClicked(mx, my, button);
+        if (h == null) return false;
         if (button == 1) {
             if (client != null) client.setScreen(new ClickGuiScreen(h));
             return true;
@@ -120,9 +134,8 @@ public class HudEditorScreen extends Screen {
         return true;
     }
 
-    @Override
-    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
-        if (dragging == null) return super.mouseDragged(mx, my, button, dx, dy);
+    private boolean aquaDrag(double mx, double my) {
+        if (dragging == null) return false;
         float w = dragging.getScaledWidth(), h = dragging.getScaledHeight();
         float nx = (float) mx - grabX, ny = (float) my - grabY;
         snapX = snapY = false;
@@ -145,15 +158,14 @@ public class HudEditorScreen extends Screen {
         return true;
     }
 
-    @Override
-    public boolean mouseReleased(double mx, double my, int button) {
+    private boolean aquaRelease() {
         if (dragging != null) {
             dragging = null;
             snapX = snapY = false;
             ConfigManager.save();
             return true;
         }
-        return super.mouseReleased(mx, my, button);
+        return false;
     }
 
     @Override
@@ -170,10 +182,9 @@ public class HudEditorScreen extends Screen {
         return false;
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    private boolean aquaKey(int keyCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) { close(); return true; }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return false;
     }
 
     @Override

@@ -52,14 +52,14 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
     static void draw(AbstractClientPlayerEntity player, PlayerEntityModel model, MatrixStack matrices, VertexConsumerProvider consumers, int light, float time) {
         if (player.isInvisible()) return;
         if (dev.aqua.client.module.impl.Skin3D.active())
-            dev.aqua.client.module.impl.Skin3D.render(player, model, new Voxel(matrices, RenderLayer.getEntityTranslucent(BEVEL), consumers, light));
-        UUID id = player.getGameProfile().getId();
+            dev.aqua.client.module.impl.Skin3D.render(player, model, new Voxel(matrices, dev.aqua.client.compat.V.entityTranslucent(BEVEL), consumers, light));
+        UUID id = dev.aqua.client.compat.V.profileId(player.getGameProfile());
         if (!AquaNet.isUser(id)) return;
         String hat = AquaNet.cosmetic(id, Slot.HAT), face = AquaNet.cosmetic(id, Slot.FACE),
                 back = AquaNet.cosmetic(id, Slot.BACK), wings = AquaNet.cosmetic(id, Slot.WINGS), pet = AquaNet.cosmetic(id, Slot.PET);
         if (hat.equals("none") && face.equals("none") && back.equals("none") && wings.equals("none") && pet.equals("none")) return;
 
-        Voxel v = new Voxel(matrices, RenderLayer.getEntityTranslucent(BEVEL), consumers, light);
+        Voxel v = new Voxel(matrices, dev.aqua.client.compat.V.entityTranslucent(BEVEL), consumers, light);
         float t = time / 20f;
         //#if MC >= 1.21.2
         boolean flying = player.isGliding() || player.getAbilities().flying;

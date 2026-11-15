@@ -54,15 +54,28 @@ public final class SimpleToggles {
 
     public static class Hitboxes extends Module {
         public Hitboxes() { super("Hitboxes", "Показывает хитбоксы сущностей (как F3+B)", Category.RENDER); }
+        //#if MC >= 1.21.9
+        // 1.21.9+: хитбоксы — запись отладочного экрана
+        private static final net.minecraft.util.Identifier ID = net.minecraft.util.Identifier.ofVanilla("entity_hitboxes");
+        @Override public void onTick() { if (mc.debugHudEntryList != null && !mc.debugHudEntryList.isEntryVisible(ID)) mc.debugHudEntryList.toggleVisibility(ID); }
+        @Override protected void onDisable() { if (mc.debugHudEntryList != null && mc.debugHudEntryList.isEntryVisible(ID)) mc.debugHudEntryList.toggleVisibility(ID); }
+        //#else
         @Override public void onTick() { if (!mc.getEntityRenderDispatcher().shouldRenderHitboxes()) mc.getEntityRenderDispatcher().setRenderHitboxes(true); }
         @Override protected void onDisable() { if (mc.getEntityRenderDispatcher() != null) mc.getEntityRenderDispatcher().setRenderHitboxes(false); }
+        //#endif
     }
 
     public static class ChunkBorders extends Module {
         private boolean shown;
         public ChunkBorders() { super("Chunk Borders", "Границы чанков (как F3+G)", Category.RENDER); }
+        //#if MC >= 1.21.9
+        private static final net.minecraft.util.Identifier ID = net.minecraft.util.Identifier.ofVanilla("chunk_borders");
+        @Override public void onTick() { if (mc.debugHudEntryList != null && !mc.debugHudEntryList.isEntryVisible(ID)) { mc.debugHudEntryList.toggleVisibility(ID); shown = true; } }
+        @Override protected void onDisable() { if (shown && mc.debugHudEntryList != null && mc.debugHudEntryList.isEntryVisible(ID)) mc.debugHudEntryList.toggleVisibility(ID); shown = false; }
+        //#else
         @Override public void onTick() { if (!shown && mc.debugRenderer != null) { shown = mc.debugRenderer.toggleShowChunkBorder(); if (!shown) shown = mc.debugRenderer.toggleShowChunkBorder(); } }
         @Override protected void onDisable() { if (shown && mc.debugRenderer != null) { if (mc.debugRenderer.toggleShowChunkBorder()) mc.debugRenderer.toggleShowChunkBorder(); } shown = false; }
+        //#endif
     }
 
     /** Время перед каждым сообщением чата (см. ChatHudMixin). */

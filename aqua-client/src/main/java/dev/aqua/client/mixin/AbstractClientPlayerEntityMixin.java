@@ -16,7 +16,7 @@ import java.util.UUID;
 
 @Mixin(AbstractClientPlayerEntity.class)
 public abstract class AbstractClientPlayerEntityMixin {
-    private UUID aqua$id() { return ((AbstractClientPlayerEntity) (Object) this).getGameProfile().getId(); }
+    private UUID aqua$id() { return dev.aqua.client.compat.V.profileId(((AbstractClientPlayerEntity) (Object) this).getGameProfile()); }
 
     //#if MC >= 1.21.9
     // 1.21.9+: скины и плащи Aqua — в следующем обновлении (новая система ассетов скинов)

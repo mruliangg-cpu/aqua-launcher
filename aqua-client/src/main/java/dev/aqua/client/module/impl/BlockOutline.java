@@ -52,7 +52,7 @@ public class BlockOutline extends Module {
 
         int c = color.color();
         float r = ColorUtil.red(c) / 255f, g = ColorUtil.green(c) / 255f, b = ColorUtil.blue(c) / 255f, a = ColorUtil.alpha(c) / 255f;
-        VertexConsumer lines = consumers.getBuffer(RenderLayer.getLines());
+        VertexConsumer lines = consumers.getBuffer(dev.aqua.client.compat.V.lines());
         MatrixStack.Entry entry = ms.peek();
         shape.forEachEdge((x1, y1, z1, x2, y2, z2) -> {
             float dx = (float) (x2 - x1), dy = (float) (y2 - y1), dz = (float) (z2 - z1);

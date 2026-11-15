@@ -129,7 +129,7 @@ public class Cosmetics extends Module {
         for (PlayerEntity p : mc.world.getPlayers()) {
             if (p != mc.player && (net == null || !net.showOthers())) continue;
             if (p.isInvisible() || p.squaredDistanceTo(mc.player) > 64 * 64) continue;
-            UUID id = p.getGameProfile().getId();
+            UUID id = dev.aqua.client.compat.V.profileId(p.getGameProfile());
             if (!AquaNet.isUser(id)) continue;
             String aura = AquaNet.cosmetic(id, Slot.AURA);
             if (aura.equals("none")) continue;

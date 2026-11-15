@@ -1,5 +1,6 @@
 package dev.aqua.client.gui;
 
+import dev.aqua.client.compat.V;
 import dev.aqua.client.config.ConfigManager;
 import dev.aqua.client.module.Category;
 import dev.aqua.client.module.HudModule;
@@ -615,8 +616,22 @@ public class ClickGuiScreen extends Screen {
     }
 
     // ===================================================================== INPUT
-    @Override
-    public boolean mouseClicked(double mx, double my, int button) {
+    //#if MC >= 1.21.9
+    // 1.21.9+: события мыши и клавиатуры приходят объектами Click / KeyInput / CharInput
+    @Override public boolean mouseClicked(net.minecraft.client.gui.Click c, boolean doubled) { return aquaClick(V.mouseX(), V.mouseY(), c.button()) || super.mouseClicked(c, doubled); }
+    @Override public boolean mouseDragged(net.minecraft.client.gui.Click c, double dx, double dy) { return aquaDrag(V.mouseX(), V.mouseY()) || super.mouseDragged(c, dx, dy); }
+    @Override public boolean mouseReleased(net.minecraft.client.gui.Click c) { return aquaRelease() || super.mouseReleased(c); }
+    @Override public boolean keyPressed(net.minecraft.client.input.KeyInput k) { return aquaKey(k.getKeycode(), V.mods(k)) || super.keyPressed(k); }
+    @Override public boolean charTyped(net.minecraft.client.input.CharInput c) { boolean r = false; for (char ch : c.asString().toCharArray()) r |= aquaChar(ch); return r || super.charTyped(c); }
+    //#else
+    @Override public boolean mouseClicked(double mx, double my, int button) { return aquaClick(mx, my, button) || super.mouseClicked(mx, my, button); }
+    @Override public boolean mouseDragged(double mx, double my, int button, double dx, double dy) { return aquaDrag(mx, my) || super.mouseDragged(mx, my, button, dx, dy); }
+    @Override public boolean mouseReleased(double mx, double my, int button) { return aquaRelease() || super.mouseReleased(mx, my, button); }
+    @Override public boolean keyPressed(int keyCode, int scanCode, int modifiers) { return aquaKey(keyCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers); }
+    @Override public boolean charTyped(char chr, int modifiers) { return aquaChar(chr) || super.charTyped(chr, modifiers); }
+    //#endif
+
+    private boolean aquaClick(double mx, double my, int button) {
         if (closing) return true;
         for (int i = hits.size() - 1; i >= 0; i--) {
             Hit h = hits.get(i);
@@ -630,19 +645,17 @@ public class ClickGuiScreen extends Screen {
             return true;
         }
         if (button == 3 && settingsModule != null) { closeSettings(); return true; } // кнопка «назад» на мыши
-        return super.mouseClicked(mx, my, button);
+        return false;
     }
 
-    @Override
-    public boolean mouseDragged(double mx, double my, int button, double dx, double dy) {
+    private boolean aquaDrag(double mx, double my) {
         if (activeDrag != null) { activeDrag.accept(mx); return true; }
-        return super.mouseDragged(mx, my, button, dx, dy);
+        return false;
     }
 
-    @Override
-    public boolean mouseReleased(double mx, double my, int button) {
+    private boolean aquaRelease() {
         if (activeDrag != null) { activeDrag = null; ConfigManager.save(); return true; }
-        return super.mouseReleased(mx, my, button);
+        return false;
     }
 
     @Override
@@ -656,8 +669,7 @@ public class ClickGuiScreen extends Screen {
         return true;
     }
 
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    private boolean aquaKey(int keyCode, int modifiers) {
         if (bindingKeySetting != null) {
             bindingKeySetting.set(keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == GLFW.GLFW_KEY_BACKSPACE || keyCode == GLFW.GLFW_KEY_DELETE ? -1 : keyCode);
             bindingKeySetting = null;
@@ -689,11 +701,10 @@ public class ClickGuiScreen extends Screen {
             scrollTarget = 0;
             return true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return false;
     }
 
-    @Override
-    public boolean charTyped(char chr, int modifiers) {
+    private boolean aquaChar(char chr) {
         if (editingString != null) {
             if (!Character.isISOControl(chr)) editingString.set(editingString.get() + chr);
             return true;
@@ -703,7 +714,7 @@ public class ClickGuiScreen extends Screen {
             scrollTarget = 0;
             return true;
         }
-        return super.charTyped(chr, modifiers);
+        return false;
     }
 
     @Override
