@@ -9,11 +9,11 @@
   const EN = {
     nav_features: 'Features', nav_shots: 'Screenshots', nav_download: 'Download', nav_get: 'Download',
     hero_badge: 'New version', hero_tag: 'Play. PvP. Enjoy.',
-    hero_lead: 'A Minecraft launcher with the built-in Aqua Client: 80 modules, a Right Shift menu, a real FPS boost, 960 cosmetics and updates that install themselves — just like Lunar.',
+    hero_lead: 'A Minecraft launcher with the built-in Aqua Client: 180 modules, a Right Shift menu, a real FPS boost, 960 cosmetics and updates that install themselves — just like Lunar.',
     cta_win: 'Download for Windows', cta_mod: 'Aqua Client mod', hero_note: 'Free · Windows 10/11 · Minecraft 1.20 – 1.21.11',
     st_modules: 'Aqua Client modules', st_cos: 'cosmetic items', st_ver: 'Minecraft versions', st_upd: 'auto-updates',
     f_title: 'Everything you need to play', f_sub: 'One launcher — profiles, mods and a PvP client.',
-    f1_t: 'Right Shift menu', f1_d: '80 modules: HUD, Keystrokes, CPS, Zoom, Freelook, minimap, TNT timer, waypoints and much more.',
+    f1_t: 'Right Shift menu', f1_d: '180 modules: HUD, Keystrokes, CPS, Zoom, Freelook, minimap, TNT timer, waypoints and much more.',
     f2_t: 'A real FPS boost', f2_d: 'Graphics, particles and distance tuning, Unfocused FPS and RAM Cleaner — more frames on any PC.',
     f3_t: '960 cosmetics', f3_d: 'Capes, wings, hats, pets, auras and name icons — 120 in every slot. Free.',
     f4_t: 'Updates itself', f4_d: 'Like Lunar: the launcher finds a new version, downloads it and restarts.',
