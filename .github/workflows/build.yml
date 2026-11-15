@@ -45,17 +45,34 @@ jobs:
         run: |
           V=$(node -p "require('./launcher/package.json').version")
           echo "version=$V" >> "$GITHUB_OUTPUT"
-          if gh release view "v$V" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then echo "publish=false" >> "$GITHUB_OUTPUT"; else echo "publish=true" >> "$GITHUB_OUTPUT"; fi
+          D=$(gh release view "v$V" --repo "$GITHUB_REPOSITORY" --json isDraft -q .isDraft 2>/dev/null || echo missing)
+          if [ "$D" = "false" ]; then echo "publish=false" >> "$GITHUB_OUTPUT"; else echo "publish=true" >> "$GITHUB_OUTPUT"; fi
       - name: Build (check)
         if: ${{ steps.ver.outputs.publish != 'true' }}
         working-directory: launcher
         run: npx electron-builder --win nsis portable --x64 --publish never
-      - name: Build and publish release v${{ steps.ver.outputs.version }}
+      - name: Prepare draft release v${{ steps.ver.outputs.version }}
+        if: ${{ steps.ver.outputs.publish == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          V=${{ steps.ver.outputs.version }}
+          gh release view "v$V" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create "v$V" --repo "$GITHUB_REPOSITORY" --draft --target "$GITHUB_SHA" --title "Aqua Launcher $V" \
+              --notes "Install **AquaLauncher-Setup-$V.exe** once — after that the launcher updates itself. Portable version: AquaLauncher-Portable-$V.exe."
+      - name: Build and upload
         if: ${{ steps.ver.outputs.publish == 'true' }}
         working-directory: launcher
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx electron-builder --win nsis portable --x64 --publish always
+      - name: Publish release
+        if: ${{ steps.ver.outputs.publish == 'true' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit "v${{ steps.ver.outputs.version }}" --repo "$GITHUB_REPOSITORY" --draft=false --latest
       - uses: actions/upload-artifact@v4
         with:
           name: AquaLauncher-Windows

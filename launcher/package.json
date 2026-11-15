@@ -88,7 +88,7 @@
         "provider": "github",
         "owner": "mruliangg-cpu",
         "repo": "aqua-launcher",
-        "releaseType": "release"
+        "releaseType": "draft"
       }
     ]
   },
