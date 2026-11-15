@@ -66,11 +66,6 @@ function load() {
     const raw = JSON.parse(fs.readFileSync(paths.store, 'utf8'));
     state = { ...DEFAULTS, ...raw, settings: { ...DEFAULTS.settings, ...(raw.settings || {}) } };
     if (!String(state.settings.networkUrl || '').trim()) state.settings.networkUrl = DEFAULTS.settings.networkUrl; // сервер Aqua Network по умолчанию
-    // Вход только через Microsoft: старые профили «ник»/«ник + пароль» убираем.
-    if ((state.accounts || []).some((a) => a.type !== 'microsoft')) {
-      state.accounts = state.accounts.filter((a) => a.type === 'microsoft');
-      if (!state.accounts.some((a) => a.id === state.selectedAccount)) state.selectedAccount = state.accounts[0] ? state.accounts[0].id : null;
-    }
   } catch {
     state = JSON.parse(JSON.stringify(DEFAULTS));
   }
@@ -106,7 +101,7 @@ function publicState() {
     accounts: s.accounts.map(({ refresh, mclc, aquaToken, ...a }) => {
       const fresh = !!(mclc && mclc.meta && mclc.meta.exp > Date.now() + 5 * 60e3);
       // pending — сессию ещё проверяем при запуске; expired — нужно войти снова
-      return { ...a, aqua: !!aquaToken || (a.type === 'microsoft' && !a.demo), pending: !fresh && !a.expired, expired: !!a.expired };
+      return { ...a, aqua: !!aquaToken || (a.type === 'microsoft' && !a.demo), pending: a.type === 'microsoft' && !fresh && !a.expired, expired: !!a.expired };
     }),
   };
 }

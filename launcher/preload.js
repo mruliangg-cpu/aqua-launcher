@@ -32,6 +32,8 @@ contextBridge.exposeInMainWorld('aqua', {
   saveSettings: (s) => call('settings:save', s),
   onState: (cb) => on('state', cb),
 
+  addOffline: (name) => call('account:offline', name),
+  aquaSignIn: (mode, name, password) => call('aqua:signin', mode, name, password),
   loginMicrosoft: () => call('account:microsoft'),
   selectAccount: (id) => call('account:select', id),
   removeAccount: (id) => call('account:remove', id),

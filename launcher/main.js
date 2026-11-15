@@ -81,6 +81,8 @@ app.whenReady().then(() => {
     else if (action === 'close') win.close();
   });
   handle('player:level', () => require('./src/core/friends').level());
+  handle('account:offline', (name) => { auth.addOffline(name); pushState(); return true; });
+  handle('aqua:signin', async (mode, name, password) => { const n = await friends.signIn(mode, name, password); pushState(); return n; });
   handle('leaderboard:get', () => require('./src/core/friends').leaderboard());
   handle('update:state', () => updater.state);
   handle('update:check', () => updater.check());

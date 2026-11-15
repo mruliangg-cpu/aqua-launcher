@@ -85,4 +85,11 @@ async function heartbeat(status) {
   try { return await withToken((token) => api('/api/friends/status', { method: 'POST', body: { status, level: level().level }, token })); } catch { return null; }
 }
 
-module.exports = { list, action, heartbeat, level, leaderboard };
+/** Регистрация или вход аккаунта Aqua (ник + пароль) → профиль с этим ником. */
+async function signIn(mode, name, password) {
+  const j = await api(mode === 'register' ? '/api/account/register' : '/api/account/login', { method: 'POST', body: { name, password } });
+  auth.addOffline(j.name, store.seal(j.token));
+  return j.name;
+}
+
+module.exports = { signIn, list, action, heartbeat, level, leaderboard };

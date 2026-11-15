@@ -160,7 +160,7 @@ function renderAccount() {
   const a = selectedAccount();
   const raw = rawAccount();
   $('#account-name').innerHTML = a ? `<span class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${esc(a.name)}</span>` : esc(raw && raw.pending ? t('signing_in') : t('sign_in'));
-  $('#account-type').innerHTML = a ? `${isOwner(a) ? '<span class="owner-tag">🐢 OWNER</span>· ' : '🐢 '}${a.demo ? 'Microsoft · Demo' : t('microsoft')}` : (raw && raw.expired ? t('session_expired') : raw && raw.pending ? '…' : t('no_account'));
+  $('#account-type').innerHTML = a ? `${isOwner(a) ? '<span class="owner-tag">🐢 OWNER</span>· ' : '🐢 '}${a.type === 'microsoft' ? (a.demo ? 'Microsoft · Demo' : t('microsoft')) : (a.aqua ? 'Aqua' : t('offline'))}` : (raw && raw.expired ? t('session_expired') : raw && raw.pending ? '…' : t('no_account'));
   $('#account-avatar').src = a ? avatar(a) : 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
 }
 
@@ -334,12 +334,14 @@ function accountsModal() {
     <div class="modal-body">
       <div class="acc-list" id="acc-list"></div>
       <button class="ms-btn" id="ms-login"><span class="ms-logo"><i style="background:#f25022"></i><i style="background:#7fba00"></i><i style="background:#00a4ef"></i><i style="background:#ffb900"></i></span><span>${t('ms_login')}</span></button>
-      <p class="note">${t('ms_only_note')}</p>
+      <div class="divider">${t('or_aqua')}</div>
+      <div id="offline-box"></div>
     </div>`, 'narrow');
   const draw = () => {
+    offlineBlock($('#offline-box', m.el), draw);
     $('#acc-list', m.el).innerHTML = S.accounts.length ? S.accounts.map((a) => `
       <div class="acc ${a.id === S.selectedAccount ? 'on' : ''}" data-id="${esc(a.id)}">
-        <img src="${avatar(a)}" alt=""><div class="grow"><b class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${isOwner(a) ? '🐢 ' : ''}${esc(a.name)}</b><small>${a.demo ? 'Microsoft · Demo' : 'Microsoft'}</small></div>
+        <img src="${avatar(a)}" alt=""><div class="grow"><b class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${isOwner(a) ? '🐢 ' : ''}${esc(a.name)}</b><small>${a.type === 'microsoft' ? (a.demo ? 'Microsoft · Demo' : 'Microsoft') : (a.aqua ? '🐢 Aqua' : t('offline'))}</small></div>
         <button class="btn danger small" data-del="${esc(a.id)}">✕</button></div>`).join('') : `<p class="note">${t('no_accounts')}</p>`;
     $$('.acc', m.el).forEach((el) => el.onclick = (e) => {
       if (e.target.dataset.del) safe(() => aqua.removeAccount(e.target.dataset.del)).then(draw);
@@ -360,7 +362,45 @@ function accountsModal() {
   obs.observe($('#modal-root'), { childList: true });
 }
 
-/** Кнопка входа через Microsoft (единственный способ входа). */
+/** Форма аккаунта Aqua: ник + пароль, режимы «Регистрация» и «Вход». */
+function aquaForm(box, onDone) {
+  let mode = 'register';
+  const draw = () => {
+    box.innerHTML = `<div class="seg aqua-mode"><button data-m="register" class="${mode === 'register' ? 'on' : ''}">${t('sign_up')}</button><button data-m="login" class="${mode === 'login' ? 'on' : ''}">${t('log_in')}</button></div>
+      <input class="input" id="aq-name" maxlength="16" placeholder="${t('nick_ph')}" autocomplete="username">
+      <input class="input" id="aq-pass" type="password" maxlength="100" placeholder="${t('password_ph')}" autocomplete="${mode === 'register' ? 'new-password' : 'current-password'}">
+      <button class="btn primary" id="aq-go">${mode === 'register' ? t('sign_up') : t('log_in')}</button>`;
+    $$('.aqua-mode button', box).forEach((b) => b.onclick = () => { mode = b.dataset.m; draw(); });
+    const go = async () => {
+      const btn = $('#aq-go', box);
+      btn.disabled = true;
+      const r = await safe(() => aqua.aquaSignIn(mode, $('#aq-name', box).value.trim(), $('#aq-pass', box).value), t('signed_in'));
+      btn.disabled = false;
+      if (r && onDone) onDone();
+    };
+    $('#aq-go', box).onclick = go;
+    $('#aq-pass', box).onkeydown = (e) => { if (e.key === 'Enter') go(); };
+  };
+  box.classList.add('aqua-form');
+  draw();
+}
+
+/** Блок входа без Microsoft (зависит от лицензии и Aqua Network). */
+function offlineBlock(box, onDone) {
+  // Аккаунт Aqua (ник + пароль) доступен всем: друзья, косметика, рейтинг. Игра по нику — после лицензии.
+  if (S.settings.networkUrl) {
+    aquaForm(box, onDone);
+    if (!S.ownershipVerified) box.insertAdjacentHTML('beforeend', `<p class="note">${t('aqua_play_note')}</p>`);
+    return;
+  }
+  if (!S.ownershipVerified) { box.innerHTML = `<div class="locked">${t('locked')}</div>`; return; }
+  box.innerHTML = `<div class="inline"><input class="input grow" id="off-name" maxlength="16" placeholder="${t('nick_ph')}"><button class="btn primary" id="off-add">${t('add_btn')}</button></div><p class="note">${t('aqua_needs_net')}</p>`;
+  const add = async () => { if (await safe(() => aqua.addOffline($('#off-name', box).value.trim()), t('profile_added')) && onDone) onDone(); };
+  $('#off-add', box).onclick = add;
+  $('#off-name', box).onkeydown = (e) => { if (e.key === 'Enter') add(); };
+}
+
+/** Кнопка входа через Microsoft. */
 function msButton(box, onDone) {
   box.innerHTML = `<button class="ms-btn"><span class="ms-logo"><i style="background:#f25022"></i><i style="background:#7fba00"></i><i style="background:#00a4ef"></i><i style="background:#ffb900"></i></span><span>${t('ms_login')}</span></button>`;
   const b = $('button', box), label = b.lastElementChild;
@@ -385,7 +425,7 @@ async function renderFriends() {
   }
   if (!acc || !acc.aqua) {
     root.innerHTML = `<div class="card glass friends-empty"><div class="big-emoji">🐢</div><h3>${t('aqua_signin_title')}</h3><p>${t(acc && acc.demo ? 'friends_demo' : 'friends_ms')}</p><div id="fr-form"></div></div>`;
-    if (!acc || !acc.demo) msButton($('#fr-form'), renderFriends);
+    if (!acc || !acc.demo) { msButton($('#fr-form'), renderFriends); $('#fr-form').insertAdjacentHTML('beforeend', `<div class="divider">${t('or_aqua')}</div><div id="fr-aqua"></div>`); aquaForm($('#fr-aqua'), renderFriends); }
     return;
   }
   if (!root.innerHTML.includes('friend-card')) root.innerHTML = '<div class="spinner"></div>';
@@ -436,10 +476,13 @@ function welcome(show) {
         <button class="ms-btn" id="w-ms">${t('ms_login')}</button>
       </div>
       <div class="login-card glass">
-        <h3><span class="big-ic">🐢</span>${t('pv_title')}</h3>
-        <p>${t('pv_welcome')}</p>
-        <button class="btn primary" id="w-preview">${t('pv_open')}</button>
+        <h3><span class="big-ic">🐢</span>${t('aqua_acc')}</h3>
+        <p>${t('aqua_acc_desc')}</p>
+        <div id="w-off-box"></div>
       </div>
+    </div>
+    <button class="btn ghost" id="w-preview">🐢 ${t('pv_open')}</button>
+    <div>
     </div>
     <button class="skip" id="w-skip">${t('later')}</button>
   </div>`;
@@ -451,6 +494,7 @@ function welcome(show) {
     b.disabled = false; b.textContent = t('ms_login');
     if (ok || selectedAccount()) welcome(false);
   };
+  offlineBlock($('#w-off-box'), () => welcome(false));
   $('#w-preview').onclick = () => { welcome(false); go('preview'); };
   $('#w-skip').onclick = () => welcome(false);
 }

@@ -56,9 +56,35 @@ async function loginMicrosoft() {
   return account;
 }
 
+function addOffline(name, aquaToken) {
+  const s = store.state;
+  // Аккаунт Aqua (ник + пароль) добавляется всегда: друзья, косметика, рейтинг работают сразу.
+  // Без пароля Aqua (просто ник) — только после подтверждения лицензии.
+  if (!s.ownershipVerified && !aquaToken) throw new Error(L('Сначала один раз войдите через Microsoft с купленной Minecraft — после этого вход по нику станет доступен.', 'Sign in once with a Microsoft account that owns Minecraft — then nickname login unlocks.'));
+  if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) throw new Error(L('Ник: 3–16 символов, латиница, цифры и _', 'Nickname: 3–16 characters, latin letters, digits and _'));
+  const uuid = offlineUuid(name);
+  const id = 'offline-' + uuid;
+  s.accounts = s.accounts.filter((a) => a.id !== id);
+  s.accounts.push({ id, type: 'offline', name, uuid, ...(aquaToken ? { aquaToken } : {}) });
+  s.selectedAccount = id;
+  store.save();
+  return id;
+}
+
 /** Готовый объект авторизации для MCLC (с обновлением токена Microsoft). */
 async function authorizationFor(account) {
-  if (account.type !== 'microsoft') throw new Error(L('Войдите через Microsoft.', 'Please sign in with Microsoft.'));
+  if (account.type === 'offline') {
+    // Защита от пиратства: играть по нику можно только после одного входа через Microsoft с купленной игрой.
+    if (!store.state.ownershipVerified) throw new Error(L('Чтобы играть, один раз войди через Microsoft с купленной Minecraft. Друзья, косметика и рейтинг уже работают с аккаунтом Aqua.', 'To play, sign in once with a Microsoft account that owns Minecraft. Friends, cosmetics and leaderboard already work with your Aqua account.'));
+    return {
+      access_token: crypto.randomBytes(16).toString('hex'),
+      client_token: account.uuid,
+      uuid: account.uuid.replace(/-/g, ''),
+      name: account.name,
+      user_properties: '{}',
+      meta: { type: 'legacy', demo: false },
+    };
+  }
   const fresh = account.mclc && account.mclc.meta && account.mclc.meta.exp && account.mclc.meta.exp > Date.now() + 5 * 60e3;
   if (fresh) return account.mclc;
   const refreshToken = store.unseal(account.refresh);
@@ -78,9 +104,9 @@ async function authorizationFor(account) {
 /** Проверка сессии выбранного аккаунта при запуске: тихо обновляем токен или помечаем «войдите снова». */
 async function validate() {
   const s = store.state, acc = s.accounts.find((a) => a.id === s.selectedAccount);
-  if (!acc) return;
+  if (!acc || acc.type !== 'microsoft') return;
   try { await authorizationFor(acc); acc.expired = false; } catch { acc.expired = true; }
   store.save();
 }
 
-module.exports = { loginMicrosoft, authorizationFor, offlineUuid, validate };
+module.exports = { loginMicrosoft, addOffline, authorizationFor, offlineUuid, validate };
