@@ -187,7 +187,7 @@ app.whenReady().then(() => {
     const clean = {
       name: String(data.name || 'Новая сборка').slice(0, 40), icon: data.icon || '🐟', mc: data.mc,
       loader: data.loader || 'vanilla', loaderVersion: data.loaderVersion || 'latest',
-      fpsBoost: !!data.fpsBoost, enderClient: !!data.enderClient, ram: data.ram ? Number(data.ram) : null,
+      fpsBoost: !!data.fpsBoost, enderClient: true, ram: data.ram ? Number(data.ram) : null,
     };
     if (!clean.mc) throw new Error(L('Выберите версию Minecraft', 'Choose a Minecraft version'));
     if (data.id) {

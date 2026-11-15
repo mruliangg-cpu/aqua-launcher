@@ -5,7 +5,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const LOADERS = { vanilla: 'Vanilla', fabric: 'Fabric', quilt: 'Quilt', forge: 'Forge', neoforge: 'NeoForge' };
 const ICONS = ['🐢', '🐟', '🐠', '🐡', '🐙', '🦑', '🦀', '🐬', '🐳', '🦈', '🪼', '🌊', '🪸', '🫧', '💎', '🔱', '⚓', '🏝️', '🟣', '👁️'];
 const OWNER = 'mrulian_gg';
-const CLIENT_MODULES = 79;
+const CLIENT_MODULES = 80;
+const AQUA_MC = ['1.21', '1.21.1'];
 const fmt = (n) => n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(n);
 
 let S = null, INFO = null, VERSIONS = null;
@@ -87,7 +88,7 @@ const avatar = (a) => a ? `https://mc-heads.net/avatar/${encodeURIComponent(a.ty
 
 function badges(inst) {
   const b = [`<span class="badge">${esc(inst.mc)}</span>`, `<span class="badge loader">${LOADERS[inst.loader] || inst.loader}</span>`];
-  if (inst.enderClient && inst.loader === 'fabric' && inst.mc === '1.21.1') b.push('<span class="badge ender">Aqua Client</span>');
+  if (inst.loader === 'fabric' && AQUA_MC.includes(inst.mc)) b.push('<span class="badge ender">Aqua Client</span>');
   if (inst.fpsBoost && inst.loader !== 'vanilla') b.push('<span class="badge fps">⚡ FPS Boost</span>');
   return b.join('');
 }
@@ -448,8 +449,8 @@ async function instanceModal(inst) {
   $('#i-ram', el).oninput = (e) => { d.ram = e.target.value ? Number(e.target.value) : null; };
   $('#i-fps', el).checked = d.fpsBoost;
   $('#i-fps', el).onchange = (e) => { d.fpsBoost = e.target.checked; };
-  $('#i-ender', el).checked = d.enderClient;
-  $('#i-ender', el).onchange = (e) => { d.enderClient = e.target.checked; };
+  $('#i-ender', el).checked = true;
+  $('#i-ender', el).disabled = true; // Aqua Client и меню на правый Shift нельзя отключить
   $('#i-icons', el).innerHTML = ICONS.map((ic) => `<button data-ic="${ic}">${ic}</button>`).join('');
   const drawIcons = () => $$('#i-icons button', el).forEach((b) => b.classList.toggle('on', b.dataset.ic === d.icon));
   $$('#i-icons button', el).forEach((b) => b.onclick = () => { d.icon = b.dataset.ic; drawIcons(); });

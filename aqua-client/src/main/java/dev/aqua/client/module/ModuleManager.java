@@ -90,6 +90,7 @@ public final class ModuleManager {
         add(new NewModules.Countdown(), false);
         add(new NewModules.NoVignette(), false);
         add(new NewModules.RamCleaner(), false);
+        add(new Skin3D(), true);
         add(new TextHudModule("Session Time", "Сколько вы уже в игре", Category.HUD, 0.8f, 0.48f,
                 Stats::session, () -> "12:34"), false);
 
@@ -138,7 +139,7 @@ public final class ModuleManager {
         add(new Waypoints(), true);
         add(new SimpleToggles.ChatTimestamps(), false);
         add(new DeathCoords(), false);
-        add(new FpsBooster(), false);
+        add(new FpsBooster(), true);
         add(new UnfocusedFps(), true);
     }
 

@@ -20,6 +20,18 @@ public abstract class PlayerEntityRendererMixin {
     @Shadow
     protected abstract void renderLabelIfPresent(AbstractClientPlayerEntity player, Text text, MatrixStack matrices, VertexConsumerProvider consumers, int light, float tickDelta);
 
+    /** 3D Skins: прячем плоский второй слой, вместо него рисуется объёмный. */
+    @Inject(method = "setModelPose", at = @At("TAIL"))
+    private void aqua$skin3d(AbstractClientPlayerEntity player, CallbackInfo ci) {
+        dev.aqua.client.module.impl.Skin3D.hideFlatLayers(player, ((PlayerEntityRenderer) (Object) this).getModel());
+    }
+
+    @Inject(method = "renderArm", at = @At("HEAD"))
+    private void aqua$armStart(CallbackInfo ci) { dev.aqua.client.module.impl.Skin3D.FIRST_PERSON.set(true); }
+
+    @Inject(method = "renderArm", at = @At("RETURN"))
+    private void aqua$armEnd(CallbackInfo ci) { dev.aqua.client.module.impl.Skin3D.FIRST_PERSON.set(false); }
+
     /** Значок черепахи (и OWNER) перед ником над головой. */
     @Inject(method = "renderLabelIfPresent(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IF)V",
             at = @At("HEAD"), cancellable = true)

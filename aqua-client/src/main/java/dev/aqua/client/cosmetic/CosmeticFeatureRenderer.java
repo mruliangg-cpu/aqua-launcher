@@ -24,6 +24,8 @@ public class CosmeticFeatureRenderer extends FeatureRenderer<AbstractClientPlaye
     public void render(MatrixStack matrices, VertexConsumerProvider consumers, int light, AbstractClientPlayerEntity player,
                        float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
         if (player.isInvisible()) return;
+        if (dev.aqua.client.module.impl.Skin3D.active())
+            dev.aqua.client.module.impl.Skin3D.render(player, getContextModel(), new Voxel(matrices, RenderLayer.getEntityTranslucent(BEVEL), consumers, light));
         UUID id = player.getGameProfile().getId();
         if (!AquaNet.isUser(id)) return;
         String hat = AquaNet.cosmetic(id, Slot.HAT), face = AquaNet.cosmetic(id, Slot.FACE),

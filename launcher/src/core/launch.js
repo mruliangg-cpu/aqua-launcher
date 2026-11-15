@@ -31,7 +31,8 @@ function prepareGameFiles(inst, log) {
   const options = path.join(dir, 'options.txt');
   if (!fs.existsSync(options)) {
     const lang = st.gameLanguage === 'auto' ? (st.language === 'ru' ? 'ru_ru' : 'en_us') : st.gameLanguage;
-    fs.writeFileSync(options, [`lang:${lang}`, `guiScale:${st.guiScale}`, `maxFps:${st.maxFps}`, `renderDistance:${st.renderDistance}`, 'fullscreen:false'].join('\n') + '\n');
+    const fps = inst.fpsBoost ? ['enableVsync:false', 'entityShadows:false', 'biomeBlendRadius:0', 'renderClouds:"false"', 'particles:1', 'simulationDistance:6', 'mipmapLevels:0', 'entityDistanceScaling:0.75'] : [];
+    fs.writeFileSync(options, [`lang:${lang}`, `guiScale:${st.guiScale}`, `maxFps:${st.maxFps}`, `renderDistance:${st.renderDistance}`, 'fullscreen:false', ...fps].join('\n') + '\n');
   }
   try {
     const added = nbt.mergeServers(path.join(dir, 'servers.dat'), s.servers || []);

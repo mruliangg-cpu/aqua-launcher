@@ -36,7 +36,7 @@
 - **Aqua Network** (папка `aqua-network`, работает на Cloudflare Workers + D1: https://aqua-network.mruliangg.workers.dev, уже встроен по умолчанию) — через него игроки видят косметику и скины друг друга, и работает CurseForge без ключа у каждого игрока.
 - Серверы из лаунчера сами появляются в игре в «Сетевой игре». Donut SMP в списке; вход через Microsoft — настоящая лицензия.
 - 20+ новых настроек: тема, масштаб, звуки, качество фона, поведение после запуска, автовход на сервер, приоритет процесса, язык/FPS/дальность/масштаб игры, пресеты Java, потоки загрузки, автозапуск с Windows и др.
-- Aqua Client: 79 модулей (20 новых: FPS Graph, Health HUD, Held Item Info, Nearby Players, Biome, Dimension, Player Counter, Hunger HUD, XP HUD, Fall Distance, Date, Death Counter, Distance Traveled, Jump Counter, Spawn Distance, TPS Meter, Block Info, Countdown, No Vignette, RAM Cleaner), перевод EN/RU (по языку игры), новые: Auto Respawn, Low Health Warning, Durability Alert, Own Nametag, Entity Counter, World Time, Aqua Network.
+- Aqua Client: 80 модулей (новый — 3D Skins: объёмный второй слой скина у всех игроков) (20 новых: FPS Graph, Health HUD, Held Item Info, Nearby Players, Biome, Dimension, Player Counter, Hunger HUD, XP HUD, Fall Distance, Date, Death Counter, Distance Traveled, Jump Counter, Spawn Distance, TPS Meter, Block Info, Countdown, No Vignette, RAM Cleaner), перевод EN/RU (по языку игры), новые: Auto Respawn, Low Health Warning, Durability Alert, Own Nametag, Entity Counter, World Time, Aqua Network.
 
 ## Готовый .exe
 `AquaLauncher-Portable-2.0.0.exe` — просто запустите, установка не нужна. При первом запуске сборки с Aqua Client лаунчер сам скачает JDK 21 и соберёт мод (3–6 минут, один раз).

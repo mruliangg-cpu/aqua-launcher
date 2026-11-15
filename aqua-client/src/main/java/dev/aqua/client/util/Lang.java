@@ -115,6 +115,7 @@ public final class Lang {
             {"Блок под прицелом и расстояние до него", "Targeted block and its distance"}, {"Таймер обратного отсчёта по клавише", "Countdown timer on a key"},
             {"Убирает тёмные края экрана", "Removes dark screen edges"}, {"Очищает неиспользуемую память Java", "Frees unused Java memory"},
             {" модулей", " modules"}, {" включено", " enabled"}, {"ПКМ — настройки", "RMB — settings"},
+            {"Делает второй слой скина и одежду объёмными (3D) у всех игроков", "Makes the skin's outer layer and clothes 3D for every player"}, {"Дальность", "Distance"}, {"Толщина", "Thickness"}, {"Голова", "Head"}, {"Тело", "Body"}, {"Руки", "Arms"}, {"Ноги", "Legs"}, {" бл.", " bl."},
             {"Звук", "Sound"}, {"Задержка (с)", "Delay (s)"}, {"Сервер", "Server URL"},
             {"Значок черепахи и косметика игроков Aqua Launcher", "Turtle icon and cosmetics of Aqua Launcher players"},
             {"Автоматически возрождает после смерти", "Respawns automatically after death"}, {"Красная рамка экрана при низком здоровье", "Red screen border at low health"},

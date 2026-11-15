@@ -13,8 +13,8 @@ const FOLDER = { mod: 'mods', resourcepack: 'resourcepacks', shader: 'shaderpack
 
 /** Моды для максимального FPS — ставятся автоматически, если включён «FPS Boost». */
 const FPS_PACK = {
-  fabric: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling'],
-  quilt: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps'],
+  fabric: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'moreculling', 'badoptimizations', 'krypton'],
+  quilt: ['sodium', 'lithium', 'ferrite-core', 'entityculling', 'immediatelyfast', 'modernfix', 'dynamic-fps', 'badoptimizations'],
   forge: ['embeddium', 'ferrite-core', 'entityculling', 'modernfix', 'immediatelyfast'],
   neoforge: ['sodium', 'ferrite-core', 'entityculling', 'modernfix', 'immediatelyfast'],
 };
@@ -180,7 +180,9 @@ function listInstalled(instanceId, type = 'mod') {
     .sort((a, b) => a.title.localeCompare(b.title));
 }
 
+const PROTECTED = /^aqua-client-.*\.jar(\.disabled)?$/i;
 function toggle(instanceId, file, type = 'mod') {
+  if (PROTECTED.test(file)) throw new Error(L('Aqua Client нельзя отключить', 'Aqua Client cannot be disabled'));
   const dir = path.join(paths.instanceDir(instanceId), FOLDER[type]);
   const target = file.endsWith('.disabled') ? file.slice(0, -9) : file + '.disabled';
   fs.renameSync(path.join(dir, file), path.join(dir, target));
@@ -188,6 +190,7 @@ function toggle(instanceId, file, type = 'mod') {
 }
 
 function remove(instanceId, file, type = 'mod') {
+  if (PROTECTED.test(file)) throw new Error(L('Aqua Client нельзя удалить', 'Aqua Client cannot be removed'));
   const inst = instance(instanceId);
   fs.rmSync(path.join(paths.instanceDir(inst.id), FOLDER[type], file), { recursive: true, force: true });
   const meta = readMeta(inst);
@@ -200,7 +203,7 @@ async function prepareInstance(inst, onLog, onProgress) {
   const meta = readMeta(inst);
   const want = [];
   if (inst.fpsBoost && FPS_PACK[inst.loader]) want.push(...FPS_PACK[inst.loader]);
-  const ender = inst.enderClient && inst.loader === 'fabric' && inst.mc === '1.21.1';
+  const ender = inst.loader === 'fabric' && ['1.21', '1.21.1'].includes(inst.mc); // Aqua Client всегда установлен
   if (ender) want.push('fabric-api');
   const key = `${inst.mc}|${inst.loader}|${want.join(',')}`;
   if (want.length && inst.preparedFor !== key) {
