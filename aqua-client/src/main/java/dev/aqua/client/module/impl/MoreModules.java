@@ -45,7 +45,7 @@ public final class MoreModules {
             float hp = instance.mc.player.getHealth() / 2f;
             if (hp > instance.threshold.get()) return;
             float pulse = 0.55f + 0.45f * (float) Math.sin(System.currentTimeMillis() / 160.0);
-            float strength = (1 - hp / (float) instance.threshold.get()) * 0.6f + 0.4f;
+            float strength = (1 - hp / instance.threshold.get().floatValue()) * 0.6f + 0.4f;
             int w = ctx.getScaledWindowWidth(), h = ctx.getScaledWindowHeight();
             int steps = 24;
             for (int i = 0; i < steps; i++) {
