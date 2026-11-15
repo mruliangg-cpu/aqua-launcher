@@ -43,7 +43,7 @@ public class Skin3D extends Module {
         if (mc.gameRenderer == null || mc.gameRenderer.getCamera() == null) return null;
         double dist = mc.gameRenderer.getCamera().getPos().distanceTo(p.getPos());
         if (dist > s.distance.get()) return null;
-        return SkinMesh.get(p.getSkinTextures(), s.thickness.get().floatValue());
+        return SkinMesh.get(dev.aqua.client.compat.V.skin(p), s.thickness.get().floatValue());
     }
 
     /** Вызывается после выставления позы модели: прячем плоский второй слой там, где нарисуем объёмный. */

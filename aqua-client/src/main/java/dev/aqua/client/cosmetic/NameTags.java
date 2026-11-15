@@ -13,7 +13,7 @@ import java.util.UUID;
 public final class NameTags {
     public static final String OWNER = "MrUlian_gg";
     public static final int OCEAN_BLUE = 0x1CA7EC;
-    private static final Identifier FONT = Identifier.of("aquaclient", "icons");
+    private static final Identifier FONT = dev.aqua.client.compat.V.id("aquaclient", "icons");
 
     private NameTags() {}
 

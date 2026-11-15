@@ -48,8 +48,8 @@ public final class WorldText {
         MatrixStack.Entry e = ms.peek();
         float r = ColorUtil.red(argb) / 255f, g = ColorUtil.green(argb) / 255f, b = ColorUtil.blue(argb) / 255f;
         float x = (float) (pos.x - c.x), y = (float) (pos.y - c.y), z = (float) (pos.z - c.z);
-        lines.vertex(e, x, y, z).color(r, g, b, 1f).normal(e, 0, 1, 0);
-        lines.vertex(e, x, (float) (y + height), z).color(r, g, b, 0.1f).normal(e, 0, 1, 0);
+        dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(lines.vertex(e.getPositionMatrix(), x, y, z).color(r, g, b, 1f), e, 0, 1, 0));
+        dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(lines.vertex(e.getPositionMatrix(), x, (float) (y + height), z).color(r, g, b, 0.1f), e, 0, 1, 0));
     }
 
     public static void flush(WorldRenderContext ctx) {

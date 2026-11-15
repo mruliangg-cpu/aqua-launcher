@@ -16,7 +16,7 @@ import java.util.HexFormat;
 /** Свой скин, загруженный в Aqua Launcher (config/aquaclient-skin.png). */
 public final class LocalSkin {
     private static final Path FILE = FabricLoader.getInstance().getConfigDir().resolve("aquaclient-skin.png");
-    private static final Identifier ID = Identifier.of("aquaclient", "skin/self");
+    private static final Identifier ID = dev.aqua.client.compat.V.id("aquaclient", "skin/self");
     private static byte[] bytes;
     private static String hash, model = "classic";
     private static boolean loaded, registered;

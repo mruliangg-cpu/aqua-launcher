@@ -200,7 +200,7 @@ public final class AquaNet {
             MinecraftClient.getInstance().execute(() -> {
                 try {
                     NativeImage img = NativeImage.read(png);
-                    Identifier tex = Identifier.of("aquaclient", "netskin/" + id.toString().replace("-", ""));
+                    Identifier tex = dev.aqua.client.compat.V.id("aquaclient", "netskin/" + id.toString().replace("-", ""));
                     MinecraftClient.getInstance().getTextureManager().registerTexture(tex, new NativeImageBackedTexture(img));
                     SKINS.put(id, tex);
                 } catch (Exception e) {

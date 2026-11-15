@@ -14,7 +14,7 @@ import java.util.UUID;
 
 /** Рисует 3D-косметику на игроках Aqua Launcher. */
 public class CosmeticFeatureRenderer extends FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> {
-    private static final Identifier BEVEL = Identifier.of("aquaclient", "textures/cosmetics/bevel.png");
+    private static final Identifier BEVEL = dev.aqua.client.compat.V.id("aquaclient", "textures/cosmetics/bevel.png");
 
     public CosmeticFeatureRenderer(FeatureRendererContext<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> context) {
         super(context);

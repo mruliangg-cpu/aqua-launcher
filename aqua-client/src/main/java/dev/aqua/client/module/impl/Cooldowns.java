@@ -15,7 +15,11 @@ import java.util.List;
 
 /** Перезарядка жемчуга, хоруса, щита, заряда ветра и рога. */
 public class Cooldowns extends HudModule {
-    private static final Item[] ITEMS = {Items.ENDER_PEARL, Items.CHORUS_FRUIT, Items.SHIELD, Items.WIND_CHARGE, Items.GOAT_HORN};
+    private static final Item[] ITEMS = {Items.ENDER_PEARL, Items.CHORUS_FRUIT, Items.SHIELD,
+            //#if MC >= 1.21
+            Items.WIND_CHARGE,
+            //#endif
+            Items.GOAT_HORN};
 
     public Cooldowns() {
         super("Cooldowns", "Перезарядка жемчуга Края, щита и др.", Category.COMBAT, 0.45f, 0.75f);

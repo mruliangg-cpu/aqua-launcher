@@ -56,8 +56,8 @@ public class BlockOutline extends Module {
             float len = MathHelper.sqrt(dx * dx + dy * dy + dz * dz);
             if (len < 1e-6f) return;
             dx /= len; dy /= len; dz /= len;
-            lines.vertex(entry, (float) (x1 + ox), (float) (y1 + oy), (float) (z1 + oz)).color(r, g, b, a).normal(entry, dx, dy, dz);
-            lines.vertex(entry, (float) (x2 + ox), (float) (y2 + oy), (float) (z2 + oz)).color(r, g, b, a).normal(entry, dx, dy, dz);
+            dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(lines.vertex(entry.getPositionMatrix(), (float) (x1 + ox), (float) (y1 + oy), (float) (z1 + oz)).color(r, g, b, a), entry, dx, dy, dz));
+            dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(lines.vertex(entry.getPositionMatrix(), (float) (x2 + ox), (float) (y2 + oy), (float) (z2 + oz)).color(r, g, b, a), entry, dx, dy, dz));
         });
         return false;
     }

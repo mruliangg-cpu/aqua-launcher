@@ -85,7 +85,7 @@ public class Cosmetics extends Module {
         return o;
     }
 
-    private static Identifier tex(String name) { return Identifier.of("aquaclient", "textures/cape/" + name + ".png"); }
+    private static Identifier tex(String name) { return dev.aqua.client.compat.V.id("aquaclient", "textures/cape/" + name + ".png"); }
 
     /** Текстура плаща для игрока (свой или другого игрока лаунчера). */
     public static Identifier capeTexture(UUID id) {

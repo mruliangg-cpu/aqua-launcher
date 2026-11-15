@@ -52,7 +52,7 @@ public final class CosmeticRegistry {
                         Sprite sprite = null;
                         if (g.has("sp")) {
                             JsonObject sp = g.getAsJsonObject("sp");
-                            sprite = new Sprite(net.minecraft.util.Identifier.of("aquaclient", "textures/wings/" + sp.get("s").getAsString() + ".png"),
+                            sprite = new Sprite(dev.aqua.client.compat.V.id("aquaclient", "textures/wings/" + sp.get("s").getAsString() + ".png"),
                                     sp.get("w").getAsFloat(), sp.get("y1").getAsFloat(), sp.get("y2").getAsFloat(), sp.has("gl") && sp.get("gl").getAsInt() == 1);
                         }
                         groups.add(new Group(org.get(0).getAsFloat(), org.get(1).getAsFloat(), org.get(2).getAsFloat(), anims, boxes, sprite));

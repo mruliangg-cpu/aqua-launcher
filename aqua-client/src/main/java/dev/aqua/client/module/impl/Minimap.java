@@ -20,7 +20,7 @@ import net.minecraft.world.Heightmap;
 
 /** Мини-карта как в Lunar: рельеф сверху, игроки и мобы точками. */
 public class Minimap extends HudModule {
-    private static final Identifier TEX_ID = Identifier.of("aquaclient", "minimap");
+    private static final Identifier TEX_ID = dev.aqua.client.compat.V.id("aquaclient", "minimap");
     private static final int RES = 96;
     private final NumberSetting size = add(new NumberSetting("Размер карты", 100, 60, 180, 5));
     private final NumberSetting zoom = add(new NumberSetting("Масштаб (блоков на пиксель)", 1, 1, 4, 1));

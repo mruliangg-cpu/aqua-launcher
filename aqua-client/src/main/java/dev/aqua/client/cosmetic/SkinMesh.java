@@ -5,7 +5,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.util.SkinTextures;
 import net.minecraft.util.Identifier;
 
 import javax.imageio.ImageIO;
@@ -35,9 +34,9 @@ public final class SkinMesh {
     private SkinMesh() {}
 
     /** Готовая сетка или null (пока грузится / нет второго слоя). */
-    public static Mesh get(SkinTextures s, float thickness) {
+    public static Mesh get(dev.aqua.client.compat.V.Skin s, float thickness) {
         if (s == null) return null;
-        boolean slim = s.model() == SkinTextures.Model.SLIM;
+        boolean slim = s.slim();
         String key = s.texture() + "|" + slim + "|" + thickness;
         Optional<Mesh> m = CACHE.get(key);
         if (m != null) return m.orElse(null);
@@ -47,13 +46,13 @@ public final class SkinMesh {
 
     public static void clear() { CACHE.clear(); }
 
-    private static void load(SkinTextures s, boolean slim, float thickness, String key) {
+    private static void load(dev.aqua.client.compat.V.Skin s, boolean slim, float thickness, String key) {
         // 1) уже загруженная текстура с картинкой (скины Aqua, свой скин)
         int[] px = fromTexture(s.texture());
         if (px != null) { finish(key, px, slim, thickness); return; }
         // 2) скин по адресу Mojang — качаем в фоне
-        if (s.textureUrl() != null) {
-            String url = s.textureUrl().replace("http://", "https://");
+        if (s.url() != null) {
+            String url = s.url().replace("http://", "https://");
             HTTP.sendAsync(HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofSeconds(10)).build(), HttpResponse.BodyHandlers.ofInputStream())
                     .thenAccept(r -> { try (InputStream in = r.body()) { finish(key, fromStream(in), slim, thickness); } catch (Exception e) { finish(key, null, slim, thickness); } })
                     .exceptionally(e -> { finish(key, null, slim, thickness); return null; });

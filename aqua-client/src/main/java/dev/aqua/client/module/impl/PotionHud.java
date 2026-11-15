@@ -42,7 +42,7 @@ public class PotionHud extends HudModule {
             boolean ending = !e.isInfinite() && e.getDuration() < 200;
             boolean hidden = blink.isOn() && ending && (System.currentTimeMillis() / 250) % 2 == 0;
             if (icons.isOn() && !hidden) {
-                Sprite sprite = mc.getStatusEffectSpriteManager().getSprite(e.getEffectType());
+                Sprite sprite = dev.aqua.client.compat.V.effectSprite(e);
                 ctx.drawSprite(2, y + 1, 0, 18, 18, sprite);
             }
             text(ctx, name(e), ix, y + 1);
@@ -52,7 +52,7 @@ public class PotionHud extends HudModule {
     }
 
     private static String name(StatusEffectInstance e) {
-        String n = e.getEffectType().value().getName().getString();
+        String n = dev.aqua.client.compat.V.effectName(e);
         int amp = e.getAmplifier();
         return amp > 0 ? n + " " + roman(amp + 1) : n;
     }

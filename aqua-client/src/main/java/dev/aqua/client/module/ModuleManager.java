@@ -277,7 +277,7 @@ public final class ModuleManager {
     private static String packs() {
         List<String> names = new ArrayList<>();
         for (ResourcePackProfile p : mc().getResourcePackManager().getEnabledProfiles()) {
-            String id = p.getId();
+            String id = dev.aqua.client.compat.V.packId(p);
             if (id.equals("vanilla") || id.startsWith("fabric") || id.equals("server") || id.contains("programmer")) continue;
             names.add(p.getDisplayName().getString());
         }

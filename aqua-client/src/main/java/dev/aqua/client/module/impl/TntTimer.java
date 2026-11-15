@@ -20,7 +20,7 @@ public class TntTimer extends Module {
             if (!(e instanceof TntEntity tnt)) continue;
             float sec = Math.max(0, tnt.getFuse() / 20f);
             int col = ColorUtil.lerp(0xFFFF3B3B, 0xFF5CFF7A, Math.min(1, sec / 4f));
-            Vec3d p = e.getLerpedPos(ctx.tickCounter().getTickDelta(true)).add(0, e.getHeight() + 0.5, 0);
+            Vec3d p = e.getLerpedPos(dev.aqua.client.compat.V.tickDelta(ctx)).add(0, e.getHeight() + 0.5, 0);
             WorldText.label(ctx, p, String.format("%.2f", sec), col, 1.2f, false);
             any = true;
         }

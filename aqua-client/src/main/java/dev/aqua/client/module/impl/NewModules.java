@@ -81,7 +81,7 @@ public final class NewModules {
             if (st.isEmpty() && !editor) { width = 0; height = 0; return; }
             String name = st.isEmpty() ? "Diamond Sword" : st.getName().getString();
             String sub = st.isEmpty() ? "1561/1561 · 3✦" : (st.isDamageable() ? (st.getMaxDamage() - st.getDamage()) + "/" + st.getMaxDamage() : "×" + st.getCount())
-                    + (st.hasEnchantments() ? " · " + st.getEnchantments().getSize() + "✦" : "");
+                    + (st.hasEnchantments() ? " · " + dev.aqua.client.compat.V.enchantCount(st) + "✦" : "");
             width = 24 + Math.max(Render2D.width(name), Render2D.width(sub)) + 6;
             height = 22;
             drawBackground(ctx, width, height);

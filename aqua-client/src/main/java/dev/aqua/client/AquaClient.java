@@ -58,6 +58,7 @@ public class AquaClient implements ClientModInitializer {
         });
 
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));
+        // (в 1.20.x второй аргумент — float tickDelta; лямбда подходит для обоих вариантов)
 
         WorldRenderEvents.START.register(ctx -> {
             TimeChanger t = ModuleManager.get(TimeChanger.class);

@@ -18,7 +18,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: v
-        run: echo "list=$(python3 tools/mc/resolve.py matrix)" >> "$GITHUB_OUTPUT"
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          ONLY=$(echo "$MSG" | grep -oE '\[only:[^]]+\]' | head -1 | sed -E 's/\[only:([^]]+)\]/\1/')
+          if [ -n "$ONLY" ]; then echo "list=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$ONLY")" >> "$GITHUB_OUTPUT"
+          else echo "list=$(python3 tools/mc/resolve.py matrix)" >> "$GITHUB_OUTPUT"; fi
 
   client:
     needs: versions
@@ -60,7 +65,7 @@ jobs:
 
   launcher:
     needs: client
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && !contains(github.event.head_commit.message, '[only:') }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4

@@ -66,8 +66,8 @@ public final class Voxel {
 
     private void v(MatrixStack.Entry e, Matrix4f m, float x, float y, float z, float u, float vv,
                    float nx, float ny, float nz, int r, int g, int b, int a, float f, int lt) {
-        vc.vertex(m, x, y, z).color(Math.min(255, (int) (r * f)), Math.min(255, (int) (g * f)), Math.min(255, (int) (b * f)), a)
-                .texture(u, vv).overlay(OverlayTexture.DEFAULT_UV).light(lt).normal(e, nx, ny, nz);
+        dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(vc.vertex(m, x, y, z).color(Math.min(255, (int) (r * f)), Math.min(255, (int) (g * f)), Math.min(255, (int) (b * f)), a)
+                .texture(u, vv).overlay(OverlayTexture.DEFAULT_UV).light(lt), e, nx, ny, nz));
     }
 
     /** HD-пластина крыла: основной слой + затемнённый слой позади (видна толщина). Без отсечения — видно с обеих сторон. */
@@ -95,6 +95,6 @@ public final class Voxel {
     }
 
     private void pv(VertexConsumer sv, MatrixStack.Entry e, Matrix4f m, float x, float y, float z, float u, float vv, float nz, int c, int lt) {
-        sv.vertex(m, x, y, z).color(c, c, c, 255).texture(u, vv).overlay(OverlayTexture.DEFAULT_UV).light(lt).normal(e, 0, 0, nz);
+        dev.aqua.client.compat.V.end(dev.aqua.client.compat.V.normal(sv.vertex(m, x, y, z).color(c, c, c, 255).texture(u, vv).overlay(OverlayTexture.DEFAULT_UV).light(lt), e, 0, 0, nz));
     }
 }

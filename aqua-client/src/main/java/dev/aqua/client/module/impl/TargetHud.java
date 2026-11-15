@@ -42,7 +42,7 @@ public class TargetHud extends HudModule {
         height = 34;
         drawBackground(ctx, width, height);
         if (target instanceof AbstractClientPlayerEntity p) {
-            PlayerSkinDrawer.draw(ctx, p.getSkinTextures(), 4, 4, 26);
+            dev.aqua.client.compat.V.drawHead(ctx, p, 4, 4, 26);
         } else {
             Render2D.roundRect(ctx, 4, 4, 26, 26, 3, 0xFF061A2C);
             Render2D.rect(ctx, 9, 14, 6, 2, 0xFF9FF6FF);
