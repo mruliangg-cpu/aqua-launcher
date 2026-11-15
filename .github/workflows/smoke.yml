@@ -1,0 +1,58 @@
+# Проверка Aqua Client в настоящем Minecraft без экрана (xvfb + программный OpenGL).
+# Запуск: коммит с меткой [smoke:1.21.11] (можно несколько версий через запятую).
+# Все инъекции миксинов становятся обязательными — любая несработавшая видна в логе.
+name: Smoke test Aqua Client
+on:
+  push:
+    branches: [main]
+
+jobs:
+  pick:
+    if: contains(github.event.head_commit.message, '[smoke:')
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.v.outputs.list }}
+    steps:
+      - id: v
+        env:
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          L=$(echo "$MSG" | grep -oE '\[smoke:[^]]+\]' | head -1 | sed -E 's/\[smoke:([^]]+)\]/\1/')
+          echo "list=$(python3 -c "import json,sys; print(json.dumps(sys.argv[1].split(',')))" "$L")" >> "$GITHUB_OUTPUT"
+
+  smoke:
+    needs: pick
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mc: ${{ fromJson(needs.pick.outputs.list) }}
+    name: smoke ${{ matrix.mc }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - name: Install virtual display and software OpenGL
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb mesa-utils libgl1-mesa-dri >/dev/null
+      - name: Prepare sources
+        run: |
+          python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
+          cd build-${{ matrix.mc }}
+          sed -i -e 's/"defaultRequire": 0/"defaultRequire": 1/' -e 's/"required": true/"required": false/' src/main/resources/aquaclient.mixins.json
+          mkdir -p run && echo "aqua.selftest=true" > run/aqua-selftest.flag
+      - name: Run client headless
+        working-directory: build-${{ matrix.mc }}
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          MESA_GL_VERSION_OVERRIDE: '4.5'
+          MESA_GLSL_VERSION_OVERRIDE: '450'
+        run: |
+          ARGS=$(python3 ../tools/mc/resolve.py ${{ matrix.mc }})
+          chmod +x gradlew
+          timeout 900 xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon $ARGS > run.log 2>&1 || true
+          echo "===== AQUA SELFTEST ====="
+          grep -a "AQUA-SELFTEST" run.log || echo "(no selftest lines)"
+          echo "===== MIXIN / ERRORS ====="
+          grep -a -iE "mixin.*(fail|error|invalid|not find|could not)|InjectionError|aquaclient.*(error|exception)|Exception|Caused by" run.log | grep -av "optifine\|irisshaders\|shadersmod" | head -150 || true
+          echo "===== TAIL ====="
+          tail -60 run.log

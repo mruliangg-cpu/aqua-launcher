@@ -64,6 +64,7 @@ public class AquaClient implements ClientModInitializer {
         });
         //#endif
 
+        if (dev.aqua.client.util.SelfTest.enabled()) ClientTickEvents.END_CLIENT_TICK.register(dev.aqua.client.util.SelfTest::onTick);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (MENU.wasPressed()) client.setScreen(new ClickGuiScreen());
             ModuleManager.tick(client);
