@@ -550,3 +550,17 @@ body.reduce-motion #nav-glider, body.reduce-motion #nav-glider::after, body.redu
 
 @media (max-width: 1180px) { .app { grid-template-columns: 200px 1fr 0; } .online-panel { display: none; } .hero-title h1 { font-size: 48px; } }
 body.reduce-motion .home-hero *, body.reduce-motion .feat, body.reduce-motion .play { animation: none !important; }
+
+/* ---------- окно «Доступно обновление» ---------- */
+.upd-pop { text-align: center; padding: 22px 22px 4px; }
+.upd-pop h3 { margin: 8px 0 6px; font-size: 22px; background: linear-gradient(90deg, var(--aqua), #9fffe9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.upd-icon { position: relative; width: 84px; height: 84px; margin: 0 auto; display: grid; place-items: center; font-size: 46px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(60, 201, 255, .28), rgba(60, 201, 255, 0) 70%); animation: updFloat 2.6s ease-in-out infinite; }
+.upd-icon i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(60, 201, 255, .5); animation: updRing 2.4s ease-out infinite; }
+.upd-icon i:nth-child(2) { animation-delay: .8s; } .upd-icon i:nth-child(3) { animation-delay: 1.6s; }
+.upd-ver { font-size: 15px; margin: 4px 0 8px; } .upd-ver span { opacity: .6; } .upd-ver b { color: var(--aqua); }
+.upd-pop-bar { height: 8px; border-radius: 8px; background: rgba(255, 255, 255, .08); overflow: hidden; margin: 12px 0 4px; }
+.upd-pop-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--aqua), var(--prism)); transition: width .3s; box-shadow: 0 0 12px var(--aqua); }
+.upd-pop .modal-foot { justify-content: center; }
+@keyframes updFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes updRing { from { transform: scale(.8); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }

@@ -1062,19 +1062,43 @@ document.addEventListener('pointermove', (e) => {
 requestAnimationFrame(() => moveNavGlider());
 
 // ======================================================================= АВТООБНОВЛЕНИЕ
-let UPD = { status: 'idle' }, updManual = false;
+let UPD = { status: 'idle' }, updManual = false, updShown = '';
+/** Окно «Доступно обновление» — как в Lunar Client: один раз на каждую новую версию. */
+function updatePopup() {
+  const u = UPD, v = u.version || '';
+  const key = u.status + v;
+  if (!v || updShown === key || !['available', 'ready'].includes(u.status) || $('#modal-root').innerHTML) return;
+  updShown = key;
+  const ready = u.status === 'ready';
+  const m = modal(`<div class="upd-pop">
+      <div class="upd-icon">🐢<i></i><i></i><i></i></div>
+      <h3>${t('upd_new_title')}</h3>
+      <p class="upd-ver"><span>v${esc(u.current || INFO.version)}</span> → <b>v${esc(v)}</b></p>
+      <p class="note">${t(ready ? 'upd_new_ready' : 'upd_new_text')}</p>
+      <div class="upd-pop-bar" hidden><i></i></div>
+      <div class="modal-foot"><button class="btn ghost" data-close>${t('upd_later')}</button><button class="btn primary" id="upd-now">${t('upd_now')}</button></div>
+    </div>`, 'narrow');
+  $('#upd-now', m.el).onclick = () => {
+    $('#upd-now', m.el).disabled = true;
+    $('.upd-pop-bar', m.el).hidden = false;
+    aqua.installUpdate();
+  };
+}
 function renderUpdate() {
   const bar = $('#update-bar');
   if (!bar) return;
   const u = UPD, v = u.version || '';
   let html = '';
   if (u.status === 'downloading') html = `<span>🐢 ${t('upd_down', { v, p: u.percent || 0 })}</span><i class="upd-progress" style="width:${u.percent || 0}%"></i>`;
-  else if (u.status === 'ready') html = `<span>✨ ${t('upd_ready', { v })}</span><button class="btn primary" id="upd-go">${t('upd_restart')}</button>`;
-  else if (u.status === 'available') html = `<span>✨ ${t('upd_avail', { v })}</span><button class="btn primary" id="upd-page">${t('upd_get')}</button>`;
+  else if (u.status === 'ready' && !u.portable) html = `<span>✨ ${t('upd_ready', { v })}</span><button class="btn primary" id="upd-go">${t('upd_restart')}</button>`;
+  else if (u.status === 'ready') html = `<span>✨ ${t('upd_restarting')}</span>`;
+  else if (u.status === 'available') html = `<span>✨ ${t('upd_avail', { v })}</span><button class="btn primary" id="upd-go">${t('upd_now')}</button>`;
   bar.hidden = !html;
   bar.innerHTML = html;
-  const go = $('#upd-go'); if (go) go.onclick = () => aqua.installUpdate();
-  const pg = $('#upd-page'); if (pg) pg.onclick = () => aqua.updatePage();
+  const go = $('#upd-go'); if (go) go.onclick = () => { go.disabled = true; aqua.installUpdate(); };
+  const pop = $('.upd-pop-bar i');
+  if (pop) pop.style.width = (u.status === 'ready' ? 100 : u.percent || 0) + '%';
+  updatePopup();
   if (updManual) {
     if (u.status === 'latest') { toast(t('upd_latest'), 'ok'); updManual = false; }
     else if (u.status === 'error') { toast(t('upd_err') + (u.error ? ': ' + u.error : ''), 'err'); updManual = false; }

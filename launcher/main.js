@@ -66,6 +66,7 @@ app.whenReady().then(() => {
   const pushState = () => send('state', store.publicState());
   // автообновление (GitHub Releases)
   const updater = require('./src/core/updater').init(send, () => store.state.settings.autoUpdate !== false);
+  if (win) win.on('focus', () => updater.focus());
   const handle = (name, fn) => ipcMain.handle(name, async (_e, ...args) => {
     try { return { ok: true, data: await fn(...args) }; } catch (e) { return { ok: false, error: e && e.message ? e.message : String(e) }; }
   });
