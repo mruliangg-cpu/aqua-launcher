@@ -43,7 +43,7 @@ public class PotionHud extends HudModule {
             boolean hidden = blink.isOn() && ending && (System.currentTimeMillis() / 250) % 2 == 0;
             if (icons.isOn() && !hidden) {
                 Sprite sprite = dev.aqua.client.compat.V.effectSprite(e);
-                ctx.drawSprite(2, y + 1, 0, 18, 18, sprite);
+                dev.aqua.client.compat.V.sprite(ctx, sprite, 2, y + 1, 18, 18);
             }
             text(ctx, name(e), ix, y + 1);
             text(ctx, duration(e), ix, y + 11, ending ? 0xFFFF5555 : 0xFFAAAAAA);

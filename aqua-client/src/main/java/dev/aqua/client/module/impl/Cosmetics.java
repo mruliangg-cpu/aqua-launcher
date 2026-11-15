@@ -139,7 +139,7 @@ public class Cosmetics extends Module {
             int n = p == mc.player ? auraAmount.getInt() : 1;
             for (int i = 0; i < n; i++) {
                 double a = Math.random() * Math.PI * 2, r = 0.5 + Math.random() * 0.3;
-                mc.world.addParticle(pe, p.getX() + Math.cos(a) * r, p.getY() + Math.random() * p.getHeight(), p.getZ() + Math.sin(a) * r,
+                dev.aqua.client.compat.V.particle(pe, p.getX() + Math.cos(a) * r, p.getY() + Math.random() * p.getHeight(), p.getZ() + Math.sin(a) * r,
                         0, portal ? -0.4 : 0.02, 0);
             }
         }

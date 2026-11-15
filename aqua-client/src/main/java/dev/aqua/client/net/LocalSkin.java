@@ -49,7 +49,7 @@ public final class LocalSkin {
             registered = true;
             try {
                 NativeImage img = NativeImage.read(bytes);
-                MinecraftClient.getInstance().getTextureManager().registerTexture(ID, new NativeImageBackedTexture(img));
+                MinecraftClient.getInstance().getTextureManager().registerTexture(ID, dev.aqua.client.compat.V.texture(img));
             } catch (Exception e) {
                 AquaClient.LOG.warn("Скин повреждён", e);
                 bytes = null;

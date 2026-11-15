@@ -32,11 +32,11 @@ public abstract class HudModule extends Module {
     public final void render(DrawContext ctx, boolean editor) {
         float s = getScale();
         float px = getScreenX(), py = getScreenY();
-        ctx.getMatrices().push();
-        ctx.getMatrices().translate(px, py, 0);
-        ctx.getMatrices().scale(s, s, 1);
+        dev.aqua.client.compat.V.push(ctx);
+        dev.aqua.client.compat.V.translate(ctx, px, py);
+        dev.aqua.client.compat.V.scale(ctx, s);
         draw(ctx, editor);
-        ctx.getMatrices().pop();
+        dev.aqua.client.compat.V.pop(ctx);
     }
 
     public float getScale() { return scale.getFloat(); }
@@ -72,7 +72,7 @@ public abstract class HudModule extends Module {
     }
 
     protected int text(DrawContext ctx, String s, int x, int y, int color) {
-        return ctx.drawText(mc.textRenderer, s, x, y, color, shadow.isOn());
+        return dev.aqua.client.compat.V.text(ctx, mc.textRenderer, s, x, y, color, shadow.isOn());
     }
 
     protected int accent() { return Theme.ACCENT; }

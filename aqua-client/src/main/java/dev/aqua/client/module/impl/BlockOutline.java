@@ -42,7 +42,7 @@ public class BlockOutline extends Module {
             VertexConsumer fv = consumers.getBuffer(RenderLayer.getDebugFilledBox());
             for (Box b : shape.getBoundingBoxes()) {
                 Box e = b.expand(0.002);
-                WorldRenderer.renderFilledBox(ms, fv, e.minX + ox, e.minY + oy, e.minZ + oz, e.maxX + ox, e.maxY + oy, e.maxZ + oz,
+                dev.aqua.client.compat.V.filledBox(ms, fv, e.minX + ox, e.minY + oy, e.minZ + oz, e.maxX + ox, e.maxY + oy, e.maxZ + oz,
                         ColorUtil.red(fc) / 255f, ColorUtil.green(fc) / 255f, ColorUtil.blue(fc) / 255f, ColorUtil.alpha(fc) / 255f);
             }
         }

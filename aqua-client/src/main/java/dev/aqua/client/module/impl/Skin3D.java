@@ -47,7 +47,8 @@ public class Skin3D extends Module {
     }
 
     /** Вызывается после выставления позы модели: прячем плоский второй слой там, где нарисуем объёмный. */
-    public static void hideFlatLayers(AbstractClientPlayerEntity p, PlayerEntityModel<AbstractClientPlayerEntity> m) {
+    @SuppressWarnings("rawtypes")
+    public static void hideFlatLayers(AbstractClientPlayerEntity p, PlayerEntityModel m) {
         Skin3D s = on();
         if (s == null || mesh(p) == null) return;
         if (s.head.isOn()) m.hat.visible = false;
@@ -56,8 +57,21 @@ public class Skin3D extends Module {
         if (s.legs.isOn()) { m.leftPants.visible = false; m.rightPants.visible = false; }
     }
 
+    //#if MC >= 1.21.2
+    /** 1.21.2+: видимость слоёв задаётся в состоянии отрисовки. */
+    public static void hideFlatLayers(AbstractClientPlayerEntity p, net.minecraft.client.render.entity.state.PlayerEntityRenderState st) {
+        Skin3D s = on();
+        if (s == null || mesh(p) == null) return;
+        if (s.head.isOn()) st.hatVisible = false;
+        if (s.body.isOn()) st.jacketVisible = false;
+        if (s.arms.isOn()) { st.leftSleeveVisible = false; st.rightSleeveVisible = false; }
+        if (s.legs.isOn()) { st.leftPantsLegVisible = false; st.rightPantsLegVisible = false; }
+    }
+    //#endif
+
     /** Рисует объёмный слой (из CosmeticFeatureRenderer). */
-    public static void render(AbstractClientPlayerEntity p, PlayerEntityModel<AbstractClientPlayerEntity> m, Voxel v) {
+    @SuppressWarnings("rawtypes")
+    public static void render(AbstractClientPlayerEntity p, PlayerEntityModel m, Voxel v) {
         Skin3D s = on();
         if (s == null) return;
         SkinMesh.Mesh mesh = mesh(p);
@@ -71,7 +85,7 @@ public class Skin3D extends Module {
     private static void draw(Voxel v, ModelPart part, List<SkinMesh.Box> boxes) {
         if (boxes.isEmpty()) return;
         v.matrices().push();
-        part.rotate(v.matrices());
+        dev.aqua.client.compat.V.applyPart(part, v.matrices());
         for (SkinMesh.Box b : boxes) v.box(b.x1(), b.y1(), b.z1(), b.x2(), b.y2(), b.z2(), b.color(), false, true);
         v.matrices().pop();
     }

@@ -189,11 +189,11 @@ public class ClickGuiScreen extends Screen {
         Render2D.rect(ctx, x0 + SIDEBAR - 1, y0 + 8, 1, H - 16, f(Theme.BORDER));
 
         // логотип: жемчуг Края + градиентная надпись
-        ctx.getMatrices().push();
-        ctx.getMatrices().translate(x0 + 10, y0 + 11, 0);
-        ctx.getMatrices().scale(2, 2, 1);
+        dev.aqua.client.compat.V.push(ctx);
+        dev.aqua.client.compat.V.translate(ctx, x0 + 10, y0 + 11);
+        dev.aqua.client.compat.V.scale(ctx, 2);
         Watermark.drawTurtle(ctx, 0, 0);
-        ctx.getMatrices().pop();
+        dev.aqua.client.compat.V.pop(ctx);
         Render2D.gradientText(ctx, "AQUA", x0 + 30, y0 + 10, 1.45f, Theme.ACCENT, Theme.EYE, true, alpha);
         Render2D.textScaled(ctx, "CLIENT  v2.0", x0 + 30, y0 + 23, 0.65f, t(Theme.SUB), false);
 

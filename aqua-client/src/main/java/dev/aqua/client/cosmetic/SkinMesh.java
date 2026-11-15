@@ -84,8 +84,7 @@ public final class SkinMesh {
                 int[] out = new int[w * h];
                 for (int y = 0; y < h; y++)
                     for (int x = 0; x < w; x++) {
-                        int abgr = img.getColor(x, y);
-                        out[y * w + x] = (abgr & 0xFF00FF00) | ((abgr & 0xFF) << 16) | ((abgr >> 16) & 0xFF);
+                        out[y * w + x] = dev.aqua.client.compat.V.getArgb(img, x, y);
                     }
                 return out;
             }

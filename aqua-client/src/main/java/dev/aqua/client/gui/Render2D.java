@@ -81,11 +81,11 @@ public final class Render2D {
     }
 
     public static void textScaled(DrawContext c, String s, float x, float y, float scale, int color, boolean shadow) {
-        c.getMatrices().push();
-        c.getMatrices().translate(x, y, 0);
-        c.getMatrices().scale(scale, scale, 1);
+        dev.aqua.client.compat.V.push(c);
+        dev.aqua.client.compat.V.translate(c, x, y);
+        dev.aqua.client.compat.V.scale(c, scale);
         c.drawText(font(), s, 0, 0, color, shadow);
-        c.getMatrices().pop();
+        dev.aqua.client.compat.V.pop(c);
     }
 
     public static void centered(DrawContext c, String s, float cx, float y, int color) {
@@ -100,9 +100,9 @@ public final class Render2D {
 
     /** Текст с градиентом по буквам (для логотипа). */
     public static void gradientText(DrawContext c, String s, float x, float y, float scale, int from, int to, boolean shadow, float alpha) {
-        c.getMatrices().push();
-        c.getMatrices().translate(x, y, 0);
-        c.getMatrices().scale(scale, scale, 1);
+        dev.aqua.client.compat.V.push(c);
+        dev.aqua.client.compat.V.translate(c, x, y);
+        dev.aqua.client.compat.V.scale(c, scale);
         int cx = 0;
         float t0 = (System.currentTimeMillis() % 3000) / 3000f;
         for (int i = 0; i < s.length(); i++) {
@@ -112,6 +112,6 @@ public final class Render2D {
             c.drawText(font(), ch, cx, 0, col, shadow);
             cx += font().getWidth(ch);
         }
-        c.getMatrices().pop();
+        dev.aqua.client.compat.V.pop(c);
     }
 }

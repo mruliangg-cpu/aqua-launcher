@@ -27,7 +27,7 @@ public class HitParticles extends Module {
                     double x = target.getX() + (Math.random() - 0.5) * target.getWidth() * 1.5;
                     double y = target.getY() + Math.random() * target.getHeight();
                     double z = target.getZ() + (Math.random() - 0.5) * target.getWidth() * 1.5;
-                    mc.world.addParticle(ParticleTypes.PORTAL, x, y, z, (Math.random() - 0.5) * 2, -Math.random(), (Math.random() - 0.5) * 2);
+                    dev.aqua.client.compat.V.particle(ParticleTypes.PORTAL, x, y, z, (Math.random() - 0.5) * 2, -Math.random(), (Math.random() - 0.5) * 2);
                 }
             }
         }

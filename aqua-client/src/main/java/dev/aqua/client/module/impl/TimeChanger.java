@@ -11,6 +11,6 @@ public class TimeChanger extends Module {
     public TimeChanger() { super("Time Changer", "Своё время суток (только визуально)", Category.RENDER); }
 
     public void onWorldRender() {
-        if (isEnabled() && mc.world != null) mc.world.setTimeOfDay(time.getInt());
+        if (isEnabled() && mc.world != null) dev.aqua.client.compat.V.setTimeOfDay(time.getInt());
     }
 }

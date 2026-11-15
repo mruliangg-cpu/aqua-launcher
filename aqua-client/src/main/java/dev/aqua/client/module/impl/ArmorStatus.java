@@ -54,7 +54,7 @@ public class ArmorStatus extends HudModule {
         for (ItemStack st : stacks) {
             int x = hor ? 2 + i * cellW : 2, y = hor ? 2 : 2 + i * 18;
             ctx.drawItem(st, x, y);
-            ctx.drawItemInSlot(mc.textRenderer, st, x, y);
+            dev.aqua.client.compat.V.itemOverlay(ctx, mc.textRenderer, st, x, y);
             String l = label(st);
             if (!l.isEmpty()) {
                 int col = durabilityColor(st);

@@ -5,7 +5,11 @@ import dev.aqua.client.module.Module;
 import dev.aqua.client.setting.BoolSetting;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
+//#if MC >= 1.21.2
+import net.minecraft.particle.ParticlesMode;
+//#else
 import net.minecraft.client.option.ParticlesMode;
+//#endif
 import net.minecraft.client.option.SimpleOption;
 
 /**

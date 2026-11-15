@@ -41,7 +41,7 @@ public class Minimap extends HudModule {
         if (--timer > 0) return;
         timer = 4;
         if (texture == null) {
-            texture = new NativeImageBackedTexture(RES, RES, true);
+            texture = dev.aqua.client.compat.V.texture(RES, RES);
             mc.getTextureManager().registerTexture(TEX_ID, texture);
         }
         NativeImage img = texture.getImage();
@@ -65,7 +65,7 @@ public class Minimap extends HudModule {
                 int r = Math.min(255, (int) (((rgb >> 16) & 0xFF) * shade));
                 int g = Math.min(255, (int) (((rgb >> 8) & 0xFF) * shade));
                 int b = Math.min(255, (int) ((rgb & 0xFF) * shade));
-                img.setColor(px, py, 0xFF000000 | (b << 16) | (g << 8) | r); // ABGR
+                dev.aqua.client.compat.V.setArgb(img, px, py, 0xFF000000 | (r << 16) | (g << 8) | b);
             }
         }
         texture.upload();
@@ -78,7 +78,7 @@ public class Minimap extends HudModule {
         height = s + 4 + (coords.isOn() ? 12 : 0);
         Render2D.roundRect(ctx, 0, 0, s + 4, s + 4, 4, 0xFF1B4A6B);
         if (texture != null && mc.player != null) {
-            ctx.drawTexture(TEX_ID, 2, 2, 0f, 0f, s, s, s, s);
+            dev.aqua.client.compat.V.texture(ctx, TEX_ID, 2, 2, 0f, 0f, s, s, s, s);
         } else {
             Render2D.rect(ctx, 2, 2, s, s, 0xFF120A1E);
             Render2D.centered(ctx, dev.aqua.client.util.Lang.t("Карта", "Map"), 2 + s / 2f, 2 + s / 2f - 4, Theme.SUB);
@@ -95,14 +95,14 @@ public class Minimap extends HudModule {
                 Render2D.rect(ctx, center + dx - 1.5f, center + dz - 1.5f, 3, 3, isPlayer ? 0xFFFFFFFF : 0xFFFF4D6D);
             }
             // стрелка игрока
-            ctx.getMatrices().push();
-            ctx.getMatrices().translate(center, center, 0);
-            ctx.getMatrices().multiply(RotationAxis.POSITIVE_Z.rotationDegrees(mc.player.getYaw() + 180));
+            dev.aqua.client.compat.V.push(ctx);
+            dev.aqua.client.compat.V.translate(ctx, center, center);
+            dev.aqua.client.compat.V.rotateZ(ctx, mc.player.getYaw() + 180);
             ctx.fill(-1, -4, 1, 3, 0xFF000000);
             ctx.fill(-3, 0, 3, 2, 0xFF000000);
             ctx.fill(0, -4, 1, 2, Theme.EYE);
             ctx.fill(-2, 0, 2, 1, Theme.EYE);
-            ctx.getMatrices().pop();
+            dev.aqua.client.compat.V.pop(ctx);
         }
         ctx.drawText(mc.textRenderer, "N", (int) center - 2, 3, 0xFFFF5577, true);
         if (coords.isOn()) {

@@ -201,7 +201,7 @@ public final class AquaNet {
                 try {
                     NativeImage img = NativeImage.read(png);
                     Identifier tex = dev.aqua.client.compat.V.id("aquaclient", "netskin/" + id.toString().replace("-", ""));
-                    MinecraftClient.getInstance().getTextureManager().registerTexture(tex, new NativeImageBackedTexture(img));
+                    MinecraftClient.getInstance().getTextureManager().registerTexture(tex, dev.aqua.client.compat.V.texture(img));
                     SKINS.put(id, tex);
                 } catch (Exception e) {
                     AquaClient.LOG.debug("Skin decode failed", e);

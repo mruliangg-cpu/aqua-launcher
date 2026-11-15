@@ -31,7 +31,7 @@ public class Cooldowns extends HudModule {
         List<Float> progress = new ArrayList<>();
         if (mc.player != null) {
             for (Item it : ITEMS) {
-                float p = mc.player.getItemCooldownManager().getCooldownProgress(it, 0f);
+                float p = dev.aqua.client.compat.V.cooldown(mc.player, it);
                 if (p > 0) { active.add(it); progress.add(p); }
             }
         }
