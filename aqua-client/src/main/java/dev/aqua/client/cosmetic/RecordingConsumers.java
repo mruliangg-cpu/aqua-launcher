@@ -47,6 +47,7 @@ public final class RecordingConsumers implements VertexConsumerProvider {
         @Override public VertexConsumer overlay(int u, int v) { if (cur != null) cur[9] = Float.intBitsToFloat((v << 16) | (u & 0xFFFF)); return this; }
         @Override public VertexConsumer light(int u, int v) { if (cur != null) cur[10] = Float.intBitsToFloat((v << 16) | (u & 0xFFFF)); return this; }
         @Override public VertexConsumer normal(float x, float y, float z) { if (cur != null) { cur[11] = x; cur[12] = y; cur[13] = z; } return this; }
+        @Override public VertexConsumer color(int argb) { return color((argb >> 16) & 255, (argb >> 8) & 255, argb & 255, (argb >>> 24) & 255); }
         public VertexConsumer lineWidth(float w) { return this; }
 
         void replay(VertexConsumer vc) {

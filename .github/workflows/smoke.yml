@@ -39,13 +39,7 @@ jobs:
           python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
           cd build-${{ matrix.mc }}
           sed -i -e 's/"defaultRequire": 0/"defaultRequire": 1/' -e 's/"required": true/"required": false/' src/main/resources/aquaclient.mixins.json
-          mkdir -p run/config && python3 -c "
-import json; d=json.load(open('src/main/resources/assets/aquaclient/cosmetics.json'))
-o={'stamp':'selftest'}
-for s in d['slots']:
-    ids=[x['id'] for x in d['items'][s] if x['id']!='none']
-    o[s]=ids[1] if len(ids)>1 else ids[0]
-json.dump(o,open('run/config/aquaclient-loadout.json','w')); print(o)"
+          mkdir -p run/config && python3 ../tools/mc/selftest_loadout.py
           mkdir -p run && echo "aqua.selftest=true" > run/aqua-selftest.flag && printf "onboardAccessibility:false\nnarrator:0\nsoundCategory_master:0\n" > run/options.txt
       - name: Run client headless
         working-directory: build-${{ matrix.mc }}
