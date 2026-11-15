@@ -620,7 +620,7 @@ async function loadMods(reset) {
   const list = $('#mods-list'), more = $('#mods-more');
   const instId = $('#mods-instance').value;
   if (!instId) { list.innerHTML = `<p class="empty">${t('create_profile_first')}</p>`; return; }
-  $('#mods-source').style.display = MODS.tab === 'browse' ? '' : 'none';
+  MODS.source = 'modrinth'; // CurseForge убран: без ключа API он не работает, все моды берём с Modrinth
   $('#mods-search').style.display = MODS.tab === 'browse' ? '' : 'none';
   if (reset) { MODS.offset = 0; list.innerHTML = '<div class="spinner"></div>'; }
   const token = ++MODS.token;
@@ -846,7 +846,6 @@ function renderSettings() {
       <label class="row col"><span>${t('s_net')}</span><input class="input" data-set="networkUrl" value="${esc(st.networkUrl)}" placeholder="https://aqua-network.mruliangg.workers.dev"></label>
       <p class="hint">${t('net_hint')}</p>
       ${chk('shareSkin', t('s_share'))}
-      <label class="row col"><span>${t('s_cf')} — <a href="#" data-ext="https://console.curseforge.com/">console.curseforge.com</a></span><input class="input" type="password" data-set="curseforgeKey" value="${esc(st.curseforgeKey)}" placeholder="$2a$10$…"></label>
     </div>
     <div class="card glass"><h4>${t('s_ender')}</h4>
       <p class="hint" id="ender-status">…</p>

@@ -42,7 +42,7 @@ function mrLoaders(inst, type) {
 async function search({ source, type = 'mod', query = '', offset = 0, instanceId }) {
   const inst = instance(instanceId);
   if (type === 'mod' && inst.loader === 'vanilla') throw new Error(L('Для модов нужна сборка с Fabric, Quilt, Forge или NeoForge.', 'Mods need a Fabric, Quilt, Forge or NeoForge profile.'));
-  if (source === 'curseforge') return searchCurse(inst, type, query, offset);
+  // CurseForge отключён (нет ключа API) — всегда Modrinth
 
   const facets = [[`project_type:${type === 'shader' ? 'shader' : type}`], [`versions:${inst.mc}`]];
   const loaders = mrLoaders(inst, type);
