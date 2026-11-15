@@ -6,7 +6,6 @@ const store = require('./store');
 const { getJson, download } = require('./net');
 
 const MR = 'https://api.modrinth.com/v2';
-const CF = 'https://api.curseforge.com/v1';
 const CF_LOADER = { forge: 1, fabric: 4, quilt: 5, neoforge: 6 };
 const CF_CLASS = { mod: 6, resourcepack: 12, shader: 6552 };
 const FOLDER = { mod: 'mods', resourcepack: 'resourcepacks', shader: 'shaderpacks' };
@@ -42,7 +41,6 @@ function mrLoaders(inst, type) {
 async function search({ source, type = 'mod', query = '', offset = 0, instanceId }) {
   const inst = instance(instanceId);
   if (type === 'mod' && inst.loader === 'vanilla') throw new Error(L('Для модов нужна сборка с Fabric, Quilt, Forge или NeoForge.', 'Mods need a Fabric, Quilt, Forge or NeoForge profile.'));
-  // CurseForge отключён (нет ключа API) — всегда Modrinth
 
   const facets = [[`project_type:${type === 'shader' ? 'shader' : type}`], [`versions:${inst.mc}`]];
   const loaders = mrLoaders(inst, type);
@@ -61,36 +59,6 @@ async function search({ source, type = 'mod', query = '', offset = 0, instanceId
   };
 }
 
-/** CurseForge: свой ключ из настроек или прокси Aqua Network (ключ хранится на сервере). */
-function cf() {
-  const st = store.state.settings;
-  if (st.curseforgeKey) return { base: CF, headers: { 'x-api-key': st.curseforgeKey }, dl: (u) => ({ url: u, headers: { 'x-api-key': st.curseforgeKey } }) };
-  const net = (st.networkUrl || '').replace(/\/+$/, '');
-  if (net) return { base: net + '/cf/v1', headers: {}, dl: (u) => ({ url: `${net}/cfdl?url=${encodeURIComponent(u)}`, headers: {} }) };
-  throw new Error(L('CurseForge: укажите адрес Aqua Network или свой API-ключ в Настройках (ключ бесплатный на console.curseforge.com).',
-    'CurseForge: set your Aqua Network URL or your own API key in Settings (free key at console.curseforge.com).'));
-}
-function cfHeaders() { return cf().headers; }
-
-async function searchCurse(inst, type, query, offset) {
-  const params = new URLSearchParams({
-    gameId: '432', classId: String(CF_CLASS[type]), searchFilter: query, gameVersion: inst.mc,
-    sortField: query ? '1' : '6', sortOrder: 'desc', pageSize: '20', index: String(offset),
-  });
-  if (type === 'mod' && CF_LOADER[inst.loader]) params.set('modLoaderType', String(CF_LOADER[inst.loader]));
-  const data = await getJson(`${cf().base}/mods/search?${params}`, cfHeaders());
-  const installed = readMeta(inst);
-  return {
-    total: data.pagination ? data.pagination.totalCount : data.data.length,
-    hits: data.data.map((m) => ({
-      source: 'curseforge', id: String(m.id), slug: m.slug, title: m.name,
-      author: m.authors && m.authors[0] ? m.authors[0].name : '', description: m.summary,
-      icon: m.logo ? m.logo.thumbnailUrl : null, downloads: m.downloadCount,
-      url: m.links ? m.links.websiteUrl : `https://www.curseforge.com/minecraft/mc-mods/${m.slug}`,
-      installed: Object.values(installed).some((x) => x.projectId === String(m.id)),
-    })),
-  };
-}
 
 // ------------------------------------------------------------------ УСТАНОВКА
 async function install({ source, projectId, instanceId, type = 'mod' }, onLog) {
@@ -98,7 +66,7 @@ async function install({ source, projectId, instanceId, type = 'mod' }, onLog) {
   const meta = readMeta(inst);
   const seen = new Set();
   const installed = [];
-  const fn = source === 'curseforge' ? installCurse : installModrinth;
+  const fn = installModrinth; // только Modrinth
   await fn(inst, projectId, type, meta, seen, installed, onLog, true);
   writeMeta(inst, meta);
   return installed;
@@ -135,34 +103,6 @@ async function installModrinth(inst, projectId, type, meta, seen, installed, onL
   }
 }
 
-async function installCurse(inst, modId, type, meta, seen, installed, onLog, required) {
-  if (seen.has(modId)) return;
-  seen.add(modId);
-  if (Object.values(meta).some((m) => m.projectId === String(modId))) return;
-  const params = new URLSearchParams({ gameVersion: inst.mc, pageSize: '20' });
-  if (type === 'mod' && CF_LOADER[inst.loader]) params.set('modLoaderType', String(CF_LOADER[inst.loader]));
-  const files = (await getJson(`${cf().base}/mods/${modId}/files?${params}`, cfHeaders())).data || [];
-  const file = files.find((f) => f.releaseType === 1) || files[0];
-  if (!file) {
-    if (required) throw new Error(L(`Нет файла для Minecraft ${inst.mc} (${inst.loader})`, `No file for Minecraft ${inst.mc} (${inst.loader})`));
-    return;
-  }
-  if (!file.downloadUrl) {
-    throw new Error(L(`Автор «${file.displayName}» запретил скачивание через сторонние лаунчеры — скачайте вручную на CurseForge.`, `The author of “${file.displayName}” disabled third-party downloads — download it manually from CurseForge.`));
-  }
-  const dest = path.join(paths.instanceDir(inst.id), FOLDER[type], file.fileName);
-  if (!fs.existsSync(dest)) { const d = cf().dl(file.downloadUrl); await download(d.url, dest, null, d.headers); }
-  const mod = (await getJson(`${cf().base}/mods/${modId}`, cfHeaders()).catch(() => ({ data: null }))).data;
-  meta[file.fileName] = {
-    source: 'curseforge', projectId: String(modId), title: mod ? mod.name : file.displayName,
-    icon: mod && mod.logo ? mod.logo.thumbnailUrl : null, version: file.displayName, type,
-  };
-  installed.push(meta[file.fileName].title);
-  onLog && onLog(L(`[Моды] Установлен ${meta[file.fileName].title}`, `[Mods] Installed ${meta[file.fileName].title}`));
-  for (const dep of file.dependencies || []) {
-    if (dep.relationType === 3) await installCurse(inst, String(dep.modId), 'mod', meta, seen, installed, onLog, false);
-  }
-}
 
 // ------------------------------------------------------------------ УСТАНОВЛЕННЫЕ
 function listInstalled(instanceId, type = 'mod') {

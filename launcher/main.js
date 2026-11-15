@@ -61,6 +61,8 @@ app.whenReady().then(() => {
   }
 
   createWindow();
+  // проверяем вход Microsoft в фоне: имя покажется только после успешного входа
+  setTimeout(() => auth.validate().finally(() => pushState()), 300);
 
   const send = (channel, data) => { if (win && !win.isDestroyed()) win.webContents.send(channel, data); };
   const pushState = () => send('state', store.publicState());

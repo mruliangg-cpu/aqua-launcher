@@ -62,7 +62,7 @@ async function authorizationFor(account) {
   const fresh = account.mclc && account.mclc.meta && account.mclc.meta.exp && account.mclc.meta.exp > Date.now() + 5 * 60e3;
   if (fresh) return account.mclc;
   const refreshToken = store.unseal(account.refresh);
-  if (!refreshToken) throw new Error(L('Сессия Microsoft истекла — войдите заново.', 'Microsoft session expired — please sign in again.'));
+  if (!refreshToken) { account.expired = true; store.save(); throw new Error(L('Сессия Microsoft истекла — войдите заново.', 'Microsoft session expired — please sign in again.')); }
   const auth = new Auth('select_account');
   const xbox = await auth.refresh(refreshToken);
   const res = await fromXbox(xbox);
@@ -70,8 +70,17 @@ async function authorizationFor(account) {
   account.refresh = store.seal(res.refresh);
   if (!res.demo) account.name = res.profile.name;
   account.updated = Date.now();
+  account.expired = false;
   store.save();
   return res.mclc;
 }
 
-module.exports = { loginMicrosoft, authorizationFor, offlineUuid };
+/** Проверка сессии выбранного аккаунта при запуске: тихо обновляем токен или помечаем «войдите снова». */
+async function validate() {
+  const s = store.state, acc = s.accounts.find((a) => a.id === s.selectedAccount);
+  if (!acc) return;
+  try { await authorizationFor(acc); acc.expired = false; } catch { acc.expired = true; }
+  store.save();
+}
+
+module.exports = { loginMicrosoft, authorizationFor, offlineUuid, validate };

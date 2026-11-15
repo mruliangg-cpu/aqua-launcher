@@ -649,3 +649,4 @@ body.reduce-motion .home-hero *, body.reduce-motion .feat, body.reduce-motion .p
 .pv-mode:hover { border-color: #3ee6ff; color: #3ee6ff; }
 .pv-str { width: 190px; padding: 5px 9px; border-radius: 8px; border: 1px solid #1b4a6b; background: rgba(4, 20, 34, .7); color: #e9fbff; font: inherit; font-size: 12.5px; }
 .pv-empty { color: #8ec4d8; padding: 20px; text-align: center; grid-column: 1 / -1; }
+.nav-badge[hidden], [hidden] { display: none !important; }

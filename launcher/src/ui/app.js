@@ -84,7 +84,9 @@ function confirmBox(title, text, okLabel) {
 }
 
 const selectedInstance = () => S.instances.find((i) => i.id === S.selectedInstance) || S.instances[0];
-const selectedAccount = () => S.accounts.find((a) => a.id === S.selectedAccount);
+const rawAccount = () => S.accounts.find((a) => a.id === S.selectedAccount);
+/** Аккаунт, в который реально выполнен вход (сессия Microsoft проверена). До проверки имя не показываем. */
+const selectedAccount = () => { const a = rawAccount(); return a && !a.pending && !a.expired ? a : undefined; };
 const isOwner = (a) => a && String(a.name).toLowerCase() === OWNER;
 const avatar = (a) => a ? `https://mc-heads.net/avatar/${encodeURIComponent(a.type === 'microsoft' ? a.uuid : a.name)}/64` : '';
 
@@ -156,8 +158,9 @@ function renderAll() {
 
 function renderAccount() {
   const a = selectedAccount();
-  $('#account-name').innerHTML = a ? `<span class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${esc(a.name)}</span>` : esc(t('sign_in'));
-  $('#account-type').innerHTML = a ? `${isOwner(a) ? '<span class="owner-tag">🐢 OWNER</span>· ' : '🐢 '}${a.type === 'microsoft' ? t('microsoft') : t('offline')}` : t('no_account');
+  const raw = rawAccount();
+  $('#account-name').innerHTML = a ? `<span class="${isOwner(a) ? 'owner-name' : 'aqua-name'}">${esc(a.name)}</span>` : esc(raw && raw.pending ? t('signing_in') : t('sign_in'));
+  $('#account-type').innerHTML = a ? `${isOwner(a) ? '<span class="owner-tag">🐢 OWNER</span>· ' : '🐢 '}${a.demo ? 'Microsoft · Demo' : t('microsoft')}` : (raw && raw.expired ? t('session_expired') : raw && raw.pending ? '…' : t('no_account'));
   $('#account-avatar').src = a ? avatar(a) : 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
 }
 
@@ -446,7 +449,7 @@ function welcome(show) {
     const ok = await safe(() => aqua.loginMicrosoft(), t('signed_in'));
     demoNote();
     b.disabled = false; b.textContent = t('ms_login');
-    if (ok || S.accounts.length) welcome(false);
+    if (ok || selectedAccount()) welcome(false);
   };
   $('#w-preview').onclick = () => { welcome(false); go('preview'); };
   $('#w-skip').onclick = () => welcome(false);
@@ -597,7 +600,7 @@ async function loadMods(reset) {
   const list = $('#mods-list'), more = $('#mods-more');
   const instId = $('#mods-instance').value;
   if (!instId) { list.innerHTML = `<p class="empty">${t('create_profile_first')}</p>`; return; }
-  MODS.source = 'modrinth'; // CurseForge убран: без ключа API он не работает, все моды берём с Modrinth
+  MODS.source = 'modrinth'; // моды только с Modrinth
   $('#mods-search').style.display = MODS.tab === 'browse' ? '' : 'none';
   if (reset) { MODS.offset = 0; list.innerHTML = '<div class="spinner"></div>'; }
   const token = ++MODS.token;
@@ -986,7 +989,7 @@ async function init() {
     S = s;
     renderAll();
     if ($('#page-friends').classList.contains('active')) renderFriends();
-    if (!$('#welcome').hidden && S.accounts.length) welcome(false);
+    if (!$('#welcome').hidden && selectedAccount()) welcome(false);
     if ($('#page-servers').classList.contains('active')) renderServers(false);
   });
   aqua.onProgress(onProgress);
@@ -1023,6 +1026,8 @@ async function init() {
   loadNews();
   setInterval(() => { if ($('#page-friends').classList.contains('active')) renderFriends(); }, 20000);
   if (!S.accounts.length) setTimeout(() => welcome(true), 400);
+  let welcomedExpired = false;
+  aqua.onState(() => { const r = rawAccount(); if (r && r.expired && !welcomedExpired && !$('#modal-root').innerHTML) { welcomedExpired = true; toast(t('session_expired_toast'), 'err'); welcome(true); } });
 }
 
 init().catch((e) => toast('UI: ' + e.message, 'err'));

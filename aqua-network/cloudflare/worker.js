@@ -1,6 +1,6 @@
 /*
  * Aqua Network для Cloudflare Workers — бесплатно, не засыпает, данные в базе D1.
- * Привязки: D1 база "DB"; секрет (необязательно) CF_API_KEY — ключ CurseForge.
+ * Привязки: D1 база "DB".
  */
 const SLOTS = ['cape', 'hat', 'face', 'wings', 'back', 'pet', 'aura', 'icon'];
 const NAME_RE = /^[A-Za-z0-9_]{3,16}$/;
@@ -89,7 +89,7 @@ export default {
     try {
       if (p === '/' || p === '/api/status') {
         const c = await db.prepare('SELECT COUNT(*) AS n FROM accounts').first();
-        return json({ name: 'Aqua Network', ok: true, accounts: c ? c.n : 0, curseforge: !!env.CF_API_KEY });
+        return json({ name: 'Aqua Network', ok: true, accounts: c ? c.n : 0});
       }
 
       // ---------- присутствие в игре, косметика, скины ----------
@@ -213,16 +213,6 @@ export default {
         return json({ ok: true });
       }
 
-      // ---------- CurseForge (ключ хранится только здесь) ----------
-      if (p.startsWith('/cf/')) {
-        if (!env.CF_API_KEY) return err(503, 'nocf', 'CurseForge key is not configured on this server');
-        return proxy('https://api.curseforge.com/' + p.slice(4) + url.search, { 'x-api-key': env.CF_API_KEY, Accept: 'application/json' });
-      }
-      if (p === '/cfdl') {
-        const target = url.searchParams.get('url') || '';
-        if (!/^https:\/\/(edge|mediafilez|media)\.forgecdn\.net\//.test(target)) return err(400, 'badurl', 'bad url');
-        return proxy(target, env.CF_API_KEY ? { 'x-api-key': env.CF_API_KEY } : {});
-      }
       return err(404, 'notfound', 'not found');
     } catch (e) {
       return err(500, 'server', String(e && e.message || e));

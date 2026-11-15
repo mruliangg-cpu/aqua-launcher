@@ -53,7 +53,6 @@ const DEFAULTS = {
     fullscreen: false,
     closeOnLaunch: false,
     animations: true,
-    curseforgeKey: '',
     showSnapshots: true,
     showOld: true,
   },
@@ -94,7 +93,7 @@ function seal(text) {
 
 function unseal(value) {
   if (!value) return null;
-  if (value.startsWith('enc:')) return safeStorage.decryptString(Buffer.from(value.slice(4), 'base64'));
+  if (value.startsWith('enc:')) { try { return safeStorage.decryptString(Buffer.from(value.slice(4), 'base64')); } catch { return null; } }
   if (value.startsWith('b64:')) return Buffer.from(value.slice(4), 'base64').toString();
   return value;
 }
@@ -104,7 +103,11 @@ function publicState() {
   const s = load();
   return {
     ...s,
-    accounts: s.accounts.map(({ refresh, mclc, aquaToken, ...a }) => ({ ...a, aqua: !!aquaToken || (a.type === 'microsoft' && !a.demo) })),
+    accounts: s.accounts.map(({ refresh, mclc, aquaToken, ...a }) => {
+      const fresh = !!(mclc && mclc.meta && mclc.meta.exp > Date.now() + 5 * 60e3);
+      // pending — сессию ещё проверяем при запуске; expired — нужно войти снова
+      return { ...a, aqua: !!aquaToken || (a.type === 'microsoft' && !a.demo), pending: !fresh && !a.expired, expired: !!a.expired };
+    }),
   };
 }
 
