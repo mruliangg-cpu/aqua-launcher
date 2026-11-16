@@ -13,14 +13,12 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.PickaxeItem;
-import net.minecraft.item.ShearsItem;
-import net.minecraft.item.SwordItem;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -60,14 +58,14 @@ public final class BedwarsModules {
         for (int i = 0; i < p().getInventory().size(); i++) { ItemStack s = p().getInventory().getStack(i); if (s.getItem() instanceof BlockItem) n += s.getCount(); }
         return n;
     }
-    private static boolean hasType(Class<?> cls) {
+    private static boolean hasTag(TagKey<Item> tag) {
         if (p() == null) return false;
-        for (int i = 0; i < p().getInventory().size(); i++) if (cls.isInstance(p().getInventory().getStack(i).getItem())) return true;
+        for (int i = 0; i < p().getInventory().size(); i++) if (p().getInventory().getStack(i).isIn(tag)) return true;
         return false;
     }
-    private static ItemStack firstOfType(Class<?> cls) {
+    private static ItemStack firstWithTag(TagKey<Item> tag) {
         if (p() == null) return ItemStack.EMPTY;
-        for (int i = 0; i < p().getInventory().size(); i++) { ItemStack s = p().getInventory().getStack(i); if (cls.isInstance(s.getItem())) return s; }
+        for (int i = 0; i < p().getInventory().size(); i++) { ItemStack s = p().getInventory().getStack(i); if (s.isIn(tag)) return s; }
         return ItemStack.EMPTY;
     }
     private static String dir(float yaw) {
@@ -113,7 +111,7 @@ public final class BedwarsModules {
         L.add(hud("Target HP", "Здоровье цели", CB, () -> recent(CombatTracker.lastTargetTime, 3000) && CombatTracker.lastTarget != null ? "❤ " + Math.round(CombatTracker.lastTarget.getHealth()) : null, "❤ 14"));
         L.add(hud("Weapon", "Оружие в руке", CB, () -> {
             if (p() == null) return null; ItemStack h = p().getMainHandStack();
-            return (h.getItem() instanceof SwordItem || h.getItem() instanceof AxeItem) ? h.getName().getString() : null; }, "Diamond Sword"));
+            return (h.isIn(ItemTags.SWORDS) || h.isIn(ItemTags.AXES)) ? h.getName().getString() : null; }, "Diamond Sword"));
         L.add(hud("Using Item", "Ешь/пьёшь/натягиваешь лук", CB, () -> p() != null && p().isUsingItem() ? t("Использую…", "Using…") : null, "Using…"));
         L.add(hud("In Air", "Ты в воздухе (не на земле)", CB, () -> p() != null && !p().isOnGround() ? t("В воздухе", "In air") : null, "In air"));
 
@@ -144,10 +142,10 @@ public final class BedwarsModules {
         L.add(hud("No Blocks", "Громко предупреждает, когда кончились блоки", MS, () -> p() != null && countBlocks() == 0 ? "⚠ " + t("НЕТ БЛОКОВ", "NO BLOCKS") : null, "⚠ NO BLOCKS"));
         L.add(hud("Low Hunger", "Мало еды", MS, () -> p() != null && p().getHungerManager().getFoodLevel() <= 6 ? "⚠ " + t("голод", "hunger") : null, "⚠ hunger"));
         L.add(hud("Inventory Full", "Инвентарь забит", MS, () -> p() != null && p().getInventory().getEmptySlot() < 0 ? "⚠ " + t("инвентарь полон", "inv full") : null, "⚠ inv full"));
-        L.add(hud("Pickaxe", "Какая кирка есть", MS, () -> { ItemStack s = firstOfType(PickaxeItem.class); return s.isEmpty() ? null : s.getName().getString(); }, "Iron Pickaxe"));
-        L.add(hud("Axe", "Какой топор есть", MS, () -> { ItemStack s = firstOfType(AxeItem.class); return s.isEmpty() ? null : s.getName().getString(); }, "Iron Axe"));
-        L.add(hud("Shears", "Есть ли ножницы", MS, () -> hasType(ShearsItem.class) ? t("Ножницы ✔", "Shears ✔") : null, "Shears ✔"));
-        L.add(hud("No Sword", "Нет меча в инвентаре", MS, () -> p() != null && !hasType(SwordItem.class) ? "⚠ " + t("нет меча", "no sword") : null, "⚠ no sword"));
+        L.add(hud("Pickaxe", "Какая кирка есть", MS, () -> { ItemStack s = firstWithTag(ItemTags.PICKAXES); return s.isEmpty() ? null : s.getName().getString(); }, "Iron Pickaxe"));
+        L.add(hud("Axe", "Какой топор есть", MS, () -> { ItemStack s = firstWithTag(ItemTags.AXES); return s.isEmpty() ? null : s.getName().getString(); }, "Iron Axe"));
+        L.add(hud("Shears", "Есть ли ножницы", MS, () -> countItem(Items.SHEARS) > 0 ? t("Ножницы ✔", "Shears ✔") : null, "Shears ✔"));
+        L.add(hud("No Sword", "Нет меча в инвентаре", MS, () -> p() != null && !hasTag(ItemTags.SWORDS) ? "⚠ " + t("нет меча", "no sword") : null, "⚠ no sword"));
         L.add(hud("Water Bucket", "Есть ли ведро воды", MS, () -> countItem(Items.WATER_BUCKET) > 0 ? t("Вода ✔", "Water ✔") : null, "Water ✔"));
         L.add(hud("Golden Carrots", "Сколько золотой моркови (еда)", MS, () -> { int n = countItem(Items.GOLDEN_CARROT); return n > 0 ? t("Морковь: ", "Carrots: ") + n : null; }, "Carrots: 12"));
 
