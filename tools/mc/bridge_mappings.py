@@ -67,7 +67,8 @@ def parse_proguard(text):
             else:
                 fm = re.match(r'(\S+) (\w+) -> (\S+)', s)
                 if fm:
-                    fields[cur_obf][fm.group(3)] = fm.group(2)
+                    ftype, fname, fobf = fm.groups()
+                    fields[cur_obf][fobf] = (fname, to_desc(ftype))
     return classes, methods, fields
 
 # ---- intermediary: obf -> intermediary (с obf-дескрипторами). Поддержка tiny v1 и v2. ----
@@ -161,13 +162,13 @@ def main():
             if yarn_name and yarn_name != moj_name:
                 o.append(f'\tm\t{moj_desc}\t{moj_name}\t{yarn_name}')
         # поля
-        for obf_name, moj_name in mfld.get(obf_cls, {}).items():
+        for obf_name, (moj_name, moj_desc) in mfld.get(obf_cls, {}).items():
             inter_name = ifld.get(obf_cls, {}).get(obf_name)
             if not inter_name:
                 continue
             yarn_name = yfld.get((inter_cls, inter_name))
             if yarn_name and yarn_name != moj_name:
-                o.append(f'\tf\t\t{moj_name}\t{yarn_name}')
+                o.append(f'\tf\t{moj_desc}\t{moj_name}\t{yarn_name}')
     open(out, 'w', encoding='utf-8').write('\n'.join(o) + '\n')
     print(f'написал {out}: классов-мостов {hits}', file=sys.stderr)
 
