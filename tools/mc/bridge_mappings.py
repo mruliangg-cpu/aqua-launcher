@@ -20,7 +20,7 @@ def tiny_text(coord):
         try:
             z = zipfile.ZipFile(io.BytesIO(getb(url)))
             name = next(n for n in z.namelist() if n.endswith('mappings.tiny'))
-            return z.read(name).decode('utf-8')
+            return z.read(name).decode('utf-8'), url + ' :: ' + name
         except Exception as e:
             last = f'{url}: {e}'
     raise RuntimeError(f'нет jar для {coord} ({last})')
@@ -61,12 +61,12 @@ def main():
     target, base, out = sys.argv[1], sys.argv[2], sys.argv[3]
     inter_coord = next(i['maven'] for i in getj('https://meta.fabricmc.net/v2/versions/intermediary') if i['version'] == target)
     print(f'intermediary coord: {inter_coord}', file=sys.stderr)
-    itext = tiny_text(inter_coord)
-    print('INTER HEAD:\n' + '\n'.join(repr(l) for l in itext.split('\n')[:4]), file=sys.stderr)
+    itext, iname = tiny_text(inter_coord)
+    print(f'IDBG file={iname} len={len(itext)} first150={itext[:150]!r}', file=sys.stderr)
     icls, imem = parse_v1(itext)
     yarn_ver = getj(f'https://meta.fabricmc.net/v2/versions/yarn/{base}')[0]['version']
     print(f'yarn base: {yarn_ver}', file=sys.stderr)
-    ycls, ymem = parse_yarn_v2(tiny_text(f'net.fabricmc:yarn:{yarn_ver}'))
+    ycls, ymem = parse_yarn_v2(tiny_text(f'net.fabricmc:yarn:{yarn_ver}')[0])
     print(f'intermediary classes={len(icls)} members={len(imem)}; yarn classes={len(ycls)} members={len(ymem)}', file=sys.stderr)
 
     # члены intermediary сгруппировать по official-владельцу
