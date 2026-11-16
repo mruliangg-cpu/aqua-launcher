@@ -71,6 +71,7 @@ def main():
     yarn_ver = getj(f'https://meta.fabricmc.net/v2/versions/yarn/{base}')[0]['version']
     print(f'yarn base: {yarn_ver}', file=sys.stderr)
     yarn_ns, yarn_cls, yarn_mem = parse_tiny(tiny_from_coord(f'net.fabricmc:yarn:{yarn_ver}'))
+    print(f'inter_ns={inter_ns}  yarn_ns={yarn_ns}', file=sys.stderr)
 
     iy = yarn_ns.index('intermediary'); ny = yarn_ns.index('named')
     # intermediary-name -> yarn-name (классы)
