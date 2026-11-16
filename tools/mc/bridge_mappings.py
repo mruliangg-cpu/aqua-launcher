@@ -70,21 +70,35 @@ def parse_proguard(text):
                     fields[cur_obf][fm.group(3)] = fm.group(2)
     return classes, methods, fields
 
-# ---- intermediary v1: obf -> intermediary (с obf-дескрипторами) ----
-def parse_inter_v1(text):
+# ---- intermediary: obf -> intermediary (с obf-дескрипторами). Поддержка tiny v1 и v2. ----
+def parse_inter(text):
     cls = {}   # obf -> inter
     meth = {}  # obf_cls -> {(obf_name, obf_desc): inter_name}
     fld = {}   # obf_cls -> {obf_name: inter_name}
-    for ln in text.split('\n'):
-        if not ln or ln.startswith('v1\t'):
-            continue
-        p = ln.split('\t')
-        if p[0] == 'CLASS' and len(p) >= 3:
-            cls[p[1]] = p[2]
-        elif p[0] == 'METHOD' and len(p) >= 5:
-            meth.setdefault(p[1], {})[(p[3], p[2])] = p[4]
-        elif p[0] == 'FIELD' and len(p) >= 5:
-            fld.setdefault(p[1], {})[p[3]] = p[4]
+    if text.lstrip().startswith('v1\t'):
+        for ln in text.split('\n'):
+            if not ln or ln.startswith('v1\t'):
+                continue
+            p = ln.split('\t')
+            if p[0] == 'CLASS' and len(p) >= 3:
+                cls[p[1]] = p[2]
+            elif p[0] == 'METHOD' and len(p) >= 5:
+                meth.setdefault(p[1], {})[(p[3], p[2])] = p[4]
+            elif p[0] == 'FIELD' and len(p) >= 5:
+                fld.setdefault(p[1], {})[p[3]] = p[4]
+    else:  # tiny v2: namespaces official, intermediary
+        cur = None
+        for ln in text.split('\n'):
+            if not ln or ln.startswith('tiny\t'):
+                continue
+            p = ln.strip().split('\t')
+            if ln[0] == 'c' and len(p) >= 3:
+                cur = p[1]; cls[p[1]] = p[2]
+            elif cur and p and p[0] == 'm' and len(p) >= 4:
+                # m <obf_desc> <obf_name> <inter_name>
+                meth.setdefault(cur, {})[(p[2], p[1])] = p[3]
+            elif cur and p and p[0] == 'f' and len(p) >= 4:
+                fld.setdefault(cur, {})[p[2]] = p[3]
     return cls, meth, fld
 
 # ---- yarn v2: intermediary -> named ----
@@ -114,7 +128,7 @@ def main():
     mcls, mmeth, mfld = parse_proguard(pg)
     print(f'mojang: classes={len(mcls)}', file=sys.stderr)
     # intermediary base
-    icls, imeth, ifld = parse_inter_v1(tiny_text('net.fabricmc:intermediary:' + base))
+    icls, imeth, ifld = parse_inter(tiny_text('net.fabricmc:intermediary:' + base))
     print(f'intermediary: classes={len(icls)}', file=sys.stderr)
     # yarn base
     yarn_ver = getj(f'https://meta.fabricmc.net/v2/versions/yarn/{base}')[0]['version']
