@@ -119,27 +119,71 @@ def parse_yarn(text):
             fld[(cur, p[2])] = p[3]
     return cls, meth, fld
 
-def fetch_proguard(ver):
+def version_json(ver):
     manifest = getj('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json')
-    vurl = next(v['url'] for v in manifest['versions'] if v['id'] == ver)
-    vjson = getj(vurl)
-    pg = urllib.request.urlopen(urllib.request.Request(vjson['downloads']['client_mappings']['url'], headers=UA), timeout=180).read().decode('utf-8')
+    return getj(next(v['url'] for v in manifest['versions'] if v['id'] == ver))
+
+def fetch_proguard(ver):
+    pg = getb(version_json(ver)['downloads']['client_mappings']['url']).decode('utf-8')
     return parse_proguard(pg)
+
+import struct
+def _cp(b):
+    """Разобрать constant pool class-файла -> список utf8 по индексу (прочее None)."""
+    n = struct.unpack_from('>H', b, 8)[0]
+    utf = [None] * n
+    i = 10; idx = 1
+    while idx < n:
+        tag = b[i]; i += 1
+        if tag == 1:
+            ln = struct.unpack_from('>H', b, i)[0]; i += 2
+            utf[idx] = b[i:i+ln].decode('utf-8', 'replace'); i += ln
+        elif tag in (5, 6):  # long/double занимают 2 слота
+            i += 8; idx += 1
+        elif tag in (3, 4, 9, 10, 11, 12, 17, 18):
+            i += 4
+        elif tag in (7, 8, 16, 19, 20):
+            i += 2
+        elif tag == 15:
+            i += 3
+        else:
+            i += 2
+        idx += 1
+    return utf, i
+
+def fetch_native(ver):
+    """Прочитать имена классов/полей/методов прямо из client.jar 26.x (без обфускации)."""
+    jar = getb(version_json(ver)['downloads']['client']['url'])
+    z = zipfile.ZipFile(io.BytesIO(jar))
+    native_f = {}; native_m = {}
+    for name in z.namelist():
+        if not name.endswith('.class') or not name.startswith('net/minecraft/'):
+            continue
+        try:
+            b = z.read(name)
+            utf, i = _cp(b)
+            i += 6  # access_flags(2) this_class(2) super_class(2)
+            ni = struct.unpack_from('>H', b, i)[0]; i += 2  # interfaces_count
+            i += ni * 2
+            cls = name[:-6]
+            for store in (native_f, native_m):
+                cnt = struct.unpack_from('>H', b, i)[0]; i += 2
+                s = store.setdefault(cls, set())
+                for _ in range(cnt):
+                    acc, nidx, didx = struct.unpack_from('>HHH', b, i); i += 6
+                    s.add(utf[nidx])
+                    attrs = struct.unpack_from('>H', b, i)[0]; i += 2
+                    for _ in range(attrs):
+                        alen = struct.unpack_from('>I', b, i + 2)[0]; i += 6 + alen
+        except Exception:
+            continue
+    return native_f, native_m
 
 def main():
     target, base, out = sys.argv[1], sys.argv[2], sys.argv[3]
-    # Имена, которые реально есть в target (26.x) — чтобы не переименовывать в уже занятое имя.
-    tcls, tmeth, tfld = fetch_proguard(target)
-    # родные имена полей/методов target по классу (slash-форма mojang-класса)
-    native_f = {}; native_m = {}
-    tinv = {o: m for m, o in tcls.items()}  # obf(=real) -> moj
-    for obf, fs in tfld.items():
-        c = tinv.get(obf, obf).replace('.', '/')
-        native_f.setdefault(c, set()).update(n for n, d in fs.values())
-    for obf, ms in tmeth.items():
-        c = tinv.get(obf, obf).replace('.', '/')
-        native_m.setdefault(c, set()).update(ms.values())
-    print(f'target {target}: classes={len(tcls)}', file=sys.stderr)
+    # Родные имена 26.x читаем прямо из client.jar (у 26.x нет ProGuard — игра без обфускации).
+    native_f, native_m = fetch_native(target)
+    print(f'target {target}: classes с полями={len(native_f)}', file=sys.stderr)
     # Mojang client mappings для base
     mcls, mmeth, mfld = fetch_proguard(base)
     print(f'mojang: classes={len(mcls)}', file=sys.stderr)
