@@ -389,10 +389,33 @@ public final class PvpModules {
             case "Крит" -> SoundEvents.ENTITY_PLAYER_ATTACK_CRIT;
             case "Аметист" -> SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME;
             case "Уровень" -> SoundEvents.ENTITY_PLAYER_LEVELUP;
+            case "Нотка" -> SoundEvents.BLOCK_NOTE_BLOCK_PLING;
+            case "Колокол" -> SoundEvents.BLOCK_NOTE_BLOCK_BELL;
+            case "Бас" -> SoundEvents.BLOCK_NOTE_BLOCK_BASS;
+            case "Арфа" -> SoundEvents.BLOCK_NOTE_BLOCK_HARP;
+            case "Флейта" -> SoundEvents.BLOCK_NOTE_BLOCK_FLUTE;
+            case "Поп" -> SoundEvents.ENTITY_ITEM_PICKUP;
+            case "Выстрел" -> SoundEvents.ENTITY_ARROW_SHOOT;
+            case "Вскользь" -> SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP;
+            case "Нокбэк" -> SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK;
+            case "Слабый" -> SoundEvents.ENTITY_PLAYER_ATTACK_WEAK;
+            case "Сильный" -> SoundEvents.ENTITY_PLAYER_ATTACK_STRONG;
+            case "Щит" -> SoundEvents.ITEM_SHIELD_BLOCK;
+            case "Наковальня" -> SoundEvents.BLOCK_ANVIL_LAND;
+            case "Рычаг" -> SoundEvents.BLOCK_LEVER_CLICK;
+            case "Жемчуг" -> SoundEvents.ENTITY_ENDER_PEARL_THROW;
+            case "Телепорт" -> SoundEvents.ENTITY_ENDERMAN_TELEPORT;
+            case "Динамит" -> SoundEvents.ENTITY_TNT_PRIMED;
+            case "Разбить" -> SoundEvents.ENTITY_ITEM_BREAK;
+            case "Яйцо" -> SoundEvents.ENTITY_CHICKEN_EGG;
+            case "Звонок" -> SoundEvents.BLOCK_BELL_USE;
+            case "Сундук" -> SoundEvents.BLOCK_CHEST_OPEN;
             default -> SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
         };
     }
-    private static final String[] SOUNDS = {"Опыт", "Попадание", "Крит", "Аметист", "Уровень"};
+    private static final String[] SOUNDS = {"Опыт", "Попадание", "Крит", "Аметист", "Уровень",
+            "Нотка", "Колокол", "Бас", "Арфа", "Флейта", "Поп", "Выстрел", "Вскользь", "Нокбэк", "Слабый",
+            "Сильный", "Щит", "Наковальня", "Рычаг", "Жемчуг", "Телепорт", "Динамит", "Разбить", "Яйцо", "Звонок", "Сундук"};
 
     // =================================================================== модули
     /** Модуль без своей логики — его работу делает render()/tick() выше. */

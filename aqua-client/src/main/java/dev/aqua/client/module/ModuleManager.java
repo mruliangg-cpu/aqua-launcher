@@ -113,6 +113,8 @@ public final class ModuleManager {
         add(new Fullbright(), false);
         add(new BlockOutline(), false);
         add(new Crosshair(), false);
+        add(new BreakingParticles(), false);
+        add(new ShulkerTooltip(), false);
         add(new TimeChanger(), false);
         add(new WeatherChanger(), false);
         add(new LowFire(), false);

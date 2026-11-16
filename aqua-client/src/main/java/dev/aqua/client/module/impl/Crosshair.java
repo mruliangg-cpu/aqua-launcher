@@ -11,7 +11,7 @@ import net.minecraft.client.gui.DrawContext;
 
 public class Crosshair extends Module {
     private static Crosshair instance;
-    private final ModeSetting mode = add(new ModeSetting("Вид", "Крест", "Крест", "Точка", "Круг", "Т-образный"));
+    private final ModeSetting mode = add(new ModeSetting("Вид", "Крест", "Крест", "Точка", "Круг", "Т-образный", "Крест с точкой", "Крестик X", "Квадрат", "Ромб", "Стрелки"));
     private final NumberSetting length = add(new NumberSetting("Длина", 4, 1, 12, 1));
     private final NumberSetting gap = add(new NumberSetting("Отступ", 2, 0, 8, 1));
     private final NumberSetting thickness = add(new NumberSetting("Толщина", 1, 1, 4, 1));
@@ -54,12 +54,48 @@ public class Crosshair extends Module {
             if (dot.isOn()) Render2D.rect(c, cx - half, cy - half, t, t, col);
             return;
         }
+        if (mode.is("Квадрат")) {
+            int r = g + l;
+            bar(c, cx - r, cy - r, 2 * r, t, col, true);              // верх
+            bar(c, cx - r, cy + r - t + 1, 2 * r, t, col, true);      // низ
+            bar(c, cx - r, cy - r, t, 2 * r, col, true);             // лево
+            bar(c, cx + r - t + 1, cy - r, t, 2 * r, col, true);     // право
+            if (dot.isOn()) bar(c, cx - half, cy - half, t, t, col, true);
+            return;
+        }
+        if (mode.is("Ромб")) {
+            int r = g + l;
+            for (int i = 0; i < r; i++) {
+                int d = r - i;
+                bar(c, cx + i, cy - d, t, t, col, true); bar(c, cx - i, cy - d, t, t, col, true);
+                bar(c, cx + i, cy + d, t, t, col, true); bar(c, cx - i, cy + d, t, t, col, true);
+            }
+            if (dot.isOn()) bar(c, cx - half, cy - half, t, t, col, true);
+            return;
+        }
+        if (mode.is("Крестик X")) {
+            for (int i = g; i <= g + l; i++) {
+                bar(c, cx + i - half, cy + i - half, t, t, col, true); bar(c, cx - i - half, cy - i - half, t, t, col, true);
+                bar(c, cx + i - half, cy - i - half, t, t, col, true); bar(c, cx - i - half, cy + i - half, t, t, col, true);
+            }
+            if (dot.isOn()) bar(c, cx - half, cy - half, t, t, col, true);
+            return;
+        }
+        if (mode.is("Стрелки")) {  // < > ^ v, остриём к центру
+            for (int i = 0; i < l; i++) {
+                bar(c, cx - g - l + i - half, cy - (l - i) - half, t, t, col, true); bar(c, cx - g - l + i - half, cy + (l - i) - half, t, t, col, true); // лево
+                bar(c, cx + g + l - i - half, cy - (l - i) - half, t, t, col, true); bar(c, cx + g + l - i - half, cy + (l - i) - half, t, t, col, true); // право
+            }
+            if (dot.isOn()) bar(c, cx - half, cy - half, t, t, col, true);
+            return;
+        }
         boolean tee = mode.is("Т-образный");
+        boolean centerDot = dot.isOn() || mode.is("Крест с точкой");
         bar(c, cx - half, cy - g - l - half, t, l, col, !tee);  // верх
         bar(c, cx - half, cy + g + 1 - half, t, l, col, true);   // низ
         bar(c, cx - g - l - half, cy - half, l, t, col, true);   // лево
         bar(c, cx + g + 1 - half, cy - half, l, t, col, true);   // право
-        if (dot.isOn()) bar(c, cx - half, cy - half, t, t, col, true);
+        if (centerDot) bar(c, cx - half, cy - half, t, t, col, true);
     }
 
     private void bar(DrawContext c, int x, int y, int w, int h, int col, boolean draw) {

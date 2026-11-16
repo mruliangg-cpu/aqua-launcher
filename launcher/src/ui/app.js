@@ -866,7 +866,9 @@ function renderSettings() {
   const sel = (key, options) => `<select class="select" data-set="${key}">${options.map(([v, l]) => opt(v, l, st[key])).join('')}</select>`;
   const chk = (key, label) => `<label class="check"><input type="checkbox" data-set="${key}" ${st[key] ? 'checked' : ''}><i></i>${label}</label>`;
   const row = (label, control) => `<div class="set-row"><span>${label}</span>${control}</div>`;
-  const maxRam = Math.max(2048, Math.floor((INFO.totalMem * 0.85) / 256) * 256);
+  // До 15 ГБ, но не больше того, что физически есть в ПК (иначе игра вылетит), с запасом 1 ГБ для системы.
+  const safeRam = Math.floor((INFO.totalMem - 1024) / 256) * 256;
+  const maxRam = Math.max(2048, Math.min(15360, safeRam));
   const servers = [['', t('none')], ...(S.servers || []).map((s) => [s.address, `${s.name} (${s.address})`])];
   $('#settings-root').innerHTML = `
     <div class="card glass"><h4>${t('g_general')}</h4>
