@@ -93,6 +93,8 @@
     $$('[data-count]', e.target).forEach(countUp);
   }), { threshold: 0.12 });
   $$('.reveal').forEach((el, i) => { el.style.transitionDelay = (i % 3) * 80 + 'ms'; io.observe(el); });
+  // страховка: что бы ни случилось с наблюдателем — контент показываем
+  setTimeout(() => $$('.reveal:not(.in)').forEach((e) => { e.classList.add('in'); $$('[data-count]', e).forEach(countUp); }), 2200);
   function countUp(el) {
     const to = +el.dataset.count, t0 = performance.now();
     const step = (t) => { const k = Math.min(1, (t - t0) / 1400); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
@@ -119,37 +121,6 @@
   $$('.gallery img').forEach((img) => img.onclick = () => { $('img', lb).src = img.src; lb.hidden = false; });
   lb.onclick = () => { lb.hidden = true; };
   addEventListener('keydown', (e) => { if (e.key === 'Escape') lb.hidden = true; });
-
-  // ---------------------------------------------------------------- океан: пузырьки и рыбки
-  const cv = $('#ocean'), g = cv.getContext('2d');
-  let W, H, bubbles = [], fish = [];
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  function size() {
-    W = cv.width = innerWidth * devicePixelRatio; H = cv.height = innerHeight * devicePixelRatio;
-    bubbles = Array.from({ length: Math.round(innerWidth / 22) }, () => newBubble(true));
-    fish = Array.from({ length: 6 }, (_, i) => ({ x: Math.random() * W, y: H * (0.25 + Math.random() * 0.6), v: (0.3 + Math.random() * 0.5) * devicePixelRatio * (i % 2 ? 1 : -1), s: (3 + Math.random() * 3) * devicePixelRatio, c: ['#ff9f43', '#5ff2c8', '#ffd36b', '#ff6b9d', '#7fb8ff', '#3ee6ff'][i] }));
-  }
-  function newBubble(any) {
-    const r = (1 + Math.random() * 4) * devicePixelRatio;
-    return { x: Math.random() * W, y: any ? Math.random() * H : H + r, r, v: (0.3 + Math.random() * 0.9) * devicePixelRatio, w: Math.random() * 6.28 };
-  }
-  function drawFish(f) {
-    const s = f.s, dir = Math.sign(f.v);
-    g.save(); g.translate(f.x, f.y + Math.sin(f.x / 60) * 6); g.scale(dir, 1); g.globalAlpha = 0.35; g.fillStyle = f.c;
-    g.fillRect(-3 * s, -s, 5 * s, 2 * s); g.fillRect(-5 * s, -1.5 * s, 2 * s, 3 * s); g.fillStyle = '#04192b'; g.fillRect(1 * s, -0.5 * s, s * 0.8, s * 0.8); g.restore();
-  }
-  function frame() {
-    g.clearRect(0, 0, W, H);
-    for (const f of fish) { f.x += f.v; if (f.x > W + 80) f.x = -80; if (f.x < -80) f.x = W + 80; drawFish(f); }
-    for (const b of bubbles) {
-      b.y -= b.v; b.w += 0.03; const x = b.x + Math.sin(b.w) * 6;
-      g.beginPath(); g.arc(x, b.y, b.r, 0, 6.28); g.strokeStyle = 'rgba(160, 235, 255, .35)'; g.lineWidth = devicePixelRatio; g.stroke();
-      g.fillStyle = 'rgba(200, 245, 255, .25)'; g.fillRect(x - b.r * 0.4, b.y - b.r * 0.5, b.r * 0.4, b.r * 0.4);
-      if (b.y < -10) Object.assign(b, newBubble(false));
-    }
-    if (!reduce) requestAnimationFrame(frame);
-  }
-  addEventListener('resize', size); size(); frame();
 
   applyLang();
 })();
