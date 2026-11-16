@@ -38,13 +38,15 @@ public abstract class ElytraFeatureRendererMixin {
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void aqua$hideElytra(MatrixStack matrices, net.minecraft.client.render.command.OrderedRenderCommandQueue queue, int light,
                                  net.minecraft.client.render.entity.state.BipedEntityRenderState state, float limbAngle, float limbDistance, CallbackInfo ci) {
-        if (aqua$wingsInstead(aqua$player(state.id))) ci.cancel();
+        if (state instanceof net.minecraft.client.render.entity.state.PlayerEntityRenderState ps
+                && aqua$wingsInstead(aqua$player(ps.id))) ci.cancel();
     }
     //#elseif MC >= 1.21.2
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
     private void aqua$hideElytra(MatrixStack matrices, net.minecraft.client.render.VertexConsumerProvider consumers, int light,
                                  net.minecraft.client.render.entity.state.BipedEntityRenderState state, float limbAngle, float limbDistance, CallbackInfo ci) {
-        if (aqua$wingsInstead(aqua$player(state.id))) ci.cancel();
+        if (state instanceof net.minecraft.client.render.entity.state.PlayerEntityRenderState ps
+                && aqua$wingsInstead(aqua$player(ps.id))) ci.cancel();
     }
     //#else
     @Inject(method = "render", at = @At("HEAD"), cancellable = true)
