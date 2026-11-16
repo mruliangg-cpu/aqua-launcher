@@ -59,6 +59,30 @@ try:
 except Exception as e:
     print('  yarn meta error:', e)
 
+print('== Loom 1.17 required Gradle (from module metadata) ==')
+try:
+    import xml.etree.ElementTree as ET
+    meta = urllib.request.urlopen(urllib.request.Request('https://maven.fabricmc.net/net/fabricmc/fabric-loom/1.17-SNAPSHOT/maven-metadata.xml', headers=UA), timeout=30).read().decode()
+    root = ET.fromstring(meta)
+    sv = root.find('.//snapshotVersions')
+    modfile = None
+    for sv2 in root.iter('snapshotVersion'):
+        ext = sv2.findtext('extension')
+        if ext == 'module':
+            val = sv2.findtext('value')
+            modfile = f'fabric-loom-1.17-SNAPSHOT-{val}.module'
+    print('   module file:', modfile)
+    if modfile:
+        mod = getj(f'https://maven.fabricmc.net/net/fabricmc/fabric-loom/1.17-SNAPSHOT/{modfile}')
+        for var in mod.get('variants', []):
+            attrs = var.get('attributes', {})
+            av = attrs.get('org.gradle.plugin.api-version')
+            jv = attrs.get('org.gradle.jvm.version')
+            if av:
+                print(f'   variant {var.get("name")}: gradle-api={av} jvm={jv}')
+except Exception as e:
+    print('   loom module error:', e)
+
 print('== loader (latest stable) ==')
 try:
     loader = next(l['version'] for l in get('https://meta.fabricmc.net/v2/versions/loader') if l['stable'])
