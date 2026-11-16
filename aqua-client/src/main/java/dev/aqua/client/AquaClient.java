@@ -118,7 +118,7 @@ public class AquaClient implements ClientModInitializer {
         });
         //#endif
 
-        //#if MC < 1.21.9 || MC >= 1.21.10
+        //#if MC < 1.21.9
         WorldRenderEvents.BLOCK_OUTLINE.register((ctx, outline) -> {
             BlockOutline b = ModuleManager.get(BlockOutline.class);
             return b == null || b.render(ctx, outline);

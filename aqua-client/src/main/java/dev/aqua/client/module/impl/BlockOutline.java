@@ -5,23 +5,19 @@ import dev.aqua.client.module.Module;
 import dev.aqua.client.setting.BoolSetting;
 import dev.aqua.client.setting.ColorSetting;
 import dev.aqua.client.util.ColorUtil;
-//#if MC >= 1.21.10
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-//#elseif MC < 1.21.9
+//#if MC < 1.21.9
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 //#endif
-import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.World;
 
 public class BlockOutline extends Module {
     private final ColorSetting color = add(new ColorSetting("Цвет линий", 0xFF3EE6FF));
@@ -32,30 +28,17 @@ public class BlockOutline extends Module {
         super("Block Outline", "Своя обводка и заливка блока под прицелом", Category.RENDER);
     }
 
-    //#if MC >= 1.21.10
-    /** 1.21.10+: новое событие отрисовки мира (пакет rendering.v1.world). */
-    public boolean render(WorldRenderContext ctx, WorldRenderContext.BlockOutlineContext bo) {
-        if (!isEnabled()) return true;
-        World world = MinecraftClient.getInstance().world;
-        if (world == null) return true;
-        return aqua$draw(ctx.matrices(), ctx.consumers(), world, bo.blockPos(), bo.blockState(), bo.cameraX(), bo.cameraY(), bo.cameraZ());
-    }
-    //#elseif MC < 1.21.9
     /** @return true — рисовать ванильную обводку, false — заменить своей. */
+    //#if MC < 1.21.9
     public boolean render(WorldRenderContext ctx, WorldRenderContext.BlockOutlineContext bo) {
         if (!isEnabled() || ctx.world() == null) return true;
-        return aqua$draw(ctx.matrixStack(), ctx.consumers(), ctx.world(), bo.blockPos(), bo.blockState(), bo.cameraX(), bo.cameraY(), bo.cameraZ());
-    }
-    //#endif
-
-    //#if MC < 1.21.9 || MC >= 1.21.10
-    /** Общая отрисовка обводки/заливки, одинаковая для старого и нового API. */
-    private boolean aqua$draw(MatrixStack ms, VertexConsumerProvider consumers, World world, BlockPos pos, BlockState state,
-                              double camX, double camY, double camZ) {
+        MatrixStack ms = ctx.matrixStack();
+        VertexConsumerProvider consumers = ctx.consumers();
         if (ms == null || consumers == null) return true;
-        VoxelShape shape = state.getOutlineShape(world, pos, ShapeContext.of(mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player));
+        BlockPos pos = bo.blockPos();
+        VoxelShape shape = bo.blockState().getOutlineShape(ctx.world(), pos, ShapeContext.of(mc.getCameraEntity() != null ? mc.getCameraEntity() : mc.player));
         if (shape.isEmpty()) return true;
-        double ox = pos.getX() - camX, oy = pos.getY() - camY, oz = pos.getZ() - camZ;
+        double ox = pos.getX() - bo.cameraX(), oy = pos.getY() - bo.cameraY(), oz = pos.getZ() - bo.cameraZ();
 
         if (fill.isOn()) {
             int fc = fillColor.color();
