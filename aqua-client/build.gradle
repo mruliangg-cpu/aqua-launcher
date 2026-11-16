@@ -1,6 +1,16 @@
-plugins {
-    id 'fabric-loom' version "${loom_version}"
+// Loom применяем через buildscript classpath, а не plugins{}, — так обходится строгая проверка
+// варианта плагина (Loom 1.17 под 26.x её не проходит в plugins-DSL).
+buildscript {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies {
+        classpath "net.fabricmc:fabric-loom:${loom_version}"
+    }
 }
+apply plugin: 'fabric-loom'
 
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
