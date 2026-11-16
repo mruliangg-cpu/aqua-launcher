@@ -113,9 +113,9 @@ public class Freelook extends Module {
         if (mc.player == null) return;
         var p = mc.player;
         realYaw = p.getYaw(); realPitch = p.getPitch();
-        realPrevYaw = p.prevYaw; realPrevPitch = p.prevPitch;
+        realPrevYaw = dev.aqua.client.compat.V.prevYaw(p); realPrevPitch = dev.aqua.client.compat.V.prevPitch(p);
         p.setYaw(yaw); p.setPitch(pitch);
-        p.prevYaw = yaw; p.prevPitch = pitch;
+        dev.aqua.client.compat.V.setPrevRot(p, yaw, pitch);
     }
 
     /** Сразу после камеры возвращаем настоящие углы — тело и движение не меняются. */
@@ -125,7 +125,7 @@ public class Freelook extends Module {
         if (mc.player == null) return;
         var p = mc.player;
         p.setYaw(realYaw); p.setPitch(realPitch);
-        p.prevYaw = realPrevYaw; p.prevPitch = realPrevPitch;
+        dev.aqua.client.compat.V.setPrevRot(p, realPrevYaw, realPrevPitch);
     }
 
     @Override

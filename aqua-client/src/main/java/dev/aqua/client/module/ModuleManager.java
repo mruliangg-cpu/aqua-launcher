@@ -116,6 +116,7 @@ public final class ModuleManager {
         add(new BreakingParticles(), false);
         add(new ShulkerTooltip(), false);
         add(new AppleSkin(), false);
+        add(new FastTransfer(), false);
         add(new TimeChanger(), false);
         add(new WeatherChanger(), false);
         add(new LowFire(), false);

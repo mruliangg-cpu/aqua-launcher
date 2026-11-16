@@ -376,6 +376,36 @@ public final class V {
     /** Живое превью модели игрока в GUI (для меню косметики). Модель следит за курсором. */
     public static void drawEntityPreview(net.minecraft.client.gui.DrawContext ctx, int x1, int y1, int x2, int y2,
                                          int size, float mouseX, float mouseY, net.minecraft.entity.LivingEntity e) {
+        //#if MC >= 1.20.2
         net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(ctx, x1, y1, x2, y2, size, 0.0625f, mouseX, mouseY, e);
+        //#else
+        int cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+        net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(ctx, cx, y2, size, (float) cx - mouseX, (float) cy - mouseY, e);
+        //#endif
+    }
+
+    /** Предыдущий угол (в 1.21.9 поля prev* переименованы в last*). */
+    public static void setPrevRot(net.minecraft.entity.Entity e, float yaw, float pitch) {
+        //#if MC >= 1.21.9
+        e.lastYaw = yaw; e.lastPitch = pitch;
+        //#else
+        e.prevYaw = yaw; e.prevPitch = pitch;
+        //#endif
+    }
+
+    public static float prevYaw(net.minecraft.entity.Entity e) {
+        //#if MC >= 1.21.9
+        return e.lastYaw;
+        //#else
+        return e.prevYaw;
+        //#endif
+    }
+
+    public static float prevPitch(net.minecraft.entity.Entity e) {
+        //#if MC >= 1.21.9
+        return e.lastPitch;
+        //#else
+        return e.prevPitch;
+        //#endif
     }
 }

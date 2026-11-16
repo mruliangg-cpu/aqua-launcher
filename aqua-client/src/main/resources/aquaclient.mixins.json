@@ -15,6 +15,7 @@
     "FloatingItemMixin",
     "GameMenuScreenMixin",
     "GameRendererMixin",
+    "HandledScreenMixin",
     "InGameHudMixin",
     "InGameOverlayRendererMixin",
     "LivingEntityRendererMixin",
