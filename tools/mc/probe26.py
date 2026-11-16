@@ -126,8 +126,31 @@ try:
         except Exception: pass
     for h in sorted(hits): print('   ', h)
     if not hits: print('    (none of the wanted classes found - deeper rename)')
-    # also list fabric key-binding / rendering module names present
-    mods=sorted(set(n.split('/')[-1] for n in nested if 'key' in n.lower() or 'render' in n.lower()))
-    print('   relevant module jars:', mods)
+    # FULL class listing for the key-mapping + rendering modules (exact new names)
+    for nj in nested:
+        bn=nj.split('/')[-1]
+        if ('key-mapping' in bn) or ('key-binding' in bn) or (bn.startswith('fabric-rendering-v1')):
+            print(f'   --- classes in {bn} ---')
+            try:
+                z2=zipfile.ZipFile(io.BytesIO(z.read(nj)))
+                for cn in sorted(z2.namelist()):
+                    if cn.endswith('.class') and '$' not in cn and cn.startswith('net/fabricmc'):
+                        print('       ', cn[:-6])
+            except Exception as ee:
+                print('       read error', ee)
 except Exception as e:
     print('   fabric-api layout error:', e)
+
+print('== 26.3 client.jar: input/windowing classes (GLFW->SDL swap) ==')
+try:
+    cj=urllib.request.urlopen(urllib.request.Request(_vjson26('26.3')['downloads']['client']['url'], headers=UA), timeout=180).read()
+    zc=zipfile.ZipFile(io.BytesIO(cj))
+    import re as _re
+    pats=_re.compile(r'(Sdl|Glfw|InputUtil|KeyMapping|KeyBinding|Keyboard|Mouse|Window)')
+    found=sorted(set(cn[:-6] for cn in zc.namelist()
+                     if cn.endswith('.class') and '$' not in cn and cn.startswith('net/minecraft/')
+                     and pats.search(cn.split('/')[-1])))
+    for f in found[:60]: print('   ', f)
+    print('   total:', len(found))
+except Exception as e:
+    print('   client input probe error:', e)
