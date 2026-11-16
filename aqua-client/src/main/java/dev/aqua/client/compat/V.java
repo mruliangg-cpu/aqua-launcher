@@ -386,7 +386,7 @@ public final class V {
 
     /** Предыдущий угол (в 1.21.9 поля prev* переименованы в last*). */
     public static void setPrevRot(net.minecraft.entity.Entity e, float yaw, float pitch) {
-        //#if MC >= 1.21.9
+        //#if MC >= 1.21.5
         e.lastYaw = yaw; e.lastPitch = pitch;
         //#else
         e.prevYaw = yaw; e.prevPitch = pitch;
@@ -394,7 +394,7 @@ public final class V {
     }
 
     public static float prevYaw(net.minecraft.entity.Entity e) {
-        //#if MC >= 1.21.9
+        //#if MC >= 1.21.5
         return e.lastYaw;
         //#else
         return e.prevYaw;
@@ -402,7 +402,7 @@ public final class V {
     }
 
     public static float prevPitch(net.minecraft.entity.Entity e) {
-        //#if MC >= 1.21.9
+        //#if MC >= 1.21.5
         return e.lastPitch;
         //#else
         return e.prevPitch;
