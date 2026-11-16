@@ -41,7 +41,7 @@ public class Cosmetics extends Module {
     private final StringSetting title = add(new StringSetting("Титул над ником", "", 12));
     private final ModeSetting titleColor = add(new ModeSetting("Цвет титула", "gold", dev.aqua.client.cosmetic.TitleRules.COLORS.toArray(new String[0])));
     private final BoolSetting titleCustom = add(new BoolSetting("Свой цвет титула", false));
-    private final dev.aqua.client.setting.ColorSetting titleCustomColor = add(new dev.aqua.client.setting.ColorSetting("Цвет (свой)", 0xFFFFC83D, titleCustom::isOn));
+    private final dev.aqua.client.setting.ColorSetting titleCustomColor = add(new dev.aqua.client.setting.ColorSetting("Цвет (свой)", 0xFFFFC83D), titleCustom::isOn);
 
     public Cosmetics() {
         super("Cosmetics", "Плащ Aqua Client и аура частиц", Category.COSMETIC);
