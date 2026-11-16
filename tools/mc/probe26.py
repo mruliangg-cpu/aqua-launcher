@@ -89,3 +89,45 @@ try:
     print('  loader:', loader)
 except Exception as e:
     print('  loader error:', e)
+
+# ============ 26.x porting ground-truth (LWJGL + fabric-api package layout) ============
+import zipfile, io
+def _vjson26(ver='26.3'):
+    man = get('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json')
+    u = next(v['url'] for v in man['versions'] if v['id']==ver)
+    return get(u)
+
+print('== 26.3 LWJGL libraries (compile classpath) ==')
+try:
+    vj = _vjson26('26.3')
+    libs = [l['name'] for l in vj.get('libraries',[]) if 'lwjgl' in l['name'].lower()]
+    for l in sorted(set(libs)): print('   ', l)
+    if not libs: print('    (no lwjgl in libraries!)')
+except Exception as e:
+    print('   lwjgl probe error:', e)
+
+print('== fabric-api 0.166.2+26.3 package layout (KeyBinding / WorldRender) ==')
+try:
+    apiurl='https://maven.fabricmc.net/net/fabricmc/fabric-api/fabric-api/0.166.2%2B26.3/fabric-api-0.166.2%2B26.3.jar'
+    raw=urllib.request.urlopen(urllib.request.Request(apiurl, headers=UA), timeout=120).read()
+    z=zipfile.ZipFile(io.BytesIO(raw))
+    nested=[n for n in z.namelist() if n.startswith('META-INF/jars/') and n.endswith('.jar')]
+    want=('KeyBindingHelper','WorldRenderEvents','WorldRenderContext','KeyBinding')
+    hits=set()
+    for nj in nested:
+        try:
+            z2=zipfile.ZipFile(io.BytesIO(z.read(nj)))
+            for cn in z2.namelist():
+                if cn.endswith('.class'):
+                    base=cn[:-6].split('/')[-1]
+                    if base in want:
+                        jn = nj.split('/')[-1]
+                        hits.add(cn[:-6].replace('/','.')+'   [in '+jn+']')
+        except Exception: pass
+    for h in sorted(hits): print('   ', h)
+    if not hits: print('    (none of the wanted classes found - deeper rename)')
+    # also list fabric key-binding / rendering module names present
+    mods=sorted(set(n.split('/')[-1] for n in nested if 'key' in n.lower() or 'render' in n.lower()))
+    print('   relevant module jars:', mods)
+except Exception as e:
+    print('   fabric-api layout error:', e)
