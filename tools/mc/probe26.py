@@ -73,7 +73,7 @@ try:
             modfile = f'fabric-loom-1.17-SNAPSHOT-{val}.module'
     print('   module file:', modfile)
     if modfile:
-        mod = getj(f'https://maven.fabricmc.net/net/fabricmc/fabric-loom/1.17-SNAPSHOT/{modfile}')
+        mod = get(f"https://maven.fabricmc.net/net/fabricmc/fabric-loom/1.17-SNAPSHOT/{modfile}")
         for var in mod.get('variants', []):
             attrs = var.get('attributes', {})
             av = attrs.get('org.gradle.plugin.api-version')
