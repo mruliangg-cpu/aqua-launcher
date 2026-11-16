@@ -59,7 +59,7 @@ jobs:
       - name: Use Gradle 9 for 26.x
         if: startsWith(matrix.mc, '26')
         run: |
-          sed -i -E 's|gradle-[0-9.]+-bin.zip|gradle-9.0.0-bin.zip|' build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
+          sed -i -E 's|gradle-[0-9.]+-bin.zip|gradle-8.14-bin.zip|' build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
       - name: Build Aqua Client ${{ matrix.mc }}
         working-directory: build-${{ matrix.mc }}
