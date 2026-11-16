@@ -24,12 +24,23 @@ try:
 except Exception as e:
     print('  game list error:', e)
 
-print('== Fabric intermediary for 26.x ==')
+print('== Fabric intermediary for 26.x (ALL) ==')
 try:
-    inter = {i['version'] for i in get('https://meta.fabricmc.net/v2/versions/intermediary')}
-    print('  intermediary has 26.x:', sorted([v for v in inter if v.startswith('26')])[:20] or 'none')
+    allinter = get('https://meta.fabricmc.net/v2/versions/intermediary')
+    inter26 = [i for i in allinter if i['version'].startswith('26') and 'snapshot' not in i['version'] and 'pre' not in i['version'] and 'rc' not in i['version']]
+    for i in inter26:
+        print('  ', i['version'], '->', i.get('maven'))
+    print('  (total 26.x full:', len(inter26), ')')
 except Exception as e:
     print('  intermediary meta error:', e)
+
+print('== direct intermediary endpoint per version ==')
+for v in ['26.1', '26.1.1', '26.2', '26.3']:
+    try:
+        r = get(f'https://meta.fabricmc.net/v2/versions/intermediary/{v}')
+        print(f'  /{v}:', (r[0].get('maven') if r else 'EMPTY LIST'))
+    except Exception as e:
+        print(f'  /{v}: error {e}')
 
 for v in ['26.1', '26.2', '26.3', '26.4']:
     print(f'== {v} ==')
