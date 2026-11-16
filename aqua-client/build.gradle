@@ -11,7 +11,14 @@ repositories { mavenCentral() }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    if (project.hasProperty('use_bridge')) {
+        // 26.x: игра без обфускации, Yarn нет — свой мост имён (official Mojang -> Yarn-имена 1.21.11).
+        mappings loom.layered {
+            mappings(rootProject.file('aqua-bridge.tiny'))
+        }
+    } else {
+        mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    }
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
@@ -30,7 +37,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-    toolchain { languageVersion = JavaLanguageVersion.of(21) }
+    toolchain { languageVersion = JavaLanguageVersion.of(javaVersion) }
     sourceCompatibility = JavaVersion.toVersion(javaVersion)
     targetCompatibility = JavaVersion.toVersion(javaVersion)
 }

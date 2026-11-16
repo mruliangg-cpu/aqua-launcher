@@ -17,10 +17,14 @@ def versions():
     return sorted(out, key=vkey)
 
 def props(mc):
-    yarn = get(f'https://meta.fabricmc.net/v2/versions/yarn/{mc}')[0]['version']
     q = urllib.parse.urlencode({'game_versions': json.dumps([mc]), 'loaders': json.dumps(['fabric'])})
     api = get(f'https://api.modrinth.com/v2/project/fabric-api/version?{q}')[0]['version_number']
     loader = next(l['version'] for l in get('https://meta.fabricmc.net/v2/versions/loader') if l['stable'])
+    if mc.startswith('26'):
+        # 26.x: игра без обфускации, Yarn нет — используем мост имён (official Mojang -> Yarn) + Java 25.
+        return {'loom_version': '1.17-SNAPSHOT', 'minecraft_version': mc, 'use_bridge': 'true',
+                'fabric_version': api, 'loader_version': loader, 'java_version': 25}
+    yarn = get(f'https://meta.fabricmc.net/v2/versions/yarn/{mc}')[0]['version']
     java = 21 if vkey(mc) >= (1, 20, 5) else 17
     loom = '1.13-SNAPSHOT' if vkey(mc) >= (1, 21, 11) else '1.11-SNAPSHOT' if vkey(mc) >= (1, 21, 9) else '1.10-SNAPSHOT'
     return {'loom_version': loom, 'minecraft_version': mc, 'yarn_mappings': yarn, 'fabric_version': api, 'loader_version': loader, 'java_version': java}

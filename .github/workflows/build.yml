@@ -36,8 +36,11 @@ jobs:
     name: client ${{ matrix.mc }}
     steps:
       - uses: actions/checkout@v4
+      - id: cfg
+        run: |
+          if [[ "${{ matrix.mc }}" == 26* ]]; then echo "java=25" >> "$GITHUB_OUTPUT"; else echo "java=21" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '21' }
+        with: { distribution: temurin, java-version: '${{ steps.cfg.outputs.java }}' }
       - uses: actions/cache@v4
         with:
           path: |
@@ -47,6 +50,9 @@ jobs:
           restore-keys: gradle-${{ matrix.mc }}-
       - name: Prepare sources for ${{ matrix.mc }}
         run: python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
+      - name: Build name bridge (26.x only)
+        if: startsWith(matrix.mc, '26')
+        run: python3 tools/mc/bridge_mappings.py 1.21.11 build-${{ matrix.mc }}/aqua-bridge.tiny
       - name: Build Aqua Client ${{ matrix.mc }}
         working-directory: build-${{ matrix.mc }}
         run: |
