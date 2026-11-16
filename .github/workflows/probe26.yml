@@ -12,3 +12,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Probe Fabric/Mojang for 26.x
         run: python3 tools/mc/probe26.py
+      - name: Build name bridge for 26.3
+        run: |
+          python3 tools/mc/bridge_mappings.py 26.3 1.21.11 /tmp/26.3-bridge.tiny || echo "BRIDGE FAILED"
+          echo "--- head of bridge ---"; head -20 /tmp/26.3-bridge.tiny || true
+          echo "--- lines ---"; wc -l /tmp/26.3-bridge.tiny || true
+          echo "--- sample known classes (MinecraftClient / ClientPlayerEntity) ---"
+          grep -aE "class_310|class_746" /tmp/26.3-bridge.tiny | head -4 || true
