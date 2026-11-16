@@ -36,11 +36,14 @@ jobs:
     name: client ${{ matrix.mc }}
     steps:
       - uses: actions/checkout@v4
-      - id: cfg
-        run: |
-          if [[ "${{ matrix.mc }}" == 26* ]]; then echo "java=25" >> "$GITHUB_OUTPUT"; else echo "java=21" >> "$GITHUB_OUTPUT"; fi
       - uses: actions/setup-java@v4
-        with: { distribution: temurin, java-version: '${{ steps.cfg.outputs.java }}' }
+        with:
+          distribution: temurin
+          java-version: |
+            21
+            25
+      - name: Run Gradle on Java 21 (compile uses toolchain)
+        run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
       - uses: actions/cache@v4
         with:
           path: |
@@ -53,17 +56,18 @@ jobs:
       - name: Build name bridge (26.x only)
         if: startsWith(matrix.mc, '26')
         run: python3 tools/mc/bridge_mappings.py 1.21.11 build-${{ matrix.mc }}/aqua-bridge.tiny
-      - name: Use Gradle 9 for 26.x (Java 25)
+      - name: Use Gradle 9 for 26.x
         if: startsWith(matrix.mc, '26')
         run: |
-          sed -i -E 's|gradle-[0-9.]+-bin.zip|gradle-9.1.0-bin.zip|' build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
+          sed -i -E 's|gradle-[0-9.]+-bin.zip|gradle-9.0.0-bin.zip|' build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
           grep distributionUrl build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
       - name: Build Aqua Client ${{ matrix.mc }}
         working-directory: build-${{ matrix.mc }}
         run: |
           ARGS=$(python3 ../tools/mc/resolve.py ${{ matrix.mc }})
           echo "$ARGS"
-          chmod +x gradlew && ./gradlew build -x copyToLauncher --no-daemon $ARGS
+          chmod +x gradlew && ./gradlew build -x copyToLauncher --no-daemon \
+            -Porg.gradle.java.installations.fromEnv=JAVA_HOME_25_X64,JAVA_HOME_21_X64 $ARGS
       - name: Collect jar
         run: |
           mkdir -p out
