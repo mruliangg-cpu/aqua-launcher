@@ -9,6 +9,11 @@ services:
       - path: /*
         name: X-Frame-Options
         value: SAMEORIGIN
+      # HTML/CSS/JS не кэшировать — чтобы телефоны всегда брали свежий дизайн
+      - path: /*
+        name: Cache-Control
+        value: no-cache, no-store, must-revalidate
+      # картинки можно кэшировать надолго
       - path: /assets/*
         name: Cache-Control
         value: public, max-age=604800
