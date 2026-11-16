@@ -70,7 +70,7 @@ try:
         ext = sv2.findtext('extension')
         if ext == 'module':
             val = sv2.findtext('value')
-            modfile = f'fabric-loom-1.17-SNAPSHOT-{val}.module'
+            modfile = f'fabric-loom-{val}.module'
     print('   module file:', modfile)
     if modfile:
         mod = get(f"https://maven.fabricmc.net/net/fabricmc/fabric-loom/1.17-SNAPSHOT/{modfile}")
