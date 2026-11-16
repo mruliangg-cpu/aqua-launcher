@@ -479,6 +479,18 @@ public class ClickGuiScreen extends Screen {
             ry += 26;
         }
 
+        // живое превью косметики — своя модель с выбранным гардеробом, обновляется сразу
+        if (m instanceof dev.aqua.client.module.impl.Cosmetics && client != null && client.player != null) {
+            float ph = 118;
+            Render2D.roundRect(ctx, x, ry, w, ph, 6, f2(Theme.CARD, a));
+            Render2D.textScaled(ctx, Lang.tr("Превью"), x + 8, ry + 5, 0.8f, t2(Theme.SUB, a), false);
+            int cxp = (int) (x + w / 2);
+            try {
+                dev.aqua.client.compat.V.drawEntityPreview(ctx, cxp - 30, (int) (ry + 18), cxp + 30, (int) (ry + ph - 8), 46, mx, my, client.player);
+            } catch (Throwable ignored) {}
+            ry += ph + 6;
+        }
+
         ry += 4;
         for (Setting<?> s : m.getSettings()) {
             if (!s.isVisible()) continue;

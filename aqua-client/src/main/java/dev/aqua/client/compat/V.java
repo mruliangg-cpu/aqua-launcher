@@ -372,4 +372,10 @@ public final class V {
         return f == null ? 0f : f.getSaturationModifier();
         //#endif
     }
+
+    /** Живое превью модели игрока в GUI (для меню косметики). Модель следит за курсором. */
+    public static void drawEntityPreview(net.minecraft.client.gui.DrawContext ctx, int x1, int y1, int x2, int y2,
+                                         int size, float mouseX, float mouseY, net.minecraft.entity.LivingEntity e) {
+        net.minecraft.client.gui.screen.ingame.InventoryScreen.drawEntity(ctx, x1, y1, x2, y2, size, 0.0625f, mouseX, mouseY, e);
+    }
 }

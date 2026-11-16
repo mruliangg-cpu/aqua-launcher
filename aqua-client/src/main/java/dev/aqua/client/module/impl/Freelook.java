@@ -21,6 +21,7 @@ public class Freelook extends Module {
     /** Мышь управляет камерой, а не игроком. */
     public static boolean capturing;
     public static float yaw, pitch;
+    private static float realYaw, realPitch, realPrevYaw, realPrevPitch;
     private static Freelook instance;
 
     private final ModeSetting mode = add(new ModeSetting("Режим", "Удерживать", "Удерживать", "Переключать"));
@@ -103,6 +104,28 @@ public class Freelook extends Module {
         float k = 0.15f * (instance == null ? 1f : instance.sens.getFloat() / 100f);
         yaw += (float) dx * k;
         pitch = MathHelper.clamp(pitch + (float) (instance != null && instance.invert.isOn() ? -dy : dy) * k, -90f, 90f);
+    }
+
+    /** На время обновления камеры ставим игроку углы Freelook — камера встаёт по ним. */
+    public static void applyToPlayer() {
+        if (!active || instance == null) return;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null) return;
+        var p = mc.player;
+        realYaw = p.getYaw(); realPitch = p.getPitch();
+        realPrevYaw = p.prevYaw; realPrevPitch = p.prevPitch;
+        p.setYaw(yaw); p.setPitch(pitch);
+        p.prevYaw = yaw; p.prevPitch = pitch;
+    }
+
+    /** Сразу после камеры возвращаем настоящие углы — тело и движение не меняются. */
+    public static void restorePlayer() {
+        if (!active || instance == null) return;
+        MinecraftClient mc = MinecraftClient.getInstance();
+        if (mc.player == null) return;
+        var p = mc.player;
+        p.setYaw(realYaw); p.setPitch(realPitch);
+        p.prevYaw = realPrevYaw; p.prevPitch = realPrevPitch;
     }
 
     @Override
