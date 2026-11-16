@@ -63,8 +63,8 @@ def parse_tiny(text):
 
 def main():
     target, base, out = sys.argv[1], sys.argv[2], sys.argv[3]
-    # intermediary 26.x
-    inter_coord = getj(f'https://meta.fabricmc.net/v2/versions/intermediary/{target}')[0]['maven']
+    # intermediary 26.x — берём координату из ОБЩЕГО списка (per-version endpoint отдаёт заглушку 0.0.0)
+    inter_coord = next(i['maven'] for i in getj('https://meta.fabricmc.net/v2/versions/intermediary') if i['version'] == target)
     print(f'intermediary coord: {inter_coord}', file=sys.stderr)
     inter_ns, inter_cls, inter_mem = parse_tiny(tiny_from_coord(inter_coord))
     # yarn base (official, intermediary, named)
