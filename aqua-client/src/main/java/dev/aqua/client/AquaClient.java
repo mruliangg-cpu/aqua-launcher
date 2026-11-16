@@ -144,5 +144,3 @@ public class AquaClient implements ClientModInitializer {
         LOG.info("Aqua Client загружен: {} модулей. Меню — правый Shift.", ModuleManager.all().size());
     }
 }
-
-// probe build 1.16.5 / 1.19.4

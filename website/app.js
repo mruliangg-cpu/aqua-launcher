@@ -21,6 +21,7 @@
     f6_t: 'Friends & leaderboard', f6_d: 'Add friends, see who is online and where, climb the Aqua leaderboard.',
     s_title: 'What it looks like', s_launcher: 'Launcher', s_game: 'In game',
     c_home: 'Home', c_locker: 'Locker — 3D try-on', c_preview: 'Aqua Client preview', c_cos: 'Cosmetics on the player', c_menu: 'Right Shift menu', c_hud: 'HUD editor',
+    mk_home: 'Home', mk_builds: 'Builds', mk_servers: 'Servers', mk_mods: 'Mods', mk_friends: 'Friends', mk_cosmetics: 'Cosmetics', mk_settings: 'Settings', mk_online: 'Online', mk_premium: 'Premium', mk_level: 'Level 12', mk_quick: 'Quick play', mk_play: 'PLAY ›', mk_pvp: 'PvP servers', mk_rating: 'Leaderboard', mk_online_n: 'Online (3)',
     d_title: 'Download', d_sub: 'Always the newest version from GitHub.', d_rec: 'Recommended',
     d_setup: 'Installer', d_setup_d: 'Installs in a minute and keeps itself up to date.', d_btn: 'Download',
     d_port: 'Portable', d_port_d: 'No install — run it from a USB stick. Updates itself too.',
