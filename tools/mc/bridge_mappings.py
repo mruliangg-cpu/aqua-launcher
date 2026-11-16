@@ -39,7 +39,7 @@ def parse_tiny(text):
     Возвращаем словари по первому неймспейсу-ключу (мы join-им по intermediary)."""
     lines = text.split('\n')
     header = lines[0].split('\t')
-    ns = header[1:]  # имена неймспейсов
+    ns = header[3:]  # пропускаем 'tiny', major, minor — дальше имена неймспейсов
     classes = {}  # key: tuple of class names by index; store member rows
     cur = None
     data = []  # (type, names-by-ns, owner_index_names)
