@@ -83,7 +83,7 @@ public final class PvpModules {
     static Module damageIndicator, damageTaken, hitMarkerM, critM, sprintM, comboM, targetInd, crossHealth, fightSummary;
     static HitSound hitSound;
     static KillSound killSound;
-    static MiningSound miningSound;
+    public static MiningSound miningSound;
     static KillEffect killEffect;
     static TotemPops totemPops;
     static NoTotemAnimation noTotem;
