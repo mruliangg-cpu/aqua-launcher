@@ -151,24 +151,36 @@ def main():
         if not yarn_cls:
             continue
         hits += 1
-        o.append(f'c\t{moj_cls.replace(".", "/")}\t{yarn_cls}')
+        cls_lines = [f'c\t{moj_cls.replace(".", "/")}\t{yarn_cls}']
         # методы — точное сопоставление по (obf-имя, obf-дескриптор)
         imeth_cls = imeth.get(obf_cls, {})
+        m_rows = []; m_cnt = {}
         for (obf_name, moj_desc), moj_name in mmeth.get(obf_cls, {}).items():
             inter_name = imeth_cls.get((obf_name, desc_moj_to_obf(moj_desc)))
             if inter_name is None:
                 continue
             yarn_name = ymeth.get((inter_cls, inter_name))
             if yarn_name and yarn_name != moj_name:
-                o.append(f'\tm\t{moj_desc}\t{moj_name}\t{yarn_name}')
+                m_rows.append((moj_desc, moj_name, yarn_name))
+                m_cnt[(yarn_name, moj_desc)] = m_cnt.get((yarn_name, moj_desc), 0) + 1
         # поля
+        f_rows = []; f_cnt = {}
         for obf_name, (moj_name, moj_desc) in mfld.get(obf_cls, {}).items():
             inter_name = ifld.get(obf_cls, {}).get(obf_name)
             if not inter_name:
                 continue
             yarn_name = yfld.get((inter_cls, inter_name))
             if yarn_name and yarn_name != moj_name:
-                o.append(f'\tf\t{moj_desc}\t{moj_name}\t{yarn_name}')
+                f_rows.append((moj_desc, moj_name, yarn_name))
+                f_cnt[yarn_name] = f_cnt.get(yarn_name, 0) + 1
+        # отбрасываем конфликтующие цели (два разных члена -> одно имя в классе)
+        for moj_desc, moj_name, yarn_name in m_rows:
+            if m_cnt[(yarn_name, moj_desc)] == 1:
+                cls_lines.append(f'\tm\t{moj_desc}\t{moj_name}\t{yarn_name}')
+        for moj_desc, moj_name, yarn_name in f_rows:
+            if f_cnt[yarn_name] == 1:
+                cls_lines.append(f'\tf\t{moj_desc}\t{moj_name}\t{yarn_name}')
+        o.extend(cls_lines)
     open(out, 'w', encoding='utf-8').write('\n'.join(o) + '\n')
     print(f'написал {out}: классов-мостов {hits}', file=sys.stderr)
 
