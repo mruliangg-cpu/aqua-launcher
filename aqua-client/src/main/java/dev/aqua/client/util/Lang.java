@@ -102,6 +102,7 @@ public final class Lang {
             {"Голод и насыщение еды в подсказках и на HUD", "Food hunger & saturation in tooltips and on the HUD"}, {"Подсказки еды", "Food tooltips"}, {"Полоса насыщения", "Saturation bar"}, {"Предпросмотр еды", "Food restore preview"},
             {"Превью", "Preview"},
             {"Зажми ЛКМ и веди по предметам — быстрый перенос в другой инвентарь", "Hold LMB and sweep over items for fast transfer to the other inventory"}, {"Переносить и по клику", "Transfer on click too"},
+            {"Свой цвет титула", "Custom title color"}, {"Цвет (свой)", "Color (custom)"},
             {"Эндер", "Ender"}, {"Портал (анимация)", "Portal (animated)"}, {"Око Края", "Eye of Ender"}, {"Жемчуг", "Pearl"}, {"Аква", "Aqua"}, {"Дракон", "Dragon"},
             {"Энд-род", "End Rod"}, {"Сердечки", "Hearts"}, {"Ноты", "Notes"}, {"Пузыри", "Bubbles"},
             {"Шляпа", "Hat"}, {"Крылья", "Wings"}, {"Спина", "Back"}, {"Питомец", "Pet"}, {"Лицо", "Face"}, {"Значок у ника", "Name icon"},

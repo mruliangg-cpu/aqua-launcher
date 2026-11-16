@@ -40,6 +40,8 @@ public class Cosmetics extends Module {
     private final StringSetting appliedStamp = add(new StringSetting("stamp", "", 64), () -> false);
     private final StringSetting title = add(new StringSetting("Титул над ником", "", 12));
     private final ModeSetting titleColor = add(new ModeSetting("Цвет титула", "gold", dev.aqua.client.cosmetic.TitleRules.COLORS.toArray(new String[0])));
+    private final BoolSetting titleCustom = add(new BoolSetting("Свой цвет титула", false));
+    private final dev.aqua.client.setting.ColorSetting titleCustomColor = add(new dev.aqua.client.setting.ColorSetting("Цвет (свой)", 0xFFFFC83D, titleCustom::isOn));
 
     public Cosmetics() {
         super("Cosmetics", "Плащ Aqua Client и аура частиц", Category.COSMETIC);
@@ -114,7 +116,7 @@ public class Cosmetics extends Module {
             String stamp = o.has("stamp") ? o.get("stamp").getAsString() : "";
             if (stamp.equals(appliedStamp.get())) return;
             if (o.has("title")) title.set(o.get("title").getAsString());
-            if (o.has("titleColor")) titleColor.set(dev.aqua.client.cosmetic.TitleRules.color(o.get("titleColor").getAsString()));
+            if (o.has("titleColor")) { String tcIn = o.get("titleColor").getAsString(); if (dev.aqua.client.cosmetic.TitleRules.COLORS.contains(tcIn)) titleColor.set(tcIn); }
             for (Slot s : Slot.values()) {
                 if (o.has(s.key) && CosmeticRegistry.get(s, o.get(s.key).getAsString()) != null) slots.get(s).set(o.get(s.key).getAsString());
             }
@@ -134,7 +136,11 @@ public class Cosmetics extends Module {
     public static String[] localTitle() {
         if (instance == null || !instance.isEnabled()) return null;
         String t = dev.aqua.client.cosmetic.TitleRules.clean(instance.title.get());
-        return t == null ? null : new String[]{t, dev.aqua.client.cosmetic.TitleRules.color(instance.titleColor.get())};
+        if (t == null) return null;
+        String color = instance.titleCustom.isOn()
+                ? "#" + String.format("%06X", instance.titleCustomColor.color() & 0xFFFFFF)
+                : dev.aqua.client.cosmetic.TitleRules.color(instance.titleColor.get());
+        return new String[]{t, color};
     }
 
     public static JsonObject loadoutJson() {

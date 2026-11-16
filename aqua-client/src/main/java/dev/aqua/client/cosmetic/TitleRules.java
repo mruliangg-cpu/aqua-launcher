@@ -45,10 +45,18 @@ public final class TitleRules {
         return t;
     }
 
-    public static String color(String c) { return c != null && COLORS.contains(c) ? c : "gold"; }
+    /** Допустимый цвет: имя из списка или свой «#RRGGBB». Иначе — золото. */
+    public static String color(String c) {
+        if (c == null) return "gold";
+        if (c.matches("#[0-9A-Fa-f]{6}")) return c.toUpperCase();
+        return COLORS.contains(c) ? c : "gold";
+    }
 
-    /** Цвет титула (радуга переливается). */
+    public static boolean isCustom(String c) { return c != null && c.matches("#[0-9A-Fa-f]{6}"); }
+
+    /** Цвет титула (радуга переливается, свой цвет — как указан). */
     public static int rgb(String c) {
+        if (isCustom(c)) return Integer.parseInt(c.substring(1), 16);
         if ("rainbow".equals(c)) return java.awt.Color.HSBtoRGB((System.currentTimeMillis() % 3000) / 3000f, 0.6f, 1f) & 0xFFFFFF;
         return HEX.getOrDefault(color(c), 0xFFC83D);
     }
