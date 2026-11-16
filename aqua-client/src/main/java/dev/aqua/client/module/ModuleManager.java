@@ -154,6 +154,7 @@ public final class ModuleManager {
 
         // ---------- удобные модули ----------
         for (Module m : QolModules.all()) add(m, false);
+        for (Module m : BedwarsModules.all()) add(m, false);
     }
 
     private static void add(Module m, boolean enabledByDefault) {
