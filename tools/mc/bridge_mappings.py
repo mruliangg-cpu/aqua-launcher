@@ -119,14 +119,29 @@ def parse_yarn(text):
             fld[(cur, p[2])] = p[3]
     return cls, meth, fld
 
-def main():
-    base, out = sys.argv[1], sys.argv[2]
-    # Mojang client mappings для base
+def fetch_proguard(ver):
     manifest = getj('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json')
-    vurl = next(v['url'] for v in manifest['versions'] if v['id'] == base)
+    vurl = next(v['url'] for v in manifest['versions'] if v['id'] == ver)
     vjson = getj(vurl)
     pg = urllib.request.urlopen(urllib.request.Request(vjson['downloads']['client_mappings']['url'], headers=UA), timeout=180).read().decode('utf-8')
-    mcls, mmeth, mfld = parse_proguard(pg)
+    return parse_proguard(pg)
+
+def main():
+    target, base, out = sys.argv[1], sys.argv[2], sys.argv[3]
+    # Имена, которые реально есть в target (26.x) — чтобы не переименовывать в уже занятое имя.
+    tcls, tmeth, tfld = fetch_proguard(target)
+    # родные имена полей/методов target по классу (slash-форма mojang-класса)
+    native_f = {}; native_m = {}
+    tinv = {o: m for m, o in tcls.items()}  # obf(=real) -> moj
+    for obf, fs in tfld.items():
+        c = tinv.get(obf, obf).replace('.', '/')
+        native_f.setdefault(c, set()).update(n for n, d in fs.values())
+    for obf, ms in tmeth.items():
+        c = tinv.get(obf, obf).replace('.', '/')
+        native_m.setdefault(c, set()).update(ms.values())
+    print(f'target {target}: classes={len(tcls)}', file=sys.stderr)
+    # Mojang client mappings для base
+    mcls, mmeth, mfld = fetch_proguard(base)
     print(f'mojang: classes={len(mcls)}', file=sys.stderr)
     # intermediary base
     icls, imeth, ifld = parse_inter(tiny_text('net.fabricmc:intermediary:' + base))
@@ -151,7 +166,10 @@ def main():
         if not yarn_cls:
             continue
         hits += 1
-        cls_lines = [f'c\t{moj_cls.replace(".", "/")}\t{yarn_cls}']
+        cslash = moj_cls.replace('.', '/')
+        nf = native_f.get(cslash, set())   # родные имена полей в 26.x
+        nm = native_m.get(cslash, set())   # родные имена методов в 26.x
+        cls_lines = [f'c\t{cslash}\t{yarn_cls}']
         # методы — точное сопоставление по (obf-имя, obf-дескриптор)
         imeth_cls = imeth.get(obf_cls, {})
         m_rows = []; m_cnt = {}
@@ -173,13 +191,18 @@ def main():
             if yarn_name and yarn_name != moj_name:
                 f_rows.append((moj_desc, moj_name, yarn_name))
                 f_cnt[yarn_name] = f_cnt.get(yarn_name, 0) + 1
-        # отбрасываем конфликтующие цели (два разных члена -> одно имя в классе)
+        # отбрасываем: а) конфликты среди своих, б) переименование в уже родное имя 26.x,
+        #              в) члены, которых в 26.x нет (moj_name отсутствует среди родных).
         for moj_desc, moj_name, yarn_name in m_rows:
-            if m_cnt[(yarn_name, moj_desc)] == 1:
-                cls_lines.append(f'\tm\t{moj_desc}\t{moj_name}\t{yarn_name}')
+            if m_cnt[(yarn_name, moj_desc)] != 1: continue
+            if moj_name not in nm: continue                 # метода нет в 26.x
+            if yarn_name in nm and yarn_name != moj_name: continue  # имя уже занято
+            cls_lines.append(f'\tm\t{moj_desc}\t{moj_name}\t{yarn_name}')
         for moj_desc, moj_name, yarn_name in f_rows:
-            if f_cnt[yarn_name] == 1:
-                cls_lines.append(f'\tf\t{moj_desc}\t{moj_name}\t{yarn_name}')
+            if f_cnt[yarn_name] != 1: continue
+            if moj_name not in nf: continue
+            if yarn_name in nf and yarn_name != moj_name: continue
+            cls_lines.append(f'\tf\t{moj_desc}\t{moj_name}\t{yarn_name}')
         o.extend(cls_lines)
     open(out, 'w', encoding='utf-8').write('\n'.join(o) + '\n')
     print(f'написал {out}: классов-мостов {hits}', file=sys.stderr)

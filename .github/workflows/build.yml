@@ -56,7 +56,7 @@ jobs:
         run: python3 tools/mc/preprocess.py aqua-client build-${{ matrix.mc }} ${{ matrix.mc }}
       - name: Build name bridge (26.x only)
         if: startsWith(matrix.mc, '26')
-        run: python3 tools/mc/bridge_mappings.py 1.21.11 build-${{ matrix.mc }}/aqua-bridge.tiny
+        run: python3 tools/mc/bridge_mappings.py ${{ matrix.mc }} 1.21.11 build-${{ matrix.mc }}/aqua-bridge.tiny
       - name: Use Gradle 9 for 26.x
         if: startsWith(matrix.mc, '26')
         run: |
