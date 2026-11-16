@@ -53,6 +53,11 @@ jobs:
       - name: Build name bridge (26.x only)
         if: startsWith(matrix.mc, '26')
         run: python3 tools/mc/bridge_mappings.py 1.21.11 build-${{ matrix.mc }}/aqua-bridge.tiny
+      - name: Use Gradle 9 for 26.x (Java 25)
+        if: startsWith(matrix.mc, '26')
+        run: |
+          sed -i -E 's|gradle-[0-9.]+-bin.zip|gradle-9.1.0-bin.zip|' build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
+          grep distributionUrl build-${{ matrix.mc }}/gradle/wrapper/gradle-wrapper.properties
       - name: Build Aqua Client ${{ matrix.mc }}
         working-directory: build-${{ matrix.mc }}
         run: |
