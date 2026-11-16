@@ -83,6 +83,7 @@ public final class PvpModules {
     static Module damageIndicator, damageTaken, hitMarkerM, critM, sprintM, comboM, targetInd, crossHealth, fightSummary;
     static HitSound hitSound;
     static KillSound killSound;
+    static MiningSound miningSound;
     static KillEffect killEffect;
     static TotemPops totemPops;
     static NoTotemAnimation noTotem;
@@ -146,6 +147,7 @@ public final class PvpModules {
         L.add(crossHealth = new Simple("Crosshair Health", "Полоска твоего здоровья под прицелом"));
         L.add(hitSound = new HitSound());
         L.add(killSound = new KillSound());
+        L.add(miningSound = new MiningSound());
         L.add(killEffect = new KillEffect());
         L.add(noTotem = new NoTotemAnimation());
         L.add(new CpsGraph());
@@ -383,39 +385,35 @@ public final class PvpModules {
             //#endif
         } catch (Exception ignored) {}
     }
-    static SoundEvent sound(String mode) {
-        return switch (mode) {
-            case "Попадание" -> SoundEvents.ENTITY_ARROW_HIT_PLAYER;
-            case "Крит" -> SoundEvents.ENTITY_PLAYER_ATTACK_CRIT;
-            case "Аметист" -> SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME;
-            case "Уровень" -> SoundEvents.ENTITY_PLAYER_LEVELUP;
-            case "Нотка" -> SoundEvents.BLOCK_NOTE_BLOCK_PLING;
-            case "Колокол" -> SoundEvents.BLOCK_NOTE_BLOCK_BELL;
-            case "Бас" -> SoundEvents.BLOCK_NOTE_BLOCK_BASS;
-            case "Арфа" -> SoundEvents.BLOCK_NOTE_BLOCK_HARP;
-            case "Флейта" -> SoundEvents.BLOCK_NOTE_BLOCK_FLUTE;
-            case "Поп" -> SoundEvents.ENTITY_ITEM_PICKUP;
-            case "Выстрел" -> SoundEvents.ENTITY_ARROW_SHOOT;
-            case "Вскользь" -> SoundEvents.ENTITY_PLAYER_ATTACK_SWEEP;
-            case "Нокбэк" -> SoundEvents.ENTITY_PLAYER_ATTACK_KNOCKBACK;
-            case "Слабый" -> SoundEvents.ENTITY_PLAYER_ATTACK_WEAK;
-            case "Сильный" -> SoundEvents.ENTITY_PLAYER_ATTACK_STRONG;
-            case "Щит" -> SoundEvents.ITEM_SHIELD_BLOCK;
-            case "Наковальня" -> SoundEvents.BLOCK_ANVIL_LAND;
-            case "Рычаг" -> SoundEvents.BLOCK_LEVER_CLICK;
-            case "Жемчуг" -> SoundEvents.ENTITY_ENDER_PEARL_THROW;
-            case "Телепорт" -> SoundEvents.ENTITY_ENDERMAN_TELEPORT;
-            case "Динамит" -> SoundEvents.ENTITY_TNT_PRIMED;
-            case "Разбить" -> SoundEvents.ENTITY_ITEM_BREAK;
-            case "Яйцо" -> SoundEvents.ENTITY_CHICKEN_EGG;
-            case "Звонок" -> SoundEvents.BLOCK_BELL_USE;
-            case "Сундук" -> SoundEvents.BLOCK_CHEST_OPEN;
-            default -> SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
+    /** Отображаемое имя звука -> его идентификатор в игре. Берём звук из реестра, чтобы работало на всех версиях. */
+    static final java.util.LinkedHashMap<String, String> SOUND_IDS = new java.util.LinkedHashMap<>();
+    static {
+        String[][] defs = {
+            {"Опыт", "entity.experience_orb.pickup"}, {"Попадание", "entity.arrow.hit_player"}, {"Крит", "entity.player.attack.crit"},
+            {"Аметист", "block.amethyst_block.chime"}, {"Уровень", "entity.player.levelup"}, {"Нотка", "block.note_block.pling"},
+            {"Колокол", "block.note_block.bell"}, {"Бас", "block.note_block.bass"}, {"Арфа", "block.note_block.harp"},
+            {"Флейта", "block.note_block.flute"}, {"Банджо", "block.note_block.banjo"}, {"Коровий", "block.note_block.cow_bell"},
+            {"Диджериду", "block.note_block.didgeridoo"}, {"Куранты", "block.note_block.chime"}, {"Ксилофон", "block.note_block.xylophone"},
+            {"Поп", "entity.item.pickup"}, {"Выстрел", "entity.arrow.shoot"}, {"Вскользь", "entity.player.attack.sweep"},
+            {"Нокбэк", "entity.player.attack.knockback"}, {"Слабый", "entity.player.attack.weak"}, {"Сильный", "entity.player.attack.strong"},
+            {"Щит", "item.shield.block"}, {"Наковальня", "block.anvil.land"}, {"Рычаг", "block.lever.click"},
+            {"Кнопка", "block.stone_button.click_on"}, {"Жемчуг", "entity.ender_pearl.throw"}, {"Телепорт", "entity.enderman.teleport"},
+            {"Динамит", "entity.tnt.primed"}, {"Разбить", "entity.item.break"}, {"Яйцо", "entity.chicken.egg"},
+            {"Звонок", "block.bell.use"}, {"Сундук", "block.chest.open"}, {"Эндер-сундук", "block.ender_chest.open"},
+            {"Портал", "block.portal.travel"}, {"Молот", "block.anvil.use"}, {"Вода", "entity.player.splash"},
+            {"Лава", "block.lava.pop"}, {"Огонь", "block.fire.extinguish"}, {"Тетива", "item.crossbow.loading_end"},
+            {"Трезубец", "item.trident.hit"}, {"Гаст", "entity.ghast.shoot"}, {"Визг", "entity.item_frame.break"},
+            {"Светокамень", "block.glass.break"}, {"Пузырь", "entity.puffer_fish.blow_up"}, {"Опыт2", "entity.player.levelup"},
         };
+        for (String[] d : defs) SOUND_IDS.put(d[0], d[1]);
     }
-    private static final String[] SOUNDS = {"Опыт", "Попадание", "Крит", "Аметист", "Уровень",
-            "Нотка", "Колокол", "Бас", "Арфа", "Флейта", "Поп", "Выстрел", "Вскользь", "Нокбэк", "Слабый",
-            "Сильный", "Щит", "Наковальня", "Рычаг", "Жемчуг", "Телепорт", "Динамит", "Разбить", "Яйцо", "Звонок", "Сундук"};
+
+    static SoundEvent sound(String mode) {
+        String id = SOUND_IDS.getOrDefault(mode, "entity.experience_orb.pickup");
+        SoundEvent ev = net.minecraft.registry.Registries.SOUND_EVENT.get(dev.aqua.client.compat.V.id("minecraft", id));
+        return ev != null ? ev : SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP;
+    }
+    private static final String[] SOUNDS = SOUND_IDS.keySet().toArray(new String[0]);
 
     // =================================================================== модули
     /** Модуль без своей логики — его работу делает render()/tick() выше. */
@@ -436,6 +434,14 @@ public final class PvpModules {
         final NumberSetting volume = add(new NumberSetting("Громкость", 80, 5, 100, 5, "%"));
         KillSound() { super("Kill Sound", "Звук, когда ты убил противника", Category.COMBAT); }
         void play() { PvpModules.play(sound(mode.get()), 1.0f, volume.getFloat() / 100f); }
+    }
+
+    public static final class MiningSound extends Module {
+        final ModeSetting mode = add(new ModeSetting("Звук", "Бас", SOUNDS));
+        final NumberSetting pitch = add(new NumberSetting("Высота", 1.0, 0.5, 2.0, 0.1));
+        final NumberSetting volume = add(new NumberSetting("Громкость", 50, 5, 100, 5, "%"));
+        public MiningSound() { super("Mining Sound", "Звук, когда ломаешь блок", Category.RENDER); }
+        public void play() { PvpModules.play(sound(mode.get()), pitch.getFloat(), volume.getFloat() / 100f); }
     }
 
     public static final class KillEffect extends Module {

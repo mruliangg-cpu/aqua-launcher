@@ -13,6 +13,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BreakBlockMixin {
     @Inject(method = "breakBlock", at = @At("RETURN"))
     private void aqua$break(BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
-        if (cir.getReturnValue()) BreakingParticles.onBreak(pos);
+        if (cir.getReturnValue()) {
+            BreakingParticles.onBreak(pos);
+            if (dev.aqua.client.module.impl.PvpModules.miningSound != null && dev.aqua.client.module.impl.PvpModules.miningSound.isEnabled())
+                dev.aqua.client.module.impl.PvpModules.miningSound.play();
+        }
     }
 }
