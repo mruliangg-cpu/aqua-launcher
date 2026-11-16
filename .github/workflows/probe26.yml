@@ -1,0 +1,14 @@
+name: Probe 26.x availability
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  probe:
+    if: contains(github.event.head_commit.message, '[probe26]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Probe Fabric/Mojang for 26.x
+        run: python3 tools/mc/probe26.py
