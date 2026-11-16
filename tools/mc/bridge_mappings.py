@@ -136,7 +136,11 @@ def main():
     ycls, ymeth, yfld = parse_yarn(tiny_text('net.fabricmc:yarn:' + yarn_ver))
     print(f'yarn: classes={len(ycls)} ({yarn_ver})', file=sys.stderr)
 
-    obf2moj = {o: m for m, o in mcls.items()}
+    # mojang-slash-класс -> obf (для перевода дескрипторов mojang -> obf)
+    moj2obf = {m.replace('.', '/'): obf for m, obf in mcls.items()}
+    def desc_moj_to_obf(desc):
+        return re.sub(r'L([^;]+);', lambda m: 'L' + moj2obf.get(m.group(1), m.group(1)) + ';', desc)
+
     o = ['tiny\t2\t0\tofficial\tnamed']
     hits = 0
     for moj_cls, obf_cls in mcls.items():
@@ -147,15 +151,11 @@ def main():
         if not yarn_cls:
             continue
         hits += 1
-        moj_slash = moj_cls.replace('.', '/')
-        o.append(f'c\t{moj_slash}\t{yarn_cls}')
-        # методы
+        o.append(f'c\t{moj_cls.replace(".", "/")}\t{yarn_cls}')
+        # методы — точное сопоставление по (obf-имя, obf-дескриптор)
+        imeth_cls = imeth.get(obf_cls, {})
         for (obf_name, moj_desc), moj_name in mmeth.get(obf_cls, {}).items():
-            # intermediary для этого метода ищем по obf-имени: подберём любой с тем же obf name
-            inter_name = None
-            for (oN, oDesc), iName in imeth.get(obf_cls, {}).items():
-                if oN == obf_name:
-                    inter_name = iName; break
+            inter_name = imeth_cls.get((obf_name, desc_moj_to_obf(moj_desc)))
             if inter_name is None:
                 continue
             yarn_name = ymeth.get((inter_cls, inter_name))
