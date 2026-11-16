@@ -99,6 +99,7 @@ public final class Lang {
             {"Точка смерти", "Death point"}, {"Макс. дистанция", "Max distance"}, {"Размер надписей", "Label size"}, {"Удалить ближайшую точку", "Remove nearest waypoint"},
             {"Удалить все точки этого мира", "Remove all waypoints in this world"}, {"Удалить", "Remove"}, {"Очистить", "Clear"}, {"Секунды", "Seconds"},
             {"Старт / стоп", "Start / stop"}, {"Сброс", "Reset"}, {"Плащ", "Cape"}, {"Узор на элитрах", "Pattern on elytra"}, {"Аура", "Aura"}, {"Сила ауры", "Aura amount"},
+            {"Голод и насыщение еды в подсказках и на HUD", "Food hunger & saturation in tooltips and on the HUD"}, {"Подсказки еды", "Food tooltips"}, {"Полоса насыщения", "Saturation bar"}, {"Предпросмотр еды", "Food restore preview"},
             {"Эндер", "Ender"}, {"Портал (анимация)", "Portal (animated)"}, {"Око Края", "Eye of Ender"}, {"Жемчуг", "Pearl"}, {"Аква", "Aqua"}, {"Дракон", "Dragon"},
             {"Энд-род", "End Rod"}, {"Сердечки", "Hearts"}, {"Ноты", "Notes"}, {"Пузыри", "Bubbles"},
             {"Шляпа", "Hat"}, {"Крылья", "Wings"}, {"Спина", "Back"}, {"Питомец", "Pet"}, {"Лицо", "Face"}, {"Значок у ника", "Name icon"},

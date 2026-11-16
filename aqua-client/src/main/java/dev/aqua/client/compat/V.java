@@ -348,4 +348,28 @@ public final class V {
         return w.getSpawnPos();
         //#endif
     }
+
+    /** Голод, который восстанавливает еда (-1 если это не еда). Компоненты появились в 1.20.5. */
+    public static int foodNutrition(net.minecraft.item.ItemStack s) {
+        if (s == null || s.isEmpty()) return -1;
+        //#if MC >= 1.20.5
+        net.minecraft.component.type.FoodComponent f = s.get(net.minecraft.component.DataComponentTypes.FOOD);
+        return f == null ? -1 : f.nutrition();
+        //#else
+        net.minecraft.item.FoodComponent f = s.getItem().getFoodComponent();
+        return f == null ? -1 : f.getHunger();
+        //#endif
+    }
+
+    /** Модификатор насыщения еды (0, если это не еда). */
+    public static float foodSatModifier(net.minecraft.item.ItemStack s) {
+        if (s == null || s.isEmpty()) return 0f;
+        //#if MC >= 1.20.5
+        net.minecraft.component.type.FoodComponent f = s.get(net.minecraft.component.DataComponentTypes.FOOD);
+        return f == null ? 0f : f.saturation();
+        //#else
+        net.minecraft.item.FoodComponent f = s.getItem().getFoodComponent();
+        return f == null ? 0f : f.getSaturationModifier();
+        //#endif
+    }
 }

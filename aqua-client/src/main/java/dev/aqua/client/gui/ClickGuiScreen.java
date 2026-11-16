@@ -154,9 +154,8 @@ public class ClickGuiScreen extends Screen {
             Render2D.roundOutline(ctx, b[0] - r * 0.6f, b[1] - r * 0.6f, r * 1.2f, r * 1.2f, r * 0.6f, f(ColorUtil.withAlpha(0x3EE6FF, (int) (160 * b[2]))));
         }
 
-        // строка статуса снизу
-        long enabled = ModuleManager.all().stream().filter(Module::isEnabled).count();
-        String status = ModuleManager.all().size() + Lang.tr(" модулей") + "  ·  " + enabled + Lang.tr(" включено") + "  ·  " + Lang.tr("ПКМ — настройки");
+        // строка статуса снизу — без счётчиков, только подсказка
+        String status = Lang.tr("ПКМ — настройки");
         Render2D.textScaled(ctx, status, cx, y0 + H - 9, 0.62f, t(0xFF4F7F96), false);
 
         // подсказка с полным описанием
@@ -226,9 +225,6 @@ public class ClickGuiScreen extends Screen {
             int col = i == selectedIdx ? Theme.TEXT : ColorUtil.lerp(Theme.SUB, Theme.TEXT, h.get());
             ctx.drawText(textRenderer, icon, (int) (x0 + 14 + h.get() * 2), (int) (ry + 7), t(i == selectedIdx ? Theme.ACCENT : col), false);
             ctx.drawText(textRenderer, name, (int) (x0 + 28 + h.get() * 2), (int) (ry + 7), t(col), false);
-            long count = ModuleManager.byCategory(c).stream().filter(Module::isEnabled).count();
-            String cnt = String.valueOf(count);
-            Render2D.textScaled(ctx, cnt, x0 + SIDEBAR - 14 - Render2D.width(cnt) * 0.7f, ry + 8, 0.7f, t(0xFF5A88A0), false);
             final Category target = c;
             hit(x0 + 6, ry, SIDEBAR - 12, rowH, b -> {
                 category = target;
