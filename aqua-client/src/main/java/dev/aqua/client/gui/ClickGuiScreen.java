@@ -54,6 +54,10 @@ public class ClickGuiScreen extends Screen {
     private Module bindingModule;
     private ColorSetting expandedColor;
     private StringSetting editingString;
+    private boolean showProfiles;
+    private final StringSetting profileBuffer = new StringSetting("profile", "", 18);
+    private String renameTarget;          // имя при переименовании; "" = создание новой; null = не редактируем
+    private Runnable profileCommit;
     private KeySetting bindingKeySetting;
     private DoubleConsumer activeDrag;
     private String search = "";
@@ -124,7 +128,10 @@ public class ClickGuiScreen extends Screen {
         float p = page.get();
         Module tipBefore = tipModule;
         tipModule = null;
-        if (p < 0.999f) renderGrid(ctx, mouseX, mouseY, cx - p * 40, cy, cw, ch, 1 - p);
+        if (p < 0.999f) {
+            if (showProfiles) renderProfiles(ctx, mouseX, mouseY, cx - p * 40, cy, cw, ch, 1 - p);
+            else renderGrid(ctx, mouseX, mouseY, cx - p * 40, cy, cw, ch, 1 - p);
+        }
         if (tipModule != tipBefore) tipTime = 0;
         if (p > 0.001f && settingsModule != null) renderSettings(ctx, mouseX, mouseY, cx + (1 - p) * 40, cy, cw, ch, p);
         ctx.disableScissor();
@@ -226,6 +233,8 @@ public class ClickGuiScreen extends Screen {
             hit(x0 + 6, ry, SIDEBAR - 12, rowH, b -> {
                 category = target;
                 lastCategory = target;
+                showProfiles = false;
+                editingString = null;
                 settingsModule = null;
                 expandedColor = null;
                 search = "";
@@ -241,13 +250,19 @@ public class ClickGuiScreen extends Screen {
         Render2D.rect(ctx, fx - 3, fy - 1, 3, 6, f(0xFFE87430));
         Render2D.rect(ctx, fx + 6, fy + 1, 1, 1, f(0xFF10202A));
 
-        // кнопка HUD-редактора
-        float bx = x0 + 8, by = y0 + H - 34, bw = SIDEBAR - 16, bh = 24;
-        boolean hov = Render2D.hover(mx, my, bx, by, bw, bh);
+        // нижние кнопки: Сборки и Редактор HUD (в ряд)
+        float by = y0 + H - 34, bh = 24, half = (SIDEBAR - 16 - 6) / 2f, lx = x0 + 8, rx = lx + half + 6;
+        boolean phov = Render2D.hover(mx, my, lx, by, half, bh);
+        Anim ph = anim("profbtn", phov || showProfiles ? 1 : 0, 14);
+        Render2D.roundRect(ctx, lx, by, half, bh, 5, f(ColorUtil.lerp(Theme.ACCENT_DARK, Theme.ACCENT, ph.get())));
+        Render2D.centered(ctx, Lang.tr("Сборки"), lx + half / 2, by + 8, t(0xFFFFFFFF));
+        hit(lx, by, half, bh, b -> { showProfiles = !showProfiles; settingsModule = null; editingString = null; profileCommit = null; renameTarget = null; scrollTarget = 0; });
+
+        boolean hov = Render2D.hover(mx, my, rx, by, half, bh);
         Anim h = anim("hudbtn", hov ? 1 : 0, 14);
-        Render2D.roundRect(ctx, bx, by, bw, bh, 5, f(ColorUtil.lerp(Theme.ACCENT_DARK, Theme.ACCENT, h.get())));
-        Render2D.centered(ctx, Lang.tr("✎ Редактор HUD"), bx + bw / 2, by + 8, t(0xFFFFFFFF));
-        hit(bx, by, bw, bh, b -> { if (client != null) client.setScreen(new HudEditorScreen()); });
+        Render2D.roundRect(ctx, rx, by, half, bh, 5, f(ColorUtil.lerp(Theme.ACCENT_DARK, Theme.ACCENT, h.get())));
+        Render2D.centered(ctx, Lang.tr("HUD"), rx + half / 2, by + 8, t(0xFFFFFFFF));
+        hit(rx, by, half, bh, b -> { if (client != null) client.setScreen(new HudEditorScreen()); });
     }
 
     private void renderHeader(DrawContext ctx, int mx, int my, float cx, float y0, float cw) {
@@ -260,9 +275,10 @@ public class ClickGuiScreen extends Screen {
             hit(cx, hy - 3, 62, 16, b -> closeSettings());
             Render2D.textScaled(ctx, settingsModule.getName(), cx + 72, hy - 1, 1.25f, t(Theme.TEXT), true);
         } else {
-            String title = category == null ? Lang.tr("Все модули") : Lang.tr(category.title);
-            if (!search.isEmpty()) title = Lang.tr("Поиск");
+            String title = showProfiles ? Lang.tr("Сборки") : category == null ? Lang.tr("Все модули") : Lang.tr(category.title);
+            if (!search.isEmpty() && !showProfiles) title = Lang.tr("Поиск");
             Render2D.textScaled(ctx, title, cx, hy - 1, 1.25f, t(Theme.TEXT), true);
+            if (showProfiles) return;
             // поиск
             float sw = Math.min(150, cw * 0.4f), sx = cx + cw - sw, sy = hy - 4;
             Render2D.roundRect(ctx, sx, sy, sw, 17, 5, f(Theme.CARD));
@@ -354,6 +370,88 @@ public class ClickGuiScreen extends Screen {
     }
 
     // ===================================================================== SETTINGS PAGE
+    /** Панель сборок (пресетов): список, применить/переименовать/удалить, сохранить текущую. */
+    private void renderProfiles(DrawContext ctx, int mx, int my, float x, float y, float w, float h, float a) {
+        java.util.List<String> names = dev.aqua.client.config.Profiles.names();
+        float rowH = 30, gap = 6, sc = scroll.get(), yy = y - sc;
+        Render2D.textScaled(ctx, Lang.tr("Сохрани включённые модули и настройки. До 5 сборок."), x, yy, 0.85f, t2(Theme.SUB, a), false);
+        yy += 16;
+
+        for (String name : names) {
+            boolean active = name.equals(dev.aqua.client.config.Profiles.active());
+            boolean editing = editingString == profileBuffer && name.equals(renameTarget);
+            boolean hov = Render2D.hover(mx, my, x, yy, w - 52, rowH) && !editing;
+            Anim rh = anim("prof" + name, hov ? 1 : 0, 14);
+            if (yy + rowH > y - rowH && yy < y + h) {
+                Render2D.roundRect(ctx, x, yy, w, rowH, 6, f(ColorUtil.lerp(active ? Theme.ACCENT_DARK : Theme.CARD, Theme.CARD_HOVER, rh.get())));
+                if (active) Render2D.roundOutline(ctx, x, yy, w, rowH, 6, f(Theme.ACCENT));
+                if (editing) {
+                    boolean cur = (System.currentTimeMillis() / 500) % 2 == 0;
+                    ctx.drawText(textRenderer, profileBuffer.get() + (cur ? "_" : ""), (int) x + 10, (int) yy + 11, t(Theme.TEXT), false);
+                } else {
+                    ctx.drawText(textRenderer, name, (int) x + 10, (int) yy + 7, t(Theme.TEXT), false);
+                    ctx.drawText(textRenderer, Lang.tr(active ? "активна · нажми, чтобы применить" : "нажми, чтобы применить"), (int) x + 10, (int) yy + 18, t2(Theme.SUB, a), false);
+                }
+                // переименовать
+                Render2D.centered(ctx, "✎", x + w - 40, yy + rowH / 2 - 4, t(Render2D.hover(mx, my, x + w - 52, yy, 26, rowH) ? Theme.TEXT : Theme.SUB));
+                // удалить
+                Render2D.centered(ctx, "✕", x + w - 14, yy + rowH / 2 - 4, t(Render2D.hover(mx, my, x + w - 26, yy, 26, rowH) ? 0xFFFF5566 : Theme.SUB));
+            }
+            final String fn = name;
+            if (!editing) hit(x, yy, w - 52, rowH, b -> dev.aqua.client.config.Profiles.apply(fn));
+            hit(x + w - 52, yy, 26, rowH, b -> startRenameProfile(fn));
+            hit(x + w - 26, yy, 26, rowH, b -> dev.aqua.client.config.Profiles.delete(fn));
+            yy += rowH + gap;
+        }
+
+        // строка создания новой сборки
+        if (editingString == profileBuffer && "".equals(renameTarget)) {
+            Render2D.roundRect(ctx, x, yy, w, rowH, 6, f(Theme.CARD));
+            Render2D.roundOutline(ctx, x, yy, w, rowH, 6, f(Theme.ACCENT));
+            boolean cur = (System.currentTimeMillis() / 500) % 2 == 0;
+            String shown = profileBuffer.get().isEmpty() ? Lang.tr("Имя сборки...") : profileBuffer.get();
+            ctx.drawText(textRenderer, shown + (cur ? "_" : ""), (int) x + 10, (int) yy + 11, t(profileBuffer.get().isEmpty() ? 0xFF5A88A0 : Theme.TEXT), false);
+            yy += rowH + gap;
+        } else if (dev.aqua.client.config.Profiles.canAdd()) {
+            boolean hov = Render2D.hover(mx, my, x, yy, w, 26);
+            Anim bh = anim("profadd", hov ? 1 : 0, 14);
+            Render2D.roundRect(ctx, x, yy, w, 26, 6, f(ColorUtil.lerp(Theme.CARD, Theme.ACCENT_DARK, bh.get())));
+            Render2D.centered(ctx, Lang.tr("＋ Сохранить текущую сборку"), x + w / 2, yy + 9, t(Theme.TEXT));
+            hit(x, yy, w, 26, b -> startCreateProfile());
+            yy += 26 + gap;
+        } else {
+            Render2D.centered(ctx, Lang.tr("Достигнут максимум — 5 сборок"), x + w / 2, yy + 9, t2(Theme.SUB, a));
+            yy += 26 + gap;
+        }
+
+        // обновить активную сборку текущим состоянием
+        if (!dev.aqua.client.config.Profiles.active().isEmpty() && names.contains(dev.aqua.client.config.Profiles.active()) && !(editingString == profileBuffer)) {
+            boolean hov = Render2D.hover(mx, my, x, yy, w, 24);
+            Anim bh = anim("profupd", hov ? 1 : 0, 14);
+            Render2D.roundRect(ctx, x, yy, w, 24, 6, f(ColorUtil.lerp(Theme.CARD, Theme.CARD_HOVER, bh.get())));
+            Render2D.centered(ctx, Lang.tr("⟳ Обновить «") + dev.aqua.client.config.Profiles.active() + "»", x + w / 2, yy + 8, t(Theme.SUB));
+            hit(x, yy, w, 24, b -> dev.aqua.client.config.Profiles.saveCurrent(dev.aqua.client.config.Profiles.active()));
+            yy += 24 + gap;
+        }
+        contentHeight = yy + sc - y + 6;
+    }
+
+    private void startRenameProfile(String name) {
+        renameTarget = name;
+        profileBuffer.set(name);
+        editingString = profileBuffer;
+        profileCommit = () -> dev.aqua.client.config.Profiles.rename(name, profileBuffer.get());
+        bindingKeySetting = null;
+    }
+
+    private void startCreateProfile() {
+        renameTarget = "";
+        profileBuffer.set("");
+        editingString = profileBuffer;
+        profileCommit = () -> dev.aqua.client.config.Profiles.saveCurrent(profileBuffer.get());
+        bindingKeySetting = null;
+    }
+
     private void renderSettings(DrawContext ctx, int mx, int my, float x, float y, float w, float h, float a) {
         Module m = settingsModule;
         float sc = scroll.get();
@@ -687,7 +785,14 @@ public class ClickGuiScreen extends Screen {
         if (editingString != null) {
             String v = editingString.get();
             if (keyCode == GLFW.GLFW_KEY_BACKSPACE && !v.isEmpty()) editingString.set(v.substring(0, v.length() - 1));
-            else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) { editingString = null; ConfigManager.save(); }
+            else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                boolean ok = keyCode != GLFW.GLFW_KEY_ESCAPE;
+                Runnable c = profileCommit;
+                boolean wasProfile = editingString == profileBuffer;
+                editingString = null; profileCommit = null; renameTarget = null;
+                if (wasProfile) { if (ok && c != null) c.run(); }
+                else ConfigManager.save();
+            }
             else if (keyCode == GLFW.GLFW_KEY_V && (modifiers & GLFW.GLFW_MOD_CONTROL) != 0 && client != null) editingString.set(v + client.keyboard.getClipboard());
             return true;
         }

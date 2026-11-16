@@ -29,8 +29,16 @@ public final class ConfigManager {
         try (Reader r = Files.newBufferedReader(FILE, StandardCharsets.UTF_8)) {
             JsonObject root = GSON.fromJson(r, JsonObject.class);
             if (root == null || !root.has("modules")) return;
-            JsonObject mods = root.getAsJsonObject("modules");
-            for (Module m : ModuleManager.all()) {
+            applyModules(root.getAsJsonObject("modules"));
+        } catch (Exception e) {
+            AquaClient.LOG.error("Не удалось загрузить конфиг Aqua Client", e);
+        }
+    }
+
+    /** Применить состояние модулей из объекта (включённость, настройки, клавиши, позиции HUD). */
+    public static void applyModules(JsonObject mods) {
+        if (mods == null) return;
+        for (Module m : ModuleManager.all()) {
                 if (!mods.has(m.getName())) continue;
                 JsonObject o = mods.getAsJsonObject(m.getName());
                 if (o.has("settings")) {
@@ -50,14 +58,10 @@ public final class ConfigManager {
                 }
                 if (o.has("enabled")) m.loadEnabled(o.get("enabled").getAsBoolean());
             }
-        } catch (Exception e) {
-            AquaClient.LOG.error("Не удалось загрузить конфиг Aqua Client", e);
-        }
     }
 
-    public static void save() {
-        JsonObject root = new JsonObject();
-        root.addProperty("version", 1);
+    /** Снимок состояния всех модулей — для конфига и для сборок. */
+    public static JsonObject snapshotModules() {
         JsonObject mods = new JsonObject();
         for (Module m : ModuleManager.all()) {
             JsonObject o = new JsonObject();
@@ -76,7 +80,13 @@ public final class ConfigManager {
             o.add("settings", s);
             mods.add(m.getName(), o);
         }
-        root.add("modules", mods);
+        return mods;
+    }
+
+    public static void save() {
+        JsonObject root = new JsonObject();
+        root.addProperty("version", 1);
+        root.add("modules", snapshotModules());
         try {
             Files.createDirectories(FILE.getParent());
             try (Writer w = Files.newBufferedWriter(FILE, StandardCharsets.UTF_8)) { GSON.toJson(root, w); }

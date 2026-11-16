@@ -60,6 +60,7 @@ public class AquaClient implements ClientModInitializer {
         net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback.EVENT.register((stack, ctx, lines) -> dev.aqua.client.module.impl.ShulkerTooltip.appendTooltip(stack, lines));
         //#endif
         ConfigManager.load();
+        dev.aqua.client.config.Profiles.load();
         // гардероб и скин, выбранные в Aqua Launcher
         dev.aqua.client.module.impl.Cosmetics cos = ModuleManager.get(dev.aqua.client.module.impl.Cosmetics.class);
         if (cos != null) cos.applyLauncherLoadout();
