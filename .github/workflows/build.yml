@@ -42,8 +42,9 @@ jobs:
           java-version: |
             21
             25
-      - name: Run Gradle on Java 21 (compile uses toolchain)
-        run: echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"
+      - name: Pick JDK to run Gradle (26.x needs Java 25)
+        run: |
+          if [[ "${{ matrix.mc }}" == 26* ]]; then echo "JAVA_HOME=$JAVA_HOME_25_X64" >> "$GITHUB_ENV"; else echo "JAVA_HOME=$JAVA_HOME_21_X64" >> "$GITHUB_ENV"; fi
       - uses: actions/cache@v4
         with:
           path: |
