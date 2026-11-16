@@ -13,7 +13,7 @@ def versions():
     """Все стабильные версии от 1.16 до 1.21.x, у которых есть Yarn (26.x без Yarn — отдельная ветка)."""
     games = [g['version'] for g in get('https://meta.fabricmc.net/v2/versions/game') if g['stable']]
     yarn = {y['gameVersion'] for y in get('https://meta.fabricmc.net/v2/versions/yarn')}
-    out = [v for v in games if re.fullmatch(r'1\.(1[6-9]|2[0-9])(\.\d+)?', v) and v in yarn]
+    out = [v for v in games if re.fullmatch(r'1\.2[0-9](\.\d+)?', v) and v in yarn]
     return sorted(out, key=vkey)
 
 def props(mc):
