@@ -61,7 +61,9 @@ def main():
     target, base, out = sys.argv[1], sys.argv[2], sys.argv[3]
     inter_coord = next(i['maven'] for i in getj('https://meta.fabricmc.net/v2/versions/intermediary') if i['version'] == target)
     print(f'intermediary coord: {inter_coord}', file=sys.stderr)
-    icls, imem = parse_v1(tiny_text(inter_coord))
+    itext = tiny_text(inter_coord)
+    print('INTER HEAD:\n' + '\n'.join(repr(l) for l in itext.split('\n')[:4]), file=sys.stderr)
+    icls, imem = parse_v1(itext)
     yarn_ver = getj(f'https://meta.fabricmc.net/v2/versions/yarn/{base}')[0]['version']
     print(f'yarn base: {yarn_ver}', file=sys.stderr)
     ycls, ymem = parse_yarn_v2(tiny_text(f'net.fabricmc:yarn:{yarn_ver}'))
