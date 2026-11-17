@@ -39,6 +39,9 @@ public final class Profiles {
                 "Low HP", "Health", "Enemy Close", "Void Warning", "Projectile Warning"));
     }
 
+    /** Встроенные сборки, которые пользователь удалил (их можно удалять, они просто прячутся). */
+    private static final Set<String> hiddenBuiltins = new HashSet<>();
+
     public static boolean isBuiltin(String name) { return BUILTIN.containsKey(name); }
 
     private Profiles() {}
@@ -57,6 +60,8 @@ public final class Profiles {
                     PROFILES.put(name, p.getAsJsonObject(name));
                 }
             }
+            if (root.has("hiddenBuiltins"))
+                for (var el : root.getAsJsonArray("hiddenBuiltins")) hiddenBuiltins.add(el.getAsString());
         } catch (Exception ignored) {}
     }
 
@@ -66,6 +71,9 @@ public final class Profiles {
         JsonObject p = new JsonObject();
         for (var e : PROFILES.entrySet()) p.add(e.getKey(), e.getValue());
         root.add("profiles", p);
+        com.google.gson.JsonArray hb = new com.google.gson.JsonArray();
+        for (String s : hiddenBuiltins) hb.add(s);
+        root.add("hiddenBuiltins", hb);
         try {
             Files.createDirectories(FILE.getParent());
             try (Writer w = Files.newBufferedWriter(FILE, StandardCharsets.UTF_8)) { GSON.toJson(root, w); }
@@ -74,7 +82,8 @@ public final class Profiles {
 
     public static List<String> names() {
         if (!loaded) load();
-        List<String> l = new ArrayList<>(BUILTIN.keySet());
+        List<String> l = new ArrayList<>();
+        for (String b : BUILTIN.keySet()) if (!hiddenBuiltins.contains(b)) l.add(b);
         l.addAll(PROFILES.keySet());
         return l;
     }
@@ -130,7 +139,12 @@ public final class Profiles {
 
     public static void delete(String name) {
         if (!loaded) load();
-        if (BUILTIN.containsKey(name)) return;
+        if (BUILTIN.containsKey(name)) {        // встроенную не удаляем из кода, а прячем — чтобы пропала навсегда
+            hiddenBuiltins.add(name);
+            if (active.equals(name)) active = "";
+            persist();
+            return;
+        }
         PROFILES.remove(name);
         if (active.equals(name)) active = "";
         persist();
