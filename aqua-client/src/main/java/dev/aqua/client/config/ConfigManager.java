@@ -28,7 +28,9 @@ public final class ConfigManager {
         if (!Files.exists(FILE)) return;
         try (Reader r = Files.newBufferedReader(FILE, StandardCharsets.UTF_8)) {
             JsonObject root = GSON.fromJson(r, JsonObject.class);
-            if (root == null || !root.has("modules")) return;
+            if (root == null) return;
+            if (root.has("lang")) dev.aqua.client.util.Lang.setLang(root.get("lang").getAsInt());
+            if (!root.has("modules")) return;
             applyModules(root.getAsJsonObject("modules"));
         } catch (Exception e) {
             AquaClient.LOG.error("Не удалось загрузить конфиг Aqua Client", e);
@@ -86,6 +88,7 @@ public final class ConfigManager {
     public static void save() {
         JsonObject root = new JsonObject();
         root.addProperty("version", 1);
+        root.addProperty("lang", dev.aqua.client.util.Lang.getLang());
         root.add("modules", snapshotModules());
         try {
             Files.createDirectories(FILE.getParent());

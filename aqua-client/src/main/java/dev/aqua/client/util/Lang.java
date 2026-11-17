@@ -15,7 +15,14 @@ public final class Lang {
 
     private Lang() {}
 
+    /** Язык клиента: 0 — как в Minecraft, 1 — русский, 2 — английский. Переключается флажками в меню. */
+    private static int override = 0;
+    public static int getLang() { return override; }
+    public static void setLang(int v) { override = v; }
+
     public static boolean isRu() {
+        if (override == 1) return true;
+        if (override == 2) return false;
         try {
             MinecraftClient mc = MinecraftClient.getInstance();
             String l = mc != null && mc.getLanguageManager() != null ? mc.getLanguageManager().getLanguage() : "en_us";
@@ -103,6 +110,9 @@ public final class Lang {
             {"Превью", "Preview"},
             {"Зажми ЛКМ и веди по предметам — быстрый перенос в другой инвентарь", "Hold LMB and sweep over items for fast transfer to the other inventory"}, {"Переносить и по клику", "Transfer on click too"},
             {"Свой цвет титула", "Custom title color"}, {"Цвет (свой)", "Color (custom)"},
+            {"⧉ Скопировать мой код", "⧉ Copy my code"}, {"📥 Вставить код сборки", "📥 Paste preset code"},
+            {"Код скопирован — поделись с другом", "Code copied — share it with a friend"},
+            {"Сборка добавлена: ", "Preset added: "}, {"Неверный код или достигнут максимум сборок", "Invalid code or preset limit reached"},
             {"Эндер", "Ender"}, {"Портал (анимация)", "Portal (animated)"}, {"Око Края", "Eye of Ender"}, {"Жемчуг", "Pearl"}, {"Аква", "Aqua"}, {"Дракон", "Dragon"},
             {"Энд-род", "End Rod"}, {"Сердечки", "Hearts"}, {"Ноты", "Notes"}, {"Пузыри", "Bubbles"},
             {"Шляпа", "Hat"}, {"Крылья", "Wings"}, {"Спина", "Back"}, {"Питомец", "Pet"}, {"Лицо", "Face"}, {"Значок у ника", "Name icon"},

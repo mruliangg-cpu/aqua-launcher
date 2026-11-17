@@ -91,6 +91,54 @@ public final class Profiles {
     /** Лимит считаем только по пользовательским сборкам, встроенные не в счёт. */
     public static int count() { if (!loaded) load(); return PROFILES.size(); }
     public static boolean canAdd() { return count() < MAX; }
+
+    // ====================== Обмен сборками по коду ======================
+    // Экспорт: текущая сборка (или по имени) -> короткий код "AQUA1:..." (gzip+base64).
+    // Друг вставляет его в сборки — и получает все твои включённые модули и настройки.
+
+    public static String exportCurrent() { return encode(ConfigManager.snapshotModules()); }
+
+    public static String exportCode(String name) {
+        if (!loaded) load();
+        if (BUILTIN.containsKey(name)) return exportCurrent();   // встроенную шарим как текущий конфиг
+        JsonObject snap = PROFILES.get(name);
+        return snap == null ? exportCurrent() : encode(snap);
+    }
+
+    private static String encode(JsonObject obj) {
+        try {
+            byte[] json = GSON.toJson(obj).getBytes(StandardCharsets.UTF_8);
+            java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+            try (java.util.zip.GZIPOutputStream gz = new java.util.zip.GZIPOutputStream(bos)) { gz.write(json); }
+            return "AQUA1:" + java.util.Base64.getEncoder().encodeToString(bos.toByteArray());
+        } catch (Exception e) { return ""; }
+    }
+
+    /** Импортирует код как новую сборку. Возвращает её имя или null при ошибке. */
+    public static String importCode(String code, String name) {
+        if (!loaded) load();
+        if (code == null) return null;
+        code = code.trim();
+        if (!code.startsWith("AQUA1:")) return null;
+        try {
+            byte[] raw = java.util.Base64.getDecoder().decode(code.substring(6).trim());
+            java.io.ByteArrayInputStream bis = new java.io.ByteArrayInputStream(raw);
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            try (java.util.zip.GZIPInputStream gz = new java.util.zip.GZIPInputStream(bis)) {
+                byte[] buf = new byte[4096]; int n;
+                while ((n = gz.read(buf)) > 0) out.write(buf, 0, n);
+            }
+            JsonObject snap = GSON.fromJson(new String(out.toByteArray(), StandardCharsets.UTF_8), JsonObject.class);
+            if (snap == null) return null;
+            String base = (name == null || clean(name).isEmpty()) ? "Импорт" : clean(name);
+            String fn = base; int i = 2;
+            while (PROFILES.containsKey(fn) || BUILTIN.containsKey(fn)) fn = base + " " + (i++);
+            if (PROFILES.size() >= MAX) return null;
+            PROFILES.put(fn, snap);
+            persist();
+            return fn;
+        } catch (Exception e) { return null; }
+    }
     public static String active() { return active; }
 
     /** Сохранить текущее состояние модулей в сборку (новую или перезаписать). */

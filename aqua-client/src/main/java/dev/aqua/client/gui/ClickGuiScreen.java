@@ -112,6 +112,7 @@ public class ClickGuiScreen extends Screen {
         ctx.fillGradient((int) sx0, (int) y0, (int) sx0 + 40, (int) y0 + 1, f(0x003EE6FF), f(0xC09FF6FF));
 
         renderSidebar(ctx, mouseX, mouseY, x0, y0, H);
+        renderFlags(ctx, mouseX, mouseY, x0, y0, H);
 
         float cx = x0 + SIDEBAR + 10, cw = W - SIDEBAR - 20;
         float cy = y0 + HEADER + 6, ch = H - HEADER - 18;
@@ -285,6 +286,28 @@ public class ClickGuiScreen extends Screen {
         }
     }
 
+    /** Два флажка снизу сайдбара — переключение языка клиента (RU / EN). */
+    private void renderFlags(DrawContext ctx, int mx, int my, float x0, float y0, float H) {
+        float fw = 26, fh = 16, gp = 8, fy = y0 + H - fh - 10;
+        float ruX = x0 + 12, enX = ruX + fw + gp;
+        boolean ru = Lang.isRu();
+        // РФ — три полосы
+        int rx = (int) ruX, ry = (int) fy, rx2 = (int) (ruX + fw); float th = fh / 3f;
+        ctx.fill(rx, ry, rx2, (int) (fy + th), 0xFFFFFFFF);
+        ctx.fill(rx, (int) (fy + th), rx2, (int) (fy + 2 * th), 0xFF0039A6);
+        ctx.fill(rx, (int) (fy + 2 * th), rx2, (int) (fy + fh), 0xFFD52B1E);
+        Render2D.roundOutline(ctx, ruX - 1, fy - 1, fw + 2, fh + 2, 3, f(ru ? Theme.ACCENT : (Render2D.hover(mx, my, ruX, fy, fw, fh) ? Theme.TEXT : Theme.BORDER)));
+        hit(ruX, fy, fw, fh, b -> { Lang.setLang(1); ConfigManager.save(); });
+        // Англия — белый с красным крестом
+        int ex = (int) enX, ey = (int) fy, ex2 = (int) (enX + fw), ey2 = (int) (fy + fh);
+        ctx.fill(ex, ey, ex2, ey2, 0xFFFFFFFF);
+        int ecx = (int) (enX + fw / 2), ecy = (int) (fy + fh / 2);
+        ctx.fill(ecx - 2, ey, ecx + 2, ey2, 0xFFCF142B);
+        ctx.fill(ex, ecy - 2, ex2, ecy + 2, 0xFFCF142B);
+        Render2D.roundOutline(ctx, enX - 1, fy - 1, fw + 2, fh + 2, 3, f(!ru ? Theme.ACCENT : (Render2D.hover(mx, my, enX, fy, fw, fh) ? Theme.TEXT : Theme.BORDER)));
+        hit(enX, fy, fw, fh, b -> { Lang.setLang(2); ConfigManager.save(); });
+    }
+
     private void renderGrid(DrawContext ctx, int mx, int my, float x, float y, float w, float h, float a) {
         List<Module> list = new ArrayList<>();
         String q = search.toLowerCase(Locale.ROOT);
@@ -429,7 +452,36 @@ public class ClickGuiScreen extends Screen {
             hit(x, yy, w, 24, b -> dev.aqua.client.config.Profiles.saveCurrent(dev.aqua.client.config.Profiles.active()));
             yy += 24 + gap;
         }
+
+        // ---- обмен конфигом по коду: скопировать свой / вставить чужой ----
+        {
+            boolean hov = Render2D.hover(mx, my, x, yy, w, 24);
+            Anim bh = anim("profcopy", hov ? 1 : 0, 14);
+            Render2D.roundRect(ctx, x, yy, w, 24, 6, f(ColorUtil.lerp(Theme.CARD, Theme.ACCENT_DARK, bh.get())));
+            Render2D.centered(ctx, Lang.tr("⧉ Скопировать мой код"), x + w / 2, yy + 8, t(Theme.TEXT));
+            hit(x, yy, w, 24, b -> {
+                if (client != null) client.keyboard.setClipboard(dev.aqua.client.config.Profiles.exportCurrent());
+                toast(Lang.tr("Код скопирован — поделись с другом"));
+            });
+            yy += 24 + gap;
+        }
+        {
+            boolean hov = Render2D.hover(mx, my, x, yy, w, 24);
+            Anim bh = anim("profpaste", hov ? 1 : 0, 14);
+            Render2D.roundRect(ctx, x, yy, w, 24, 6, f(ColorUtil.lerp(Theme.CARD, Theme.CARD_HOVER, bh.get())));
+            Render2D.centered(ctx, Lang.tr("📥 Вставить код сборки"), x + w / 2, yy + 8, t(Theme.SUB));
+            hit(x, yy, w, 24, b -> {
+                String fn = client == null ? null : dev.aqua.client.config.Profiles.importCode(client.keyboard.getClipboard(), null);
+                toast(fn != null ? Lang.tr("Сборка добавлена: ") + fn : Lang.tr("Неверный код или достигнут максимум сборок"));
+            });
+            yy += 24 + gap;
+        }
         contentHeight = yy + sc - y + 6;
+    }
+
+    private void toast(String msg) {
+        if (client != null && client.player != null)
+            client.player.sendMessage(net.minecraft.text.Text.literal("§b[Aqua] §f" + msg), false);
     }
 
     private void startRenameProfile(String name) {
