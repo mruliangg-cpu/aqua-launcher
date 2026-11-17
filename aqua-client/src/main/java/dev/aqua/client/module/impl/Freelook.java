@@ -45,7 +45,10 @@ public class Freelook extends Module {
         if (f == null) return;
         MinecraftClient mc = MinecraftClient.getInstance();
         if (!f.isEnabled() || mc.player == null) { if (active) f.finish(); return; }
-        boolean down = AquaClient.FREELOOK != null && AquaClient.FREELOOK.isPressed() && mc.currentScreen == null;
+        // активируем Freelook и по его собственной привязке (например F4), а не только по клавише из настроек MC
+        boolean modKey = f.getKey() > 0 && dev.aqua.client.util.Keys.isKeyDown(f.getKey());
+        boolean down = mc.currentScreen == null
+                && (modKey || (AquaClient.FREELOOK != null && AquaClient.FREELOOK.isPressed()));
         if (down && !f.wasDown) f.toggled = !f.toggled;
         f.wasDown = down;
         boolean want = f.mode.is("Удерживать") ? down : f.toggled;
