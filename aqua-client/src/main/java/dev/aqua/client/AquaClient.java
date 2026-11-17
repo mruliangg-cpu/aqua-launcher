@@ -97,6 +97,24 @@ public class AquaClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register((ctx, tickCounter) -> HudRenderer.render(ctx));
         // (в 1.20.x второй аргумент — float tickDelta; лямбда подходит для обоих вариантов)
 
+        // Fast Transfer через события экрана Fabric (кросс-версийно, без правки методов мыши)
+        net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, sw, sh) -> {
+            if (!(screen instanceof net.minecraft.client.gui.screen.ingame.HandledScreen<?>)) return;
+            net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents.allowMouseClick(screen).register((scr, mx, my, button) -> {
+                if (!dev.aqua.client.module.impl.FastTransfer.on() || button != 0) return true;
+                dev.aqua.client.module.impl.FastTransfer.begin();
+                if (dev.aqua.client.module.impl.FastTransfer.onClickToo()
+                        && dev.aqua.client.module.impl.FastTransfer.transfer((net.minecraft.client.gui.screen.ingame.HandledScreen<?>) scr, mx, my))
+                    return false; // перенесли — отменяем ваниль (не поднимаем предмет)
+                return true;
+            });
+            net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents.afterMouseRelease(screen).register((scr, mx, my, button) -> dev.aqua.client.module.impl.FastTransfer.end());
+            net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((scr, dc, mx, my, td) -> {
+                if (dev.aqua.client.module.impl.FastTransfer.dragging())
+                    dev.aqua.client.module.impl.FastTransfer.transfer((net.minecraft.client.gui.screen.ingame.HandledScreen<?>) scr, mx, my);
+            });
+        });
+
         //#if MC < 1.21.9 || MC >= 1.21.10
         // (в Fabric API для 1.21.9 событий отрисовки мира нет)
         //#if MC >= 1.21.10
