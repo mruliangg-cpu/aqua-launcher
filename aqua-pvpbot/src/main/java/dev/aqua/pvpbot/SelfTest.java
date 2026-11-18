@@ -19,6 +19,7 @@ final class SelfTest {
 
     private static int clock = 0;
     private static int round = -1;
+    private static boolean waiting = false;
     private static int roundStart = 0;
     private static BotPlayer a, b;
     private static final Kit[] KITS = Kit.values();
@@ -26,6 +27,7 @@ final class SelfTest {
     static void tick(MinecraftServer server) {
         clock++;
         if (clock < 100) return;
+        if (waiting) return;
         if (round == -1) { next(server); return; }
         boolean done = a == null || b == null || a.isLeaving() || b.isLeaving() || a.isRemoved() || b.isRemoved()
                 || clock - roundStart > ROUND_TICKS;
@@ -41,13 +43,12 @@ final class SelfTest {
             if (!a.isLeaving()) a.removeBot();
             if (!b.isLeaving()) b.removeBot();
             a = b = null;
-            BotManager.later(40, () -> next(server));
-            round = round + 1000; // wait
+            waiting = true;
+            BotManager.later(40, () -> { waiting = false; next(server); });
         }
     }
 
     private static void next(MinecraftServer server) {
-        if (round >= 1000) round -= 1000;
         round++;
         if (round >= KITS.length) {
             log("DONE");
