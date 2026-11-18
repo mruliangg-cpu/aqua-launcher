@@ -253,7 +253,7 @@ public class DeathAnimations extends Module {
         float tw = Render2D.width(s) * scale;
         Render2D.textScaled(c, s, w / 2f - tw / 2f + 2, h / 2f - 18 * scale / 3.2f + 2, scale, col(0x3A0000, 0.9f * reveal(t)), false); // тень
         Render2D.gradientText(c, s, w / 2f - tw / 2f, h / 2f - 18 * scale / 3.2f, scale, 0xFF4D4D, 0xB00020, false, pop * flick * reveal(t));
-        String name = MinecraftClient.getInstance().player != null ? MinecraftClient.getInstance().player.getGameProfile().getName() : "Player";
+        String name = MinecraftClient.getInstance().getSession() != null ? MinecraftClient.getInstance().getSession().getUsername() : "Player";
         if (t > 0.35f) Render2D.centered(c, "☠ " + name, w / 2f, h / 2f + 34, col(0xD9A0A0, Math.min(1, (t - 0.35f) / 0.3f) * reveal(t)));
     }
 
