@@ -1,0 +1,64 @@
+# Aqua PvP Bot mod (Fabric 1.21.11). Builds on every push to the aqua-pvpbot branch.
+#  [mcsrc]   in the commit message -> also export decompiled Minecraft sources to branch mc-src-1.21.11
+#  [release] in the commit message -> publish a GitHub release with the jar
+name: Build Aqua PvP Bot
+on:
+  push:
+    branches: [aqua-pvpbot]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: pvpbot-${{ hashFiles('aqua-pvpbot/*.gradle', 'aqua-pvpbot/gradle.properties') }}
+          restore-keys: pvpbot-
+      - name: Export Minecraft sources
+        if: contains(github.event.head_commit.message, '[mcsrc]')
+        working-directory: aqua-pvpbot
+        run: |
+          chmod +x gradlew
+          ./gradlew genSources --no-daemon -q || true
+          J=$(find ~/.gradle .gradle -name 'minecraft-*sources.jar' 2>/dev/null | head -1)
+          echo "sources: $J"
+          mkdir -p /tmp/src && cd /tmp/src && unzip -q -o "$J" 'net/minecraft/server/*' 'net/minecraft/world/entity/*' 'net/minecraft/world/item/*' \
+            'net/minecraft/world/effect/*' 'net/minecraft/world/damagesource/*' 'net/minecraft/commands/*' 'net/minecraft/core/*' \
+            'net/minecraft/network/Connection.java' 'net/minecraft/network/chat/*' 'net/minecraft/network/protocol/game/*' \
+            'net/minecraft/world/level/*.java' 'net/minecraft/world/food/*' 'net/minecraft/world/phys/*' 'net/minecraft/world/*.java' \
+            'net/minecraft/world/level/block/Block.java' 'net/minecraft/world/level/block/Blocks.java' 'net/minecraft/world/level/block/state/BlockBehaviour.java' 'net/minecraft/util/Mth.java' || true
+          cd /tmp/src && git init -q && git checkout -q -b mc-src-1.21.11 && git add -A && \
+            git -c user.name=ci -c user.email=ci@local commit -qm "MC 1.21.11 mojmap sources" && \
+            git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" mc-src-1.21.11
+      - name: Build
+        working-directory: aqua-pvpbot
+        run: |
+          chmod +x gradlew
+          ./gradlew build --no-daemon 2>&1 | tee build.log
+          exit ${PIPESTATUS[0]}
+      - name: Compile errors
+        if: failure()
+        working-directory: aqua-pvpbot
+        run: grep -E "error:|\.java:[0-9]+" build.log | head -200 || true
+      - name: Release
+        if: contains(github.event.head_commit.message, '[release]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V=$(grep mod_version aqua-pvpbot/gradle.properties | cut -d= -f2)
+          J=$(ls aqua-pvpbot/build/libs/*.jar | grep -v sources | head -1)
+          cp "$J" "AquaPvPBot-$V-1.21.11-fabric.jar"
+          gh release delete "pvpbot-v$V" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "pvpbot-v$V" "AquaPvPBot-$V-1.21.11-fabric.jar" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Aqua PvP Bot $V (Minecraft 1.21.11 Fabric)" --latest=false --prerelease \
+            --notes "Put the jar in your .minecraft/mods folder (Fabric 1.21.11). Commands: /spawnbot <easy|normal|hard|endless|impossible> [kit], /kit <sword|diamond|op|nethpot|crystal|mace>, /killbots, /pvpbot. Made by Ulian Voskoboynikov."

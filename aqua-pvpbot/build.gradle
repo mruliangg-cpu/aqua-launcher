@@ -1,0 +1,41 @@
+// Aqua PvP Bot - made by Ulian Voskoboynikov
+buildscript {
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    dependencies { classpath "net.fabricmc:fabric-loom:${loom_version}" }
+}
+apply plugin: 'fabric-loom'
+
+version = "${project.mod_version}+${project.minecraft_version}"
+group = project.maven_group
+base { archivesName = project.archives_base_name }
+
+repositories { mavenCentral() }
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+}
+
+def javaVersion = (project.findProperty('java_version') ?: '21') as int
+
+processResources {
+    def p = [version: project.version, minecraft_version: project.minecraft_version, java_version: javaVersion]
+    inputs.properties p
+    filesMatching(["fabric.mod.json", "aquapvpbot.mixins.json"]) { expand p }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = javaVersion
+    it.options.encoding = 'UTF-8'
+    it.options.compilerArgs += ['-Xmaxerrs', '400']
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion(javaVersion)
+    targetCompatibility = JavaVersion.toVersion(javaVersion)
+}

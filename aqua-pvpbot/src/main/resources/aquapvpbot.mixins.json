@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.aqua.pvpbot.mixin",
+  "compatibilityLevel": "JAVA_${java_version}",
+  "mixins": [
+    "CommandsMixin",
+    "ConnectionAccessor",
+    "PlayerKnockbackMixin",
+    "PlayerListMixin"
+  ],
+  "injectors": { "defaultRequire": 1 }
+}

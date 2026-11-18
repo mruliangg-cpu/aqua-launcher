@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "aquapvpbot",
+  "version": "${version}",
+  "name": "Aqua PvP Bot",
+  "description": "PvP practice bots for your own worlds. /spawnbot <easy|normal|hard|endless|impossible> and /kit <sword|diamond|op|nethpot|crystal|mace>. Made by Ulian Voskoboynikov.",
+  "authors": ["Ulian Voskoboynikov"],
+  "license": "MIT",
+  "icon": "assets/aquapvpbot/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.aqua.pvpbot.AquaPvPBot"]
+  },
+  "mixins": ["aquapvpbot.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}"
+  }
+}
