@@ -213,7 +213,7 @@ public final class BotBrain {
 
         ServerPlayer owner = owner();
         if (owner == null || owner.level() != bot.level()) {
-            if (++noOwnerTicks > 400) { if (run != null) BotManager.endlessLost(null, run); bot.removeBot(); }
+            if (++noOwnerTicks > 1200) { if (run != null) BotManager.endlessLost(null, run); bot.removeBot(); }
             idle();
             return;
         }
@@ -773,12 +773,16 @@ public final class BotBrain {
         boolean hasWind = has(s -> s.is(Items.WIND_CHARGE));
         switch (mace) {
             case GROUND -> {
-                if (!hasWind || !bot.onGround() || age < nextWindAt || dist > 4.2 || dist < 1.2) return false;
+                // get close first (the melee code walks us in), then launch while running at them
+                if (!hasWind || !bot.onGround() || age < nextWindAt || dist > 3.2 || dist < 0.8) return false;
                 if (bot.getCooldowns().isOnCooldown(new ItemStack(Items.WIND_CHARGE))) return false;
                 if (bot.isUsingItem()) bot.releaseUsingItem();
                 select(s -> s.is(Items.WIND_CHARGE));
+                lookAt(aimPoint(target), 180f);
                 throwDown(90f);
                 nWind++;
+                forward = 1;
+                sprint = true;
                 mace = MaceState.LAUNCH;
                 maceStateAt = age;
                 nextWindAt = age + 30 + (d.clickDelay * 4);
@@ -796,10 +800,12 @@ public final class BotBrain {
                 lookAt(aimPoint(target), Math.max(d.turnSpeed, 30f));
                 // drift towards the target while in the air
                 double hd = Math.sqrt(Math.pow(target.getX() - bot.getX(), 2) + Math.pow(target.getZ() - bot.getZ(), 2));
-                forward = hd > 0.8 ? 1 : 0;
-                sprint = false;
+                forward = hd > 0.6 ? 1 : 0;
+                sprint = hd > 1.5;
                 boolean falling = bot.getDeltaMovement().y < 0;
-                if (falling && bot.fallDistance > 1.5 && inReach(target, d.reach) && bot.getAttackStrengthScale(0.5f) >= 0.9f) {
+                // the smash bonus doesn't need a charged swing - it only needs the fall
+                if (falling && bot.fallDistance > 1.5 && inReach(target, d.reach) && angleTo(target.position()) < 50f) {
+                    bot.setSprinting(false);
                     bot.attack(target);
                     bot.swing(InteractionHand.MAIN_HAND);
                     nSmash++;

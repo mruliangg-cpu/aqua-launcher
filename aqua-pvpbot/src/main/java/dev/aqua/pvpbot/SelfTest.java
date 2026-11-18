@@ -51,8 +51,7 @@ final class SelfTest {
     private static void next(MinecraftServer server) {
         round++;
         if (round >= KITS.length) {
-            log("DONE");
-            server.halt(false);
+            commandTest(server);
             return;
         }
         ServerLevel level = server.overworld();
@@ -69,6 +68,64 @@ final class SelfTest {
         BotManager.register(a);
         BotManager.register(b);
         roundStart = clock;
+    }
+
+    // ---- phase 2: run the real commands as a (bot) player, like a user would ----
+    private static BotPlayer owner;
+
+    private static void run(String cmd) {
+        log("CMD /" + cmd);
+        owner.level().getServer().getCommands().performPrefixedCommand(owner.createCommandSourceStack(), cmd);
+    }
+
+    private static String botsOf() {
+        StringBuilder sb = new StringBuilder();
+        for (BotPlayer b : BotManager.bots()) if (owner.getUUID().equals(b.brain.ownerId)) sb.append(b.getScoreboardName()).append("[").append(b.brain.d.label).append(", ").append(b.brain.kit.id).append("] ");
+        return BotManager.countFor(owner.getUUID()) + " bots: " + sb;
+    }
+
+    private static void commandTest(MinecraftServer server) {
+        ServerLevel level = server.overworld();
+        int x = 600;
+        level.getChunk(x >> 4, 0);
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, 0);
+        // a passive "player" (its own owner doesn't exist, so it just stands there)
+        owner = BotPlayer.spawnAt(level, new Vec3(x + 0.5, y, 0.5), 0f, "Owner",
+                new BotBrain.Setup(UUIDUtil.createOfflinePlayerUUID("Nobody"), Difficulty.EASY, Kit.SWORD, null));
+        BotManager.register(owner);
+        BotManager.later(20, () -> {
+            run("pvpbot");
+            run("kit nethpot");
+            log("owner items after /kit nethpot: main=" + owner.getInventory().getItem(0) + " chest=" + owner.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST) + " offhand=" + owner.getOffhandItem());
+            run("spawnbot hard");
+            run("spawnbot easy crystal");
+            run("spawnbot nonsense");
+            log("after spawns: " + botsOf());
+        });
+        BotManager.later(120, () -> {
+            log("owner hp after 5s: " + owner.getHealth());
+            run("killbots");
+        });
+        BotManager.later(140, () -> {
+            log("after /killbots: " + botsOf());
+            run("kit restore");
+            owner.setHealth(20f);
+            run("spawnbot endless mace");
+            log("endless started: " + botsOf());
+        });
+        BotManager.later(220, () -> {
+            for (BotPlayer b : BotManager.bots()) if (owner.getUUID().equals(b.brain.ownerId)) { log("killing " + b.getScoreboardName() + " to clear wave 1"); b.kill(b.level()); }
+        });
+        BotManager.later(320, () -> log("wave 2 should be here: " + botsOf() + (BotManager.bots().stream().anyMatch(b -> b.brain.d.label.contains("Wave 2")) ? " OK" : " MISSING")));
+        BotManager.later(360, () -> {
+            run("killbots");
+            log("final: " + botsOf());
+            owner.removeBot();
+        });
+        BotManager.later(400, () -> {
+            log("DONE");
+            server.halt(false);
+        });
     }
 
     private static String pos(BotPlayer p) {
