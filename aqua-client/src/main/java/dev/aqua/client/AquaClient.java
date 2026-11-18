@@ -100,9 +100,15 @@ public class AquaClient implements ClientModInitializer {
         // Fast Transfer: только стабильное событие отрисовки экрана + опрос мыши через GLFW
         // (методы мыши Screen в 1.21.9 сменили сигнатуру, поэтому в них не лезем)
         net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, sw, sh) -> {
-            if (!(screen instanceof net.minecraft.client.gui.screen.ingame.HandledScreen<?>)) return;
-            net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((scr, dc, mx, my, td) ->
-                    dev.aqua.client.module.impl.FastTransfer.frame((net.minecraft.client.gui.screen.ingame.HandledScreen<?>) scr, mx, my));
+            if (screen instanceof net.minecraft.client.gui.screen.ingame.HandledScreen<?>) {
+                net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((scr, dc, mx, my, td) ->
+                        dev.aqua.client.module.impl.FastTransfer.frame((net.minecraft.client.gui.screen.ingame.HandledScreen<?>) scr, mx, my));
+            }
+            if (screen instanceof net.minecraft.client.gui.screen.DeathScreen) {
+                dev.aqua.client.module.impl.DeathAnimations.onDeath();
+                net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.afterRender(screen).register((scr, dc, mx, my, td) ->
+                        dev.aqua.client.module.impl.DeathAnimations.renderOverlay(dc, scr.width, scr.height));
+            }
         });
 
         //#if MC < 1.21.9 || MC >= 1.21.10
