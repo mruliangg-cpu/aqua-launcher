@@ -64,6 +64,23 @@ jobs:
           echo "===== ERRORS ====="
           grep -a -B2 -A12 "Exception\|ERROR\|Mixin apply failed\|InvalidInjection" server.log | head -150 || true
           grep -a -q "AQUA-PVP-TEST DONE" server.log
+      - name: Production test (the real jar on a real Fabric server, no dev tools)
+        if: contains(github.event.head_commit.message, '[prodtest]')
+        run: |
+          LOADER=$(curl -s https://meta.fabricmc.net/v2/versions/loader | jq -r '[.[] | select(.stable)][0].version')
+          INST=$(curl -s https://meta.fabricmc.net/v2/versions/installer | jq -r '[.[] | select(.stable)][0].version')
+          echo "loader $LOADER installer $INST"
+          mkdir -p prod/mods && cd prod
+          curl -sL -o server.jar "https://meta.fabricmc.net/v2/versions/loader/1.21.11/$LOADER/$INST/server/jar"
+          cp $(ls ../aqua-pvpbot/build/libs/*.jar | grep -v sources | head -1) mods/
+          ls -la mods
+          echo "eula=true" > eula.txt
+          printf 'online-mode=false\nlevel-type=minecraft\\:flat\nspawn-protection=0\ndifficulty=normal\nspawn-monsters=false\nmax-tick-time=-1\n' > server.properties
+          touch aquapvp-selftest.flag
+          timeout 900 java -Xmx2G -jar server.jar nogui > server.log 2>&1 || true
+          grep -a "AQUA-PVP-TEST\|Loading [0-9]* mods\|aquapvpbot" server.log | head -80
+          grep -a -B2 -A12 "Exception\|Mixin apply failed\|InvalidInjection" server.log | head -80 || true
+          grep -a -q "AQUA-PVP-TEST DONE" server.log
       - name: Release
         if: contains(github.event.head_commit.message, '[release]')
         env:
