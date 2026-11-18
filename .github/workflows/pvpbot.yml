@@ -55,7 +55,7 @@ jobs:
         working-directory: aqua-pvpbot
         run: |
           mkdir -p run && echo "eula=true" > run/eula.txt
-          printf 'online-mode=false\nlevel-type=minecraft\\:flat\nspawn-protection=0\npvp=true\ndifficulty=easy\nspawn-monsters=false\nmax-tick-time=-1\n' > run/server.properties
+          printf 'online-mode=false\nlevel-type=minecraft\\:flat\nspawn-protection=0\npvp=true\ndifficulty=normal\nspawn-monsters=false\nmax-tick-time=-1\n' > run/server.properties
           cat run/server.properties
           touch run/aquapvp-selftest.flag
           timeout 900 ./gradlew runServer --no-daemon > server.log 2>&1 || true
@@ -76,3 +76,6 @@ jobs:
           gh release create "pvpbot-v$V" "AquaPvPBot-$V-1.21.11-fabric.jar" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "Aqua PvP Bot $V (Minecraft 1.21.11 Fabric)" --latest=false --prerelease \
             --notes "Put the jar in your .minecraft/mods folder (Fabric 1.21.11). Commands: /spawnbot <easy|normal|hard|endless|impossible> [kit], /kit <sword|diamond|op|nethpot|crystal|mace>, /killbots, /pvpbot. Made by Ulian Voskoboynikov."
+          mkdir -p /tmp/dist && cp "AquaPvPBot-$V-1.21.11-fabric.jar" /tmp/dist/ && cd /tmp/dist && git init -q && git checkout -q -b pvpbot-dist && git add -A && \
+            git -c user.name=ci -c user.email=ci@local commit -qm "Aqua PvP Bot $V jar" && \
+            git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" pvpbot-dist

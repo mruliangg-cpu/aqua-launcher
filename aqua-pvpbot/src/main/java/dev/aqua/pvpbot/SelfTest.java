@@ -51,6 +51,7 @@ final class SelfTest {
     private static void next(MinecraftServer server) {
         round++;
         if (round >= KITS.length) {
+            waiting = true; // the fights are over
             commandTest(server);
             return;
         }

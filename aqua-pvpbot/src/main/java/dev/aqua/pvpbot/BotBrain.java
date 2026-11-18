@@ -72,6 +72,8 @@ public final class BotBrain {
     int jumpedAt = -100;
     int strafeDir = 1; int strafeSwitchAt = 0;
     boolean shieldUp = false;
+    boolean shieldPlan = false;
+    int axeAt = -100;
 
     // items
     int totemMissingSince = -1;
@@ -377,12 +379,23 @@ public final class BotBrain {
         if (isUsing(Items.BOW)) { bot.releaseUsingItem(); bowStart = -1; }
         boolean blocking = t.isBlocking();
 
-        // weapon choice
-        if (blocking && d.axeVsShield && has(BotBrain::isAxe)) select(BotBrain::isAxe);
-        else selectWeapon();
-
         Vec3 aim = aimPoint(t);
         lookAt(aim, d.turnSpeed);
+
+        // ---- axe vs shield: swap to the axe, hit once (no charge needed to disable a shield), swap back ----
+        if (blocking && d.axeVsShield && has(BotBrain::isAxe) && dist < d.reach + 1.5) {
+            if (!isAxe(bot.getMainHandItem())) { select(BotBrain::isAxe); axeAt = age; }
+            forward = dist > 2.6 ? 1 : 0;
+            sprint = forward > 0;
+            if (age - axeAt >= 1 + d.reaction / 3 && inReach(t, d.reach) && angleTo(t.position()) < 35f) {
+                bot.attack(t);
+                bot.swing(InteractionHand.MAIN_HAND);
+                nAxe++;
+                nextClickAt = age + 2;
+            }
+            return;
+        }
+        selectWeapon();
 
         float charge = bot.getAttackStrengthScale(0.5f);
         float delay = bot.getCurrentItemAttackStrengthDelay();
@@ -408,7 +421,7 @@ public final class BotBrain {
         // ---- shield ----
         ItemStack off = bot.getOffhandItem();
         boolean hasShield = off.is(Items.SHIELD);
-        if (d.shield && hasShield && t instanceof Player && dist < 4.5 && charge < 0.55f && !critPlan) {
+        if (shieldPlan && hasShield && t instanceof Player && !blocking && dist < 3.8 && charge < 0.5f && !critPlan) {
             if (!bot.isUsingItem()) { bot.gameMode.useItem(bot, bot.level(), off, InteractionHand.OFF_HAND); nShield++; }
             shieldUp = true;
             sprint = false;
@@ -445,7 +458,6 @@ public final class BotBrain {
             nMiss++;
         } else {
             if (!bot.onGround() && bot.fallDistance > 0 && !bot.isSprinting()) nCrit++;
-            if (isAxe(bot.getMainHandItem()) && t.isBlocking()) nAxe++;
             bot.attack(t);
             bot.swing(InteractionHand.MAIN_HAND);
             if (t.getUUID().equals(ownerId)) {
@@ -459,6 +471,7 @@ public final class BotBrain {
         // w-tap: let go of sprint for a moment so the next hit deals full knockback again
         resprintAt = age + (rng.nextFloat() < d.wtapChance ? 1 + rng.nextInt(2) : 6 + rng.nextInt(8));
         critPlan = rng.nextFloat() < d.critChance;
+        shieldPlan = d.shield && rng.nextFloat() < (d.reaction <= 1 ? 0.75f : 0.55f);
     }
 
     private void selectWeapon() {
