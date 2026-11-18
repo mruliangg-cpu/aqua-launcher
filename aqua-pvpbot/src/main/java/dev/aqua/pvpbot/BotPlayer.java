@@ -43,14 +43,16 @@ public class BotPlayer extends ServerPlayer {
 
     /** Spawns a bot 4 blocks in front of the owner, facing them. */
     public static BotPlayer spawn(ServerPlayer owner, String name, BotBrain.Setup setup) {
-        MinecraftServer server = owner.level().getServer();
-        ServerLevel level = owner.level();
-        UUID uuid = UUIDUtil.createOfflinePlayerUUID(name);
-        GameProfile profile = new GameProfile(uuid, name);
-
         Vec3 pos = findSpawnPos(owner);
         double dx = owner.getX() - pos.x, dz = owner.getZ() - pos.z;
         float yaw = (float) (Mth.atan2(dz, dx) * Mth.RAD_TO_DEG) - 90f;
+        return spawnAt(owner.level(), pos, yaw, name, setup);
+    }
+
+    public static BotPlayer spawnAt(ServerLevel level, Vec3 pos, float yaw, String name, BotBrain.Setup setup) {
+        MinecraftServer server = level.getServer();
+        UUID uuid = UUIDUtil.createOfflinePlayerUUID(name);
+        GameProfile profile = new GameProfile(uuid, name);
 
         BotPlayer bot = new BotPlayer(server, level, profile, ClientInformation.createDefault(), setup);
         bot.fixStartingPosition = () -> bot.snapTo(pos.x, pos.y, pos.z, yaw, 0f);

@@ -42,6 +42,7 @@ public final class BotManager {
     // ---------------- ticking ----------------
     public static void tick(MinecraftServer server) {
         now++;
+        if (SelfTest.ENABLED) SelfTest.tick(server);
         if (TASKS.isEmpty()) return;
         List<Delayed> due = new ArrayList<>();
         for (Iterator<Delayed> it = TASKS.iterator(); it.hasNext(); ) {

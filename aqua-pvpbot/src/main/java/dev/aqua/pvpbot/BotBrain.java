@@ -90,6 +90,8 @@ public final class BotBrain {
     float forward, strafe; boolean jump, sprint;
 
     // stats
+    // what the bot did (shown by the self-test)
+    int nCrit, nCrystalPlace, nCrystalBreak, nObsidian, nPot, nApple, nPearl, nArrow, nWind, nSmash, nTotem, nShield, nAxe, nMiss;
     int startTick = 0, botHits = 0, ownerHits = 0, ownerCombo = 0, ownerBestCombo = 0, botCombo = 0, botBestCombo = 0;
 
     BotBrain(BotPlayer bot, Setup s) {
@@ -120,6 +122,12 @@ public final class BotBrain {
                     .append(Component.literal("/kit " + kit.id).withStyle(ChatFormatting.AQUA))
                     .append(Component.literal(" gives you the same kit as the bot.").withStyle(ChatFormatting.GRAY)));
         }
+    }
+
+    public String statsLine() {
+        return "hits=" + botHits + " miss=" + nMiss + " crit=" + nCrit + " axe=" + nAxe + " shield=" + nShield + " totem=" + nTotem
+                + " pot=" + nPot + " apple=" + nApple + " arrow=" + nArrow + " pearl=" + nPearl + " obsidian=" + nObsidian
+                + " crystalPlace=" + nCrystalPlace + " crystalBreak=" + nCrystalBreak + " wind=" + nWind + " smash=" + nSmash;
     }
 
     ServerPlayer owner() {
@@ -401,7 +409,7 @@ public final class BotBrain {
         ItemStack off = bot.getOffhandItem();
         boolean hasShield = off.is(Items.SHIELD);
         if (d.shield && hasShield && t instanceof Player && dist < 4.5 && charge < 0.55f && !critPlan) {
-            if (!bot.isUsingItem()) bot.gameMode.useItem(bot, bot.level(), off, InteractionHand.OFF_HAND);
+            if (!bot.isUsingItem()) { bot.gameMode.useItem(bot, bot.level(), off, InteractionHand.OFF_HAND); nShield++; }
             shieldUp = true;
             sprint = false;
             return;
@@ -434,7 +442,10 @@ public final class BotBrain {
     private void swingAt(LivingEntity t) {
         if (rng.nextFloat() < d.missChance) {
             bot.swing(InteractionHand.MAIN_HAND); // whiff
+            nMiss++;
         } else {
+            if (!bot.onGround() && bot.fallDistance > 0 && !bot.isSprinting()) nCrit++;
+            if (isAxe(bot.getMainHandItem()) && t.isBlocking()) nAxe++;
             bot.attack(t);
             bot.swing(InteractionHand.MAIN_HAND);
             if (t.getUUID().equals(ownerId)) {
@@ -480,6 +491,7 @@ public final class BotBrain {
         inv.setItem(slot, old.isEmpty() ? ItemStack.EMPTY : old.copy());
         bot.setItemSlot(EquipmentSlot.OFFHAND, totem.copy());
         totemMissingSince = -1;
+        nTotem++;
     }
 
     private boolean healTick(double dist) {
@@ -491,6 +503,7 @@ public final class BotBrain {
             if (d.spacing && danger && hp > 6) { retreat(); }
             select(BotBrain::isHealPot);
             throwDown(88f);
+            nPot++;
             nextPotAt = age + (hp <= 6 && d.potDelay <= 8 ? 3 : d.potDelay);
             return true;
         }
@@ -506,6 +519,7 @@ public final class BotBrain {
                 select(apple);
                 lookAt(aimPoint(target), d.turnSpeed);
                 bot.gameMode.useItem(bot, bot.level(), bot.getMainHandItem(), InteractionHand.MAIN_HAND);
+                nApple++;
                 if (d.spacing && danger) retreat();
                 return true;
             }
@@ -587,7 +601,7 @@ public final class BotBrain {
         float power = Math.min(1f, (drawn / 20f) * (drawn / 20f + 2f) / 3f);
         aimBallistic(target, 3.0 * Math.max(power, 0.95), 0.05, 0.99);
         int need = 21 + (d.clickDelay > 2 ? rng.nextInt(6) : 0);
-        if (drawn >= need) { bot.releaseUsingItem(); bowStart = -1; }
+        if (drawn >= need) { bot.releaseUsingItem(); bowStart = -1; nArrow++; }
         return true;
     }
 
@@ -602,6 +616,7 @@ public final class BotBrain {
         bot.gameMode.useItem(bot, bot.level(), bot.getMainHandItem(), InteractionHand.MAIN_HAND);
         bot.swing(InteractionHand.MAIN_HAND);
         nextPearlAt = age + 60 + rng.nextInt(60);
+        nPearl++;
         return true;
     }
 
@@ -664,6 +679,7 @@ public final class BotBrain {
             bot.attack(best);
             bot.swing(InteractionHand.MAIN_HAND);
             nextCrystalAt = age + d.crystalDelay;
+            nCrystalBreak++;
             return true;
         }
 
@@ -676,6 +692,7 @@ public final class BotBrain {
             bot.gameMode.useItemOn(bot, level, bot.getMainHandItem(), InteractionHand.MAIN_HAND, new BlockHitResult(hit, Direction.UP, base, false));
             bot.swing(InteractionHand.MAIN_HAND);
             nextCrystalAt = age + Math.max(1, d.crystalDelay / 2);
+            nCrystalPlace++;
             return true;
         }
 
@@ -690,6 +707,7 @@ public final class BotBrain {
                 bot.gameMode.useItemOn(bot, level, bot.getMainHandItem(), InteractionHand.MAIN_HAND, new BlockHitResult(hit, Direction.UP, below, false));
                 bot.swing(InteractionHand.MAIN_HAND);
                 nextCrystalAt = age + d.crystalDelay;
+                nObsidian++;
                 return true;
             }
         }
@@ -760,6 +778,7 @@ public final class BotBrain {
                 if (bot.isUsingItem()) bot.releaseUsingItem();
                 select(s -> s.is(Items.WIND_CHARGE));
                 throwDown(90f);
+                nWind++;
                 mace = MaceState.LAUNCH;
                 maceStateAt = age;
                 nextWindAt = age + 30 + (d.clickDelay * 4);
@@ -783,6 +802,7 @@ public final class BotBrain {
                 if (falling && bot.fallDistance > 1.5 && inReach(target, d.reach) && bot.getAttackStrengthScale(0.5f) >= 0.9f) {
                     bot.attack(target);
                     bot.swing(InteractionHand.MAIN_HAND);
+                    nSmash++;
                     if (target.getUUID().equals(ownerId)) { botHits++; botCombo++; botBestCombo = Math.max(botBestCombo, botCombo); ownerCombo = 0; }
                     // wind burst throws us up again - stay in the air state
                     maceStateAt = age;

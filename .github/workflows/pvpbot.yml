@@ -50,6 +50,20 @@ jobs:
         if: failure()
         working-directory: aqua-pvpbot
         run: grep -E "error:|\.java:[0-9]+" build.log | head -200 || true
+      - name: Self-test on a real server (bots fight each other with every kit)
+        if: contains(github.event.head_commit.message, '[test]')
+        working-directory: aqua-pvpbot
+        run: |
+          mkdir -p run && echo "eula=true" > run/eula.txt
+          printf 'online-mode=false\nlevel-type=minecraft\\:flat\nspawn-protection=0\npvp=true\ndifficulty=easy\nspawn-monsters=false\nmax-tick-time=-1\n' > run/server.properties
+          cat run/server.properties
+          touch run/aquapvp-selftest.flag
+          timeout 900 ./gradlew runServer --no-daemon > server.log 2>&1 || true
+          echo "===== AQUA PVP SELFTEST ====="
+          grep -a "AQUA-PVP-TEST" server.log || echo "(no test lines)"
+          echo "===== ERRORS ====="
+          grep -a -B2 -A12 "Exception\|ERROR\|Mixin apply failed\|InvalidInjection" server.log | head -150 || true
+          grep -a -q "AQUA-PVP-TEST DONE" server.log
       - name: Release
         if: contains(github.event.head_commit.message, '[release]')
         env:
