@@ -60,9 +60,13 @@ public final class BotManager {
     public static void register(BotPlayer bot) { BOTS.add(bot); }
     public static void unregister(BotPlayer bot) { BOTS.remove(bot); }
 
-    public static List<BotPlayer> bots() { return new ArrayList<>(BOTS); }
+    public static List<BotPlayer> bots() { prune(); return new ArrayList<>(BOTS); }
+
+    /** forget bots that are gone (e.g. after leaving a singleplayer world) */
+    private static void prune() { BOTS.removeIf(b -> b.isRemoved() && !b.isAlive()); BOTS.removeIf(b -> b.isLeaving()); }
 
     public static int countFor(UUID owner) {
+        prune();
         int n = 0;
         for (BotPlayer b : BOTS) if (owner.equals(b.brain.ownerId)) n++;
         return n;
@@ -91,6 +95,7 @@ public final class BotManager {
     public static Component spawn(ServerPlayer owner, Difficulty difficulty, Kit kit, EndlessRun run) {
         if (countFor(owner.getUUID()) >= MAX_BOTS_PER_PLAYER)
             return Component.literal("You already have " + MAX_BOTS_PER_PLAYER + " bots. Use /killbots first.");
+        prune();
         if (BOTS.size() >= MAX_BOTS_TOTAL)
             return Component.literal("Too many bots on this server (max " + MAX_BOTS_TOTAL + ").");
         String name = freeName(owner.level().getServer(), capital(difficulty.id) + "Bot");

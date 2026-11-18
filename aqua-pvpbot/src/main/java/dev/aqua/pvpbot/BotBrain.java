@@ -297,6 +297,7 @@ public final class BotBrain {
 
     /** writes this tick's "keys" into the player */
     private void apply() {
+        if (bot.isInWater() || bot.isInLava()) jump = true; // swim up
         bot.zza = Mth.clamp(forward, -1f, 1f);
         bot.xxa = Mth.clamp(strafe, -1f, 1f);
         if (bot.isUsingItem()) { bot.zza *= 0.2f; bot.xxa *= 0.2f; }
