@@ -240,7 +240,7 @@ public class ClickGuiScreen extends Screen {
         }
 
         // рыбка плавает внизу боковой панели
-        float fy = y0 + H - 56 + (float) Math.sin(System.currentTimeMillis() / 600.0) * 2;
+        float fy = y0 + H - 82 + (float) Math.sin(System.currentTimeMillis() / 600.0) * 2;
         float fx = x0 + 14 + (float) ((System.currentTimeMillis() / 25) % (long) (SIDEBAR - 34));
         Render2D.rect(ctx, fx, fy, 8, 4, f(0xFFFF8A3D));
         Render2D.rect(ctx, fx + 2, fy, 2, 4, f(0xFFFFFFFF));
@@ -288,7 +288,7 @@ public class ClickGuiScreen extends Screen {
 
     /** Два флажка снизу сайдбара — переключение языка клиента (RU / EN). */
     private void renderFlags(DrawContext ctx, int mx, int my, float x0, float y0, float H) {
-        float fw = 26, fh = 16, gp = 8, fy = y0 + H - fh - 10;
+        float fw = 26, fh = 16, gp = 8, fy = y0 + H - 34 - fh - 8;
         float ruX = x0 + 12, enX = ruX + fw + gp;
         boolean ru = Lang.isRu();
         // РФ — три полосы
