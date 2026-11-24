@@ -23,7 +23,9 @@
     "NetworkHandlerMixin",
     "PlayerEntityRendererMixin",
     "PlayerListHudMixin",
+    "ScreenDrawablesAccessor",
     "SimpleOptionMixin",
+    "TitleScreenMixin",
     "VignetteMixin"
   ],
   "injectors": {
