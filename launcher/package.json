@@ -1,7 +1,7 @@
 {
   "name": "aqua-launcher",
   "productName": "Aqua Launcher",
-  "version": "3.9.27",
+  "version": "3.9.28",
   "description": "Красивый лаунчер Minecraft в морском стиле: все версии, Fabric/Quilt/Forge/NeoForge, моды с Modrinth и CurseForge, Aqua Client и FPS-буст.",
   "main": "main.js",
   "author": "Ulian",

@@ -14,6 +14,7 @@
 </head>
 <body>
   <canvas id="ocean"></canvas>
+  <div id="bg-veil"></div>
 
   <div class="app">
     <header class="titlebar">
@@ -197,6 +198,22 @@
     <footer class="app-foot"><span class="af-left">AQUA LAUNCHER <b id="af-ver"></b></span><span class="af-right">PLAY TOGETHER — BE THE BEST 👑</span></footer>
   </div>
 
+  <div id="launch-splash" class="launch-splash" hidden>
+    <canvas id="splash-fx"></canvas>
+    <div class="ls-center">
+      <div class="ls-logo">
+        <div class="ls-ring"></div>
+        <div class="ls-ring ls-ring2"></div>
+        <div class="ls-core"><span class="ls-a">A</span></div>
+      </div>
+      <div class="ls-word"><span class="t-aqua">AQUA</span> <span class="t-launcher">LAUNCHER</span></div>
+      <div class="ls-status" id="ls-status">LAUNCHING…</div>
+      <div class="ls-bar"><i id="ls-bar-i"></i></div>
+      <div class="ls-tip" id="ls-tip"></div>
+    </div>
+    <button class="ls-hide" id="ls-hide" hidden></button>
+  </div>
+
   <div id="welcome" class="welcome" hidden></div>
   <div id="modal-root"></div>
   <div id="toasts"></div>
@@ -209,6 +226,7 @@
   <script src="ocean.js"></script>
   <script src="assets/client-modules.js"></script>
   <script src="preview.js"></script>
+  <script src="splash.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

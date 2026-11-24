@@ -295,11 +295,13 @@ async function play(id, server) {
   blip(330);
   const r = $('#play-btn').getBoundingClientRect();
   if (window.Ocean) Ocean.burst(r.left + r.width / 2, r.top + r.height / 2, 30);
+  if (window.Splash) Splash.show();
   if (S.settings.consoleOnLaunch) go('console');
-  try { await aqua.launch(inst.id, server); } catch (e) { toast(e.message, 'err'); } finally { busy = false; updatePlay(); }
+  try { await aqua.launch(inst.id, server); } catch (e) { toast(e.message, 'err'); if (window.Splash) Splash.hide(); } finally { busy = false; updatePlay(); }
 }
 
 function onProgress(p) {
+  if (window.Splash) Splash.progress(p);
   const box = $('#progress');
   if (!p) { box.classList.remove('show'); return; }
   box.classList.add('show');
@@ -1077,9 +1079,10 @@ async function init() {
   aqua.onProgress(onProgress);
   aqua.onIncoming((n) => { setBadge(n); if (n) toast(t('new_requests', { n }), 'ok'); });
   aqua.onLog(addLog);
-  aqua.onStarted(() => toast(t('started'), 'ok'));
+  aqua.onStarted(() => { if (window.Splash) Splash.started(); toast(t('started'), 'ok'); });
   aqua.onGameState((st) => {
     running = !!st.running;
+    if (window.Splash && st.running) Splash.started();
     if (!st.running && st.code && st.code !== 0) toast(t('exit_code', { c: st.code }), 'err');
     updatePlay();
   });

@@ -1,7 +1,7 @@
 :root {
-  --deep: #021526;
-  --glass: rgba(4, 34, 58, 0.58);
-  --glass-hi: rgba(10, 62, 96, 0.62);
+  --deep: #060a12;
+  --glass: rgba(9, 20, 34, 0.62);
+  --glass-hi: rgba(14, 34, 54, 0.66);
   --line: rgba(130, 230, 255, 0.16);
   --line-hi: rgba(130, 230, 255, 0.38);
   --text: #e9fbff;
@@ -19,7 +19,11 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; background: var(--deep); color: var(--text); font: 14px/1.45 var(--font); user-select: none; }
-#ocean { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+#ocean { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .5; }
+#bg-veil { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(135% 100% at 50% -12%, rgba(10, 26, 44, .22), rgba(3, 7, 14, .86) 76%),
+    linear-gradient(180deg, rgba(4, 9, 18, .35), rgba(2, 5, 11, .62)); }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 a { color: var(--aqua); }
 ::-webkit-scrollbar { width: 8px; }
@@ -96,7 +100,7 @@ h2 { font: 700 24px var(--pixel); letter-spacing: 1px; text-shadow: 0 2px 0 rgba
 .current .change { margin-left: auto; color: var(--sub); font-size: 12px; }
 
 .play-box { padding: 16px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
-.play { position: relative; overflow: hidden; height: 64px; border-radius: 16px; font: 700 26px var(--pixel); letter-spacing: 4px; color: #01273b;
+.play { position: relative; overflow: hidden; height: 72px; border-radius: 18px; font: 700 28px var(--pixel); letter-spacing: 4px; color: #01273b;
   background: linear-gradient(135deg, #8ff7ff, var(--aqua) 40%, var(--prism)); box-shadow: 0 10px 30px rgba(62, 230, 255, .45), inset 0 -4px 0 rgba(0, 60, 90, .35), inset 0 3px 0 rgba(255, 255, 255, .5);
   transition: transform .2s, box-shadow .3s, filter .3s; }
 .play::before { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .55) 45%, transparent 60%); transform: translateX(-120%); animation: sweep 3.2s ease-in-out infinite; }
@@ -662,3 +666,47 @@ body.reduce-motion .home-hero *, body.reduce-motion .feat, body.reduce-motion .p
 .title-colors button.on { border-color: #fff; transform: scale(1.15); }
 .title-colors button.rainbow { background: conic-gradient(#ff5566, #ffc83d, #5cff8a, #3fe0ff, #b57cff, #ff5566); }
 #title-msg.bad { color: #ff7a8a; }
+
+/* ===================== Lunar-style launch splash ===================== */
+.launch-splash { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; overflow: hidden;
+  opacity: 0; visibility: hidden; transition: opacity .5s ease, visibility .5s;
+  background:
+    radial-gradient(60% 55% at 50% 42%, rgba(26, 90, 130, .35), transparent 70%),
+    radial-gradient(120% 120% at 50% 50%, rgba(6, 14, 24, .92), rgba(2, 5, 11, .98));
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.launch-splash.on { opacity: 1; visibility: visible; }
+.launch-splash #splash-fx { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .75; }
+.ls-center { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 18px;
+  transform: translateY(8px); animation: ls-pop .6s cubic-bezier(.2, .9, .25, 1) forwards; }
+@keyframes ls-pop { to { transform: translateY(0); } }
+
+.ls-logo { position: relative; width: 132px; height: 132px; display: grid; place-items: center; }
+.ls-ring { position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 65%, var(--aqua) 82%, var(--prism) 92%, transparent 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+  animation: ls-spin 1.15s linear infinite; filter: drop-shadow(0 0 10px rgba(62, 230, 255, .5)); }
+.ls-ring2 { inset: 14px; animation: ls-spin 1.7s linear infinite reverse; opacity: .6;
+  background: conic-gradient(from 180deg, transparent 0 70%, var(--prism) 88%, transparent 100%); }
+@keyframes ls-spin { to { transform: rotate(360deg); } }
+.ls-core { width: 80px; height: 80px; border-radius: 22px; display: grid; place-items: center;
+  background: linear-gradient(135deg, #8ff7ff, var(--aqua) 45%, var(--prism));
+  box-shadow: 0 10px 34px rgba(62, 230, 255, .5), inset 0 -4px 0 rgba(0, 60, 90, .35), inset 0 3px 0 rgba(255, 255, 255, .5);
+  animation: ls-breathe 2.4s ease-in-out infinite; }
+.ls-a { font: 900 46px var(--pixel); color: #01283c; text-shadow: 0 2px 0 rgba(255, 255, 255, .4); }
+@keyframes ls-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+.ls-word { font: 700 30px var(--pixel); letter-spacing: 4px; }
+.ls-word .t-aqua { background: linear-gradient(90deg, #9ff6ff, var(--aqua), var(--prism), #9ff6ff); background-size: 300%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s linear infinite; }
+.ls-word .t-launcher { color: var(--text); opacity: .9; }
+.ls-status { font-weight: 700; font-size: 14px; color: var(--sub); letter-spacing: .5px; min-height: 18px; text-align: center; }
+.ls-bar { width: 340px; max-width: 70vw; height: 8px; border-radius: 10px; overflow: hidden;
+  background: rgba(0, 20, 40, .65); border: 1px solid var(--line); box-shadow: inset 0 1px 3px rgba(0, 0, 0, .4); }
+.ls-bar > i { display: block; height: 100%; width: 6%; border-radius: 10px;
+  background: repeating-linear-gradient(45deg, var(--aqua) 0 12px, var(--prism) 12px 24px); background-size: 34px 34px;
+  animation: flow 1s linear infinite; transition: width .5s cubic-bezier(.3, .8, .3, 1); box-shadow: 0 0 14px rgba(62, 230, 255, .5); }
+.ls-tip { font-size: 12.5px; color: #86c3da; opacity: 0; transition: opacity .3s ease; min-height: 16px; text-align: center; max-width: 80vw; }
+.ls-hide { position: absolute; top: 16px; right: 18px; z-index: 2; font-size: 12px; font-weight: 700; color: var(--sub);
+  padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: rgba(6, 20, 34, .6); transition: all .2s; }
+.ls-hide:hover { color: var(--text); border-color: var(--line-hi); background: rgba(62, 230, 255, .12); }
