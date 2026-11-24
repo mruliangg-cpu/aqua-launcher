@@ -116,6 +116,7 @@ public final class Lang {
             {"Эффектная анимация при смерти (выбери одну в меню)", "Flashy animation when you die (pick one in the menu)"},
             {"Анимация смерти", "Death animation"}, {"Случайная", "Random"},
             {"Взрыв", "Explosion"}, {"Пустота", "Void"}, {"Призрак", "Ghost"}, {"Молния", "Lightning"}, {"Заморозка", "Freeze"}, {"Пиксели", "Pixelate"}, {"Кровь", "Blood"}, {"Воронка", "Whirlpool"}, {"Разлом", "Shatter"},
+            {"Наковальня", "Anvil"}, {"Чёрная дыра", "Black Hole"}, {"Глитч", "Glitch"}, {"Небеса", "Heaven"}, {"Кислота", "Acid"}, {"Портал", "Portal"}, {"Киллкам", "Killcam"}, {"GG", "GG"},
             {"Эндер", "Ender"}, {"Портал (анимация)", "Portal (animated)"}, {"Око Края", "Eye of Ender"}, {"Жемчуг", "Pearl"}, {"Аква", "Aqua"}, {"Дракон", "Dragon"},
             {"Энд-род", "End Rod"}, {"Сердечки", "Hearts"}, {"Ноты", "Notes"}, {"Пузыри", "Bubbles"},
             {"Шляпа", "Hat"}, {"Крылья", "Wings"}, {"Спина", "Back"}, {"Питомец", "Pet"}, {"Лицо", "Face"}, {"Значок у ника", "Name icon"},

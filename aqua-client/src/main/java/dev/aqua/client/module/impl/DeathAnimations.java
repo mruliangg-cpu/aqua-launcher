@@ -16,7 +16,8 @@ import java.util.Random;
  */
 public class DeathAnimations extends Module {
     private static DeathAnimations instance;
-    public static final String[] LIST = {"Взрыв", "Пустота", "Призрак", "Молния", "Заморозка", "Пиксели", "Кровь", "Воронка", "GAME OVER", "Разлом"};
+    public static final String[] LIST = {"Взрыв", "Пустота", "Призрак", "Молния", "Заморозка", "Пиксели", "Кровь", "Воронка", "GAME OVER", "Разлом",
+            "Наковальня", "Чёрная дыра", "Глитч", "Небеса", "Кислота", "Портал", "Киллкам", "GG"};
 
     private final ModeSetting anim;
 
@@ -60,6 +61,14 @@ public class DeathAnimations extends Module {
             case "Воронка"   -> whirlpool(c, w, h, t);
             case "GAME OVER" -> gameOver(c, w, h, t);
             case "Разлом"    -> shatter(c, w, h, t, seed);
+            case "Наковальня" -> anvil(c, w, h, t, seed);
+            case "Чёрная дыра" -> blackHole(c, w, h, t, seed);
+            case "Глитч"     -> glitch(c, w, h, t, seed);
+            case "Небеса"    -> heaven(c, w, h, t, seed);
+            case "Кислота"   -> acid(c, w, h, t, seed);
+            case "Портал"    -> portal(c, w, h, t);
+            case "Киллкам"   -> killcam(c, w, h, t);
+            case "GG"        -> confetti(c, w, h, t, seed);
             default          -> explosion(c, w, h, t, seed);
         }
     }
@@ -287,6 +296,172 @@ public class DeathAnimations extends Module {
                 line(c, x, y, x + cell, y, 1f, col(0xBFE0FF, (1 - Math.min(1, lt)) * 0.5f));
             }
         }
+    }
+
+    private static void anvil(DrawContext c, int w, int h, float t, long seed) {
+        float cx = w / 2f, rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x0A0C12, 0.25f * t * rv));
+        float dropT = Math.min(1, t / 0.4f);
+        float ay = -60 + dropT * dropT * (h / 2f + 40);                                   // падение с ускорением
+        int aw = 90, ah = 54;
+        c.fill((int) (cx - aw / 2), (int) ay, (int) (cx + aw / 2), (int) (ay + 16), col(0x3A3E46, rv));       // верх наковальни
+        c.fill((int) (cx - aw / 2 + 14), (int) (ay + 16), (int) (cx + aw / 2 - 14), (int) (ay + 30), col(0x24272E, rv));
+        c.fill((int) (cx - aw / 2 + 22), (int) (ay + 30), (int) (cx + aw / 2 - 22), (int) (ay + ah), col(0x3A3E46, rv));
+        if (t >= 0.4f) {                                                                   // удар
+            float it = (t - 0.4f) / 0.6f;
+            if (it < 0.12f) c.fill(0, 0, w, h, col(0xFFFFFF, (0.12f - it) / 0.12f));
+            float impactY = h / 2f + 40;
+            for (int i = 0; i < 8; i++) {                                                  // трещины от удара
+                float ang = (float) (Math.PI + i / 7.0 * Math.PI);
+                line(c, cx, impactY, cx + (float) Math.cos(ang) * ease(it) * 160, impactY + (float) Math.sin(ang) * ease(it) * 60, 1.6f, col(0xBFC6D0, (1 - it) * rv));
+            }
+            for (int i = 0; i < 10; i++) {                                                 // звёзды вокруг
+                double sa = i / 10.0 * Math.PI * 2 + it * 6;
+                float sr = 40 + it * 30;
+                float sxp = cx + (float) Math.cos(sa) * sr, syp = impactY - 20 + (float) Math.sin(sa) * sr * 0.5f;
+                Render2D.textScaled(c, "✦", sxp, syp, 1.3f, col(0xFFE36B, (1 - it) * rv), false);
+            }
+        }
+    }
+
+    private static void blackHole(DrawContext c, int w, int h, float t, long seed) {
+        float cx = w / 2f, cy = h / 2f, e = ease(t), rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x01010A, 0.5f * e * rv));
+        Random rr = new Random(seed);
+        for (int i = 0; i < 90; i++) {                                                     // материя закручивается внутрь
+            float f = rr.nextFloat();
+            float ang = f * (float) Math.PI * 14 + t * 9;
+            float rad = (1 - Math.min(1, t * 1.1f)) * Math.max(w, h) * 0.6f * (0.25f + f);
+            float px = cx + (float) Math.cos(ang) * rad, py = cy + (float) Math.sin(ang) * rad;
+            c.fill((int) px, (int) py, (int) px + 2, (int) py + 2, col(interp(0xFFB060, 0x6A1B9A, f), 0.9f * rv));
+        }
+        float hr = e * Math.min(w, h) * 0.3f;
+        ring(c, cx, cy, hr * 1.25f, 3f, col(0xFF8C3A, (1 - t) * rv));                       // аккреционный диск
+        ring(c, cx, cy, hr * 1.1f, 2f, col(0xC24BE0, (1 - t) * rv));
+        Render2D.circle(c, cx, cy, hr, col(0x000000, rv));                                 // горизонт событий
+    }
+
+    private static void glitch(DrawContext c, int w, int h, float t, long seed) {
+        float rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x030308, 0.6f * rv));
+        Random rr = new Random(seed + (long) (t * 40));                                    // дёргается каждый кадр
+        for (int i = 0; i < 18; i++) {                                                     // глитч-полосы
+            int gy = rr.nextInt(h), gh = 4 + rr.nextInt(26), off = rr.nextInt(60) - 30;
+            int cc = new int[]{0x00E5FF, 0xFF00A8, 0x00FF6A, 0xFFFFFF}[rr.nextInt(4)];
+            c.fill(off, gy, w + off, gy + gh, col(cc, 0.18f * rv));
+        }
+        for (int y = 0; y < h; y += 3) c.fill(0, y, w, y + 1, col(0x000000, 0.3f * rv));   // скан-линии
+        float sc = 2.6f;
+        String s = "SYSTEM FAILURE";
+        float tw = Render2D.width(s) * sc, bx = w / 2f - tw / 2f, by = h / 2f - 14;
+        float j = (rr.nextFloat() - 0.5f) * 8;                                             // RGB-сдвиг
+        Render2D.textScaled(c, s, bx - 3 + j, by, sc, col(0xFF0040, 0.8f * rv), false);
+        Render2D.textScaled(c, s, bx + 3 - j, by, sc, col(0x00E5FF, 0.8f * rv), false);
+        Render2D.textScaled(c, s, bx, by, sc, col(0xFFFFFF, 0.95f * rv), false);
+    }
+
+    private static void heaven(DrawContext c, int w, int h, float t, long seed) {
+        float cx = w / 2f, e = ease(t), rv = reveal(t);
+        c.fillGradient(0, 0, w, h, col(0xFFF6D8, 0.6f * e * rv), col(0xFFE9A8, 0.15f * e * rv));
+        for (int i = 0; i < 16; i++) {                                                     // золотые лучи сверху
+            float lx = (i + 0.5f) / 16f * w;
+            line(c, cx, -20, lx, h, 2f + (i % 3), col(0xFFF0B0, 0.12f * e * rv));
+        }
+        float gy = h * (0.8f - e * 0.65f);                                                 // восходящий силуэт
+        Render2D.circle(c, cx, gy - 16, 26, col(0xFFFFFF, 0.18f * rv));
+        Render2D.circle(c, cx, gy - 20, 15, col(0xFFFFFF, 0.8f * (1 - t) * rv));
+        c.fill((int) (cx - 16), (int) gy - 18, (int) (cx + 16), (int) (gy + 26), col(0xFFFFFF, 0.6f * (1 - t) * rv));
+        ring(c, cx, gy - 30, 16, 2f, col(0xFFE36B, (1 - t) * rv));                          // нимб
+        Random rr = new Random(seed);
+        for (int i = 0; i < 30; i++) {                                                     // золотые частицы вверх
+            float px = rr.nextFloat() * w, py = h - ((t * 1.2f + rr.nextFloat()) % 1f) * h;
+            c.fill((int) px, (int) py, (int) px + 2, (int) py + 2, col(0xFFE9A8, 0.7f * rv));
+        }
+        if (t > 0.8f) c.fill(0, 0, w, h, col(0xFFFFFF, (t - 0.8f) / 0.2f * 0.5f));
+    }
+
+    private static void acid(DrawContext c, int w, int h, float t, long seed) {
+        float e = ease(t), rv = reveal(t);
+        Random rr = new Random(seed);
+        for (int i = 0; i < 20; i++) {                                                     // потёки кислоты сверху
+            float dx = (i + 0.5f) / 20f * w;
+            float drip = ease(Math.min(1, t * 1.3f)) * h * (0.3f + rr.nextFloat() * 0.7f);
+            c.fill((int) dx - 4, 0, (int) dx + 4, (int) drip, col(0x66FF33, 0.55f * rv));
+            Render2D.circle(c, dx, drip, 5, col(0x55DD22, 0.7f * rv));
+        }
+        int rise = (int) (e * h * 0.9f);
+        c.fillGradient(0, h - rise, w, h, col(0x3BBF1A, 0.55f * rv), col(0x173A0C, 0.7f * rv)); // поднимается снизу
+        for (int i = 0; i < 26; i++) {                                                     // пузыри
+            float bx = rr.nextFloat() * w;
+            float by = h - ((t * 1.5f + rr.nextFloat()) % 1f) * rise;
+            Render2D.circle(c, bx, by, 2 + rr.nextFloat() * 4, col(0x9FFF6A, 0.5f * rv));
+        }
+        c.fill(0, 0, w, h, col(0x1A3A08, 0.25f * t * rv));
+    }
+
+    private static void portal(DrawContext c, int w, int h, float t) {
+        float cx = w / 2f, cy = h / 2f, e = ease(t), rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x0A0215, 0.55f * e * rv));
+        for (int r = 0; r < 5; r++) {                                                      // вращающиеся кольца портала
+            float rad = e * Math.min(w, h) * (0.12f + r * 0.11f);
+            int steps = 40 + r * 10;
+            for (int i = 0; i < steps; i++) {
+                double an = i / (double) steps * Math.PI * 2 + t * (r % 2 == 0 ? 8 : -8);
+                float px = cx + (float) Math.cos(an) * rad, py = cy + (float) Math.sin(an) * rad;
+                c.fill((int) px, (int) py, (int) px + 2, (int) py + 2, col(interp(0xD17BFF, 0x3A0A66, r / 4f), 0.85f * rv));
+            }
+        }
+        Render2D.circle(c, cx, cy, e * Math.min(w, h) * 0.1f, col(0x160826, 0.9f * rv));
+        if (t > 0.65f) {                                                                    // поглощает экран
+            float g = (t - 0.65f) / 0.35f;
+            Render2D.circle(c, cx, cy, g * Math.max(w, h), col(0x160826, 0.85f * rv));
+        }
+    }
+
+    private static void killcam(DrawContext c, int w, int h, float t) {
+        float cx = w / 2f, cy = h / 2f, rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x0A0000, 0.45f * t * rv));
+        float conv = 1 - ease(Math.min(1, t / 0.4f));                                       // прицел сходится
+        float gap = 60 + conv * 220;
+        int red = col(0xFF2A2A, rv), redd = col(0xFF2A2A, 0.5f * rv);
+        line(c, cx - gap - 40, cy, cx - gap, cy, 2f, red);
+        line(c, cx + gap, cy, cx + gap + 40, cy, 2f, red);
+        line(c, cx, cy - gap - 40, cx, cy - gap, 2f, red);
+        line(c, cx, cy + gap, cx, cy + gap + 40, 2f, red);
+        ring(c, cx, cy, 40 + conv * 120, 2f, redd);
+        if (t > 0.42f) {                                                                    // ELIMINATED
+            float it = (t - 0.42f) / 0.58f;
+            line(c, cx - 26, cy - 26, cx + 26, cy + 26, 3f, col(0xFF2A2A, rv));             // красный крест
+            line(c, cx + 26, cy - 26, cx - 26, cy + 26, 3f, col(0xFF2A2A, rv));
+            float sc = 2.6f * ease(Math.min(1, it * 2));
+            String s = "ELIMINATED";
+            float tw = Render2D.width(s) * sc;
+            Render2D.textScaled(c, s, cx - tw / 2f, cy + 54, sc, col(0xFF3030, rv), true);
+        }
+    }
+
+    private static void confetti(DrawContext c, int w, int h, float t, long seed) {
+        float rv = reveal(t);
+        c.fill(0, 0, w, h, col(0x101024, 0.3f * t * rv));
+        Random rr = new Random(seed);
+        int[] palette = {0xFF5252, 0xFFD740, 0x69F0AE, 0x40C4FF, 0xE040FB, 0xFFFFFF};
+        for (int i = 0; i < 120; i++) {                                                     // конфетти
+            float speed = 0.5f + rr.nextFloat();
+            float px = (rr.nextFloat() * w + (float) Math.sin(t * 6 + i) * 20) % w;
+            float py = ((t * speed + rr.nextFloat()) % 1f) * h;
+            int s = 3 + rr.nextInt(4);
+            c.fill((int) px, (int) py, (int) px + s, (int) py + s, col(palette[i % palette.length], 0.9f * rv));
+        }
+        for (int i = 0; i < 6; i++) {                                                       // шарики вверх
+            float bx = (i + 0.5f) / 6f * w;
+            float by = h - ease(Math.min(1, t * 1.1f)) * h * (0.6f + (i % 3) * 0.15f);
+            Render2D.circle(c, bx, by, 14, col(palette[i % palette.length], 0.8f * rv));
+            line(c, bx, by + 14, bx, by + 34, 1f, col(0xFFFFFF, 0.5f * rv));
+        }
+        float sc = 4f * ease(Math.min(1, t * 2.5f));
+        String s = "GG";
+        float tw = Render2D.width(s) * sc;
+        Render2D.gradientText(c, s, w / 2f - tw / 2f, h / 2f - 22, sc, 0x69F0AE, 0x40C4FF, true, rv);
     }
 
     private static int interp(int from, int to, float t) {
