@@ -1,7 +1,7 @@
 :root {
-  --deep: #060a12;
-  --glass: rgba(9, 20, 34, 0.62);
-  --glass-hi: rgba(14, 34, 54, 0.66);
+  --deep: #021526;
+  --glass: rgba(4, 34, 58, 0.58);
+  --glass-hi: rgba(10, 62, 96, 0.62);
   --line: rgba(130, 230, 255, 0.16);
   --line-hi: rgba(130, 230, 255, 0.38);
   --text: #e9fbff;
@@ -19,11 +19,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; background: var(--deep); color: var(--text); font: 14px/1.45 var(--font); user-select: none; }
-#ocean { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; opacity: .5; }
-#bg-veil { position: fixed; inset: 0; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(135% 100% at 50% -12%, rgba(10, 26, 44, .22), rgba(3, 7, 14, .86) 76%),
-    linear-gradient(180deg, rgba(4, 9, 18, .35), rgba(2, 5, 11, .62)); }
+#ocean { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+#bg-veil { display: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 a { color: var(--aqua); }
 ::-webkit-scrollbar { width: 8px; }
