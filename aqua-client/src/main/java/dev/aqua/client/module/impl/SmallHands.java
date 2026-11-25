@@ -17,6 +17,6 @@ public class SmallHands extends Module {
     /** Масштаб руки от первого лица. 1.0 = выключено (ничего не меняем). */
     public static float scale() {
         if (instance == null || !instance.isEnabled()) return 1f;
-        return (float) instance.size.get();
+        return (float) (double) instance.size.get();
     }
 }
