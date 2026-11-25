@@ -125,6 +125,7 @@ public final class ModuleManager {
         add(new SimpleToggles.HideScoreboard(), false);
         add(new SimpleToggles.NoHurtCam(), false);
         add(new FovChanger(), false);
+        add(new SmallHands(), false);
         add(new Snaplook(), true);
         add(new TntTimer(), true);
         add(new SimpleToggles.HideBossbar(), false);

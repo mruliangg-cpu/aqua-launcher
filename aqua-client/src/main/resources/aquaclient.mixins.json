@@ -16,6 +16,7 @@
     "GameMenuScreenMixin",
     "GameRendererMixin",
     "HandledScreenMixin",
+    "HeldItemRendererMixin",
     "InGameHudMixin",
     "InGameOverlayRendererMixin",
     "LivingEntityRendererMixin",

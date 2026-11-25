@@ -32,7 +32,7 @@ function init(send, enabled) {
     try { au = require('electron-updater').autoUpdater; } catch { /* нет модуля */ }
     if (au) {
       au.autoDownload = true;              // качаем в фоне сразу, как только нашли
-      au.autoInstallOnAppQuit = false;     // ставим только по кнопке, пока лаунчер открыт
+      au.autoInstallOnAppQuit = true;      // тихо ставим при закрытии — как в Chrome/Discord, без навязчивых окон
       au.on('checking-for-update', () => { if (!['downloading', 'ready'].includes(state.status)) emit({ status: 'checking', error: null }); });
       au.on('update-available', (i) => emit({ status: 'downloading', version: i.version, percent: 0 }));
       au.on('update-not-available', () => emit({ status: 'latest' }));

@@ -1133,7 +1133,8 @@ let UPD = { status: 'idle' }, updManual = false, updShown = '';
 function updatePopup() {
   const u = UPD, v = u.version || '';
   const key = u.status + v;
-  if (!v || updShown === key || !['available', 'ready'].includes(u.status) || $('#modal-root').innerHTML) return;
+  let dismissed = ''; try { dismissed = localStorage.getItem('updDismissed') || ''; } catch (e) {}
+  if (!v || updShown === key || dismissed === v || !['available', 'ready'].includes(u.status) || $('#modal-root').innerHTML) return;
   updShown = key;
   const ready = u.status === 'ready';
   const m = modal(`<div class="upd-pop">
@@ -1149,6 +1150,8 @@ function updatePopup() {
     $('.upd-pop-bar', m.el).hidden = false;
     aqua.installUpdate();
   };
+  const later = $('[data-close]', m.el);
+  if (later) later.addEventListener('click', () => { try { localStorage.setItem('updDismissed', v); } catch (e) {} });
 }
 function renderUpdate() {
   const bar = $('#update-bar');
