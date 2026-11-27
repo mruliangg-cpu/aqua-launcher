@@ -1,12 +1,15 @@
 package dev.aqua.client.mixin;
 
 import dev.aqua.client.module.impl.Freelook;
+import dev.aqua.client.module.impl.GlowingItems;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
@@ -16,5 +19,16 @@ public abstract class EntityMixin {
             Freelook.turn(cursorDeltaX, cursorDeltaY);
             ci.cancel();
         }
+    }
+
+    // Glowing Items — выпавшие предметы светятся контуром (ванильное свечение).
+    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true, require = 0)
+    private void aqua$glowItems(CallbackInfoReturnable<Boolean> cir) {
+        if (GlowingItems.on() && (Object) this instanceof ItemEntity) cir.setReturnValue(true);
+    }
+
+    @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true, require = 0)
+    private void aqua$glowColor(CallbackInfoReturnable<Integer> cir) {
+        if (GlowingItems.on() && (Object) this instanceof ItemEntity) cir.setReturnValue(GlowingItems.color());
     }
 }
