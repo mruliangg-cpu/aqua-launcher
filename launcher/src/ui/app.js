@@ -868,9 +868,8 @@ function renderSettings() {
   const sel = (key, options) => `<select class="select" data-set="${key}">${options.map(([v, l]) => opt(v, l, st[key])).join('')}</select>`;
   const chk = (key, label) => `<label class="check"><input type="checkbox" data-set="${key}" ${st[key] ? 'checked' : ''}><i></i>${label}</label>`;
   const row = (label, control) => `<div class="set-row"><span>${label}</span>${control}</div>`;
-  // Полоска RAM доходит до всей памяти ПК (с запасом 1 ГБ для системы), без искусственного лимита.
-  const safeRam = Math.floor((INFO.totalMem - 1024) / 256) * 256;
-  const maxRam = Math.max(2048, safeRam);
+  // Полоска RAM доходит до всей памяти ПК; рядом поле ввода — туда можно вписать сколько угодно (без лимита).
+  const maxRam = Math.max(2048, Math.floor(INFO.totalMem / 256) * 256);
   const servers = [['', t('none')], ...(S.servers || []).map((s) => [s.address, `${s.name} (${s.address})`])];
   $('#settings-root').innerHTML = `
     <div class="card glass"><h4>${t('g_general')}</h4>
@@ -899,7 +898,8 @@ function renderSettings() {
       ${chk('fullscreen', t('s_fullscreen'))}
     </div>
     <div class="card glass"><h4>${t('g_java')}</h4>
-      <label class="row"><span>${t('s_ram')} <b id="ram-val"></b></span><input type="range" data-set="ramMax" min="2048" max="${maxRam}" step="256" value="${Math.min(st.ramMax, maxRam)}"></label>
+      <label class="row"><span>${t('s_ram')}</span><input type="range" data-set="ramMax" min="2048" max="${maxRam}" step="256" value="${Math.min(st.ramMax, maxRam)}"></label>
+      <div class="row"><span>${t('ram_exact')}</span><span class="inline"><input class="input small" id="ram-num" type="number" min="1" step="0.5" value="${(st.ramMax / 1024).toFixed(1)}"> GB</span></div>
       <p class="hint">${t('ram_hint', { t: (INFO.totalMem / 1024).toFixed(1) })}</p>
       ${row(t('s_preset'), sel('jvmPreset', [['performance', t('preset_perf')], ['balanced', t('preset_bal')], ['zgc', t('preset_zgc')], ['off', t('preset_off')]]))}
       <label class="row col"><span>${t('s_java')}</span><div class="inline"><input class="input grow" data-set="javaPath" value="${esc(st.javaPath)}" placeholder="${t('java_ph')}"><button class="btn ghost" id="pick-java">${t('pick')}</button></div></label>
@@ -921,10 +921,21 @@ function renderSettings() {
 
   const root = $('#settings-root');
   const showRam = () => {
-    $('#ram-val').textContent = `${(st.ramMax / 1024).toFixed(1)} GB`;
+    const num = $('#ram-num');
+    if (num && document.activeElement !== num) num.value = (st.ramMax / 1024).toFixed(1);
+    const sl = $('input[data-set="ramMax"]', root);
+    if (sl) sl.value = Math.min(st.ramMax, Number(sl.max));
     $$('input[type=range]', root).forEach((r) => r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min)) * 100 + '%'));
   };
   showRam();
+  const ramNum = $('#ram-num');
+  if (ramNum) ramNum.onchange = () => {
+    let gb = parseFloat(ramNum.value);
+    if (!(gb > 0)) gb = st.ramMax / 1024;
+    const mb = Math.max(1024, Math.round(gb * 1024 / 256) * 256); // без верхнего лимита — хоть больше физической RAM
+    saveSetting({ ramMax: mb, ramMin: Math.min(1024, mb) });
+    showRam();
+  };
   $$('[data-set]', root).forEach((el) => {
     const key = el.dataset.set;
     const handler = () => {
