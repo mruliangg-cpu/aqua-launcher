@@ -21,14 +21,14 @@ public abstract class EntityMixin {
         }
     }
 
-    // Glowing Items — выпавшие предметы светятся контуром (ванильное свечение).
+    // Glowing Items «На полу» — выпавшие предметы светятся контуром (ванильное свечение).
     @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true, require = 0)
-    private void aqua$glowItems(CallbackInfoReturnable<Boolean> cir) {
-        if (GlowingItems.on() && (Object) this instanceof ItemEntity) cir.setReturnValue(true);
+    private void aqua$glowFloor(CallbackInfoReturnable<Boolean> cir) {
+        if (GlowingItems.floorGlow() && (Object) this instanceof ItemEntity) cir.setReturnValue(true);
     }
 
     @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true, require = 0)
-    private void aqua$glowColor(CallbackInfoReturnable<Integer> cir) {
-        if (GlowingItems.on() && (Object) this instanceof ItemEntity) cir.setReturnValue(GlowingItems.color());
+    private void aqua$glowFloorColor(CallbackInfoReturnable<Integer> cir) {
+        if (GlowingItems.floorGlow() && (Object) this instanceof ItemEntity) cir.setReturnValue(GlowingItems.color());
     }
 }
