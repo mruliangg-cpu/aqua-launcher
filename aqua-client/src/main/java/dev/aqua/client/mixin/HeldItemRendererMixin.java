@@ -17,6 +17,9 @@ public class HeldItemRendererMixin {
         float s = SmallHands.scale();
         if (s == 1f) return;
         matrices.push();
+        // Масштабируем вокруг точки, где предмет держится в руке (≈ низ-право),
+        // чтобы он уменьшался/увеличивался НА МЕСТЕ, а не уезжал в угол (иначе руки трясёт при ходьбе).
+        matrices.translate(0.56f * (1f - s), -0.52f * (1f - s), -0.72f * (1f - s));
         matrices.scale(s, s, s);
     }
 

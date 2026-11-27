@@ -7,7 +7,7 @@ import dev.aqua.client.setting.NumberSetting;
 /** Маленькие руки: уменьшает предмет/руку от первого лица до выбранного размера. */
 public class SmallHands extends Module {
     private static SmallHands instance;
-    private final NumberSetting size = add(new NumberSetting("Размер", 0.55, 0.20, 1.00, 0.05, "x"));
+    private final NumberSetting size = add(new NumberSetting("Размер", 0.55, 0.20, 2.00, 0.05, "x"));
 
     public SmallHands() {
         super("Small Hands", "Уменьшает предмет в руке от первого лица", Category.RENDER);
