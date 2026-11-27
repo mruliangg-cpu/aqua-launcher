@@ -84,24 +84,30 @@ function init(send, enabled) {
     }
     emit({ status: 'ready', percent: 100 });
     // После выхода лаунчера скрипт заменяет .exe (повторяя, пока файл занят) и запускает новую версию.
-    const script = path.join(os.tmpdir(), `aqua-update-${Date.now()}.cmd`);
+    // Паузу делаем через ping (timeout падает без консоли), а сам скрипт запускаем скрытно через wscript,
+    // чтобы не мелькала консоль и обновление реально применялось.
+    const stamp = Date.now();
+    const script = path.join(os.tmpdir(), `aqua-update-${stamp}.cmd`);
+    const vbs = path.join(os.tmpdir(), `aqua-update-${stamp}.vbs`);
     fs.writeFileSync(script, [
       '@echo off',
       'set n=0',
       ':retry',
-      'timeout /t 1 /nobreak >nul',
-      `move /y "${tmp}" "${portableFile}" >nul 2>&1`,
+      'ping -n 2 127.0.0.1 >nul',                      // надёжная пауза ~1с
+      `move /y "${tmp}" "${portableFile}" >nul 2>&1`,  // ждём, пока лаунчер закроется и освободит .exe
       'if not errorlevel 1 goto ok',
       'set /a n+=1',
-      'if %n% lss 90 goto retry',
-      'goto end',
+      'if %n% lss 120 goto retry',                     // до ~2 минут попыток
+      'goto cleanup',
       ':ok',
       `start "" "${portableFile}"`,
-      ':end',
-      'del "%~f0"',
+      ':cleanup',
+      `del "${vbs}" >nul 2>&1`,
+      'del "%~f0" >nul 2>&1',
     ].join('\r\n'));
-    spawn('cmd.exe', ['/c', script], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
-    setTimeout(() => app.quit(), 400);
+    fs.writeFileSync(vbs, `CreateObject("WScript.Shell").Run "cmd /c ""${script}""", 0, False`);
+    spawn('wscript.exe', [vbs], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
+    setTimeout(() => app.quit(), 500);
   }
 
   let busy = false;
