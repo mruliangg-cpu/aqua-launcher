@@ -93,7 +93,7 @@ const avatar = (a) => a ? `https://mc-heads.net/avatar/${encodeURIComponent(a.ty
 function badges(inst) {
   const b = [`<span class="badge">${esc(inst.mc)}</span>`, `<span class="badge loader">${LOADERS[inst.loader] || inst.loader}</span>`];
   if (inst.loader === 'fabric' && AQUA_MC.includes(inst.mc)) b.push('<span class="badge ender">Aqua Client</span>');
-  if (inst.fpsBoost && inst.loader !== 'vanilla') b.push('<span class="badge fps">⚡ FPS Boost</span>');
+  if (inst.fpsBoost !== false && inst.loader !== 'vanilla') b.push('<span class="badge fps">⚡ FPS Boost</span>');
   return b.join('');
 }
 
@@ -533,7 +533,7 @@ async function instanceModal(inst) {
   $('#i-name', el).oninput = (e) => { d.name = e.target.value; };
   $('#i-ram', el).value = d.ram || '';
   $('#i-ram', el).oninput = (e) => { d.ram = e.target.value ? Number(e.target.value) : null; };
-  $('#i-fps', el).checked = d.fpsBoost;
+  $('#i-fps', el).checked = d.fpsBoost !== false;
   $('#i-fps', el).onchange = (e) => { d.fpsBoost = e.target.checked; };
   $('#i-ender', el).checked = true;
   $('#i-ender', el).disabled = true; // Aqua Client и меню на правый Shift нельзя отключить

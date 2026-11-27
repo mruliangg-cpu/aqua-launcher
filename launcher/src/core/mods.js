@@ -144,7 +144,7 @@ function remove(instanceId, file, type = 'mod') {
 async function prepareInstance(inst, onLog, onProgress) {
   const meta = readMeta(inst);
   const want = [];
-  if (inst.fpsBoost && FPS_PACK[inst.loader]) want.push(...FPS_PACK[inst.loader]);
+  if (inst.fpsBoost !== false && FPS_PACK[inst.loader]) want.push(...FPS_PACK[inst.loader]); // по умолчанию включено во всех профилях
   const ac = require('./aquaclient');
   const ender = inst.loader === 'fabric' && (!!ac.jarFor(inst.mc) || ['1.21', '1.21.1'].includes(inst.mc)); // Aqua Client всегда установлен
   if (ender) want.push('fabric-api');
