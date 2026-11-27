@@ -24,6 +24,7 @@
     mk_home: 'Home', mk_builds: 'Builds', mk_servers: 'Servers', mk_mods: 'Mods', mk_friends: 'Friends', mk_cosmetics: 'Cosmetics', mk_settings: 'Settings', mk_online: 'Online', mk_premium: 'Premium', mk_level: 'Level 12', mk_quick: 'Quick play', mk_play: 'PLAY ›', mk_pvp: 'PvP servers', mk_rating: 'Leaderboard', mk_online_n: 'Online (3)',
     d_title: 'Download', d_rec: 'Recommended',
     d_setup: 'Installer (Setup)', d_setup_d: 'Installs in a minute and keeps itself up to date.', d_btn: 'Download',
+    d_exe: 'Aqua Launcher (EXE)', d_exe_d: 'Download and run — one-click install, updates itself.',
     d_port: 'Aqua Launcher EXE (ready)', d_port_d: 'Just run it — no install. Updates itself too.',
     d_mod: 'Aqua Client mod', d_mod_d: 'For any launcher with Fabric. Requires Fabric API.', d_ver: 'Minecraft version',
     st1: 'Download and run the installer', st2: 'Sign in with Microsoft', st3: 'Press “Play” — Aqua Client is already inside',
@@ -72,14 +73,12 @@
     release = rel;
     const assets = rel.assets || [];
     $('#ver').textContent = rel.tag_name;
-    const setup = assets.find((a) => /Setup.*\.exe$/i.test(a.name)), port = assets.find((a) => /Portable.*\.exe$/i.test(a.name));
-    const main = port || setup; // готовая EXE — основная кнопка
+    const main = assets.find((a) => /\.exe$/i.test(a.name)); // единственный EXE
     if (main) {
-      for (const id of ['#dl-setup', '#dl-portable']) { const el = $(id); if (el) el.href = main.browser_download_url; }
-      $('#port-name').textContent = `${main.name} · ${mb(main.size)}`;
-      $('#setup-size').textContent = `${rel.tag_name} · ${mb(main.size)}`;
+      for (const id of ['#dl-setup', '#dl-exe']) { const el = $(id); if (el) el.href = main.browser_download_url; }
+      const en = $('#exe-name'); if (en) en.textContent = `${main.name} · ${mb(main.size)}`;
+      const ss = $('#setup-size'); if (ss) ss.textContent = `${rel.tag_name} · ${mb(main.size)}`;
     }
-    if (setup) { const el = $('#dl-setup2'); if (el) el.href = setup.browser_download_url; $('#setup-name').textContent = `${setup.name} · ${mb(setup.size)}`; }
     const mods = assets.map((a) => { const m = /^AquaClient-(.+)-fabric\.jar$/.exec(a.name); return m && { mc: m[1], name: a.name, url: a.browser_download_url, size: a.size }; })
       .filter(Boolean).sort((a, b) => vcmp(a.mc, b.mc));
     if (mods.length) modList(mods);

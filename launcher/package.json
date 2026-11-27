@@ -1,14 +1,14 @@
 {
   "name": "aqua-launcher",
   "productName": "Aqua Launcher",
-  "version": "3.9.38",
+  "version": "3.9.39",
   "description": "Красивый лаунчер Minecraft в морском стиле: все версии, Fabric/Quilt/Forge/NeoForge, моды с Modrinth и CurseForge, Aqua Client и FPS-буст.",
   "main": "main.js",
   "author": "Ulian",
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win nsis portable",
+    "dist": "electron-builder --win nsis",
     "dist:mac": "electron-builder --mac dmg",
     "dist:linux": "electron-builder --linux AppImage"
   },
@@ -60,16 +60,17 @@
     ],
     "win": {
       "target": [
-        "nsis",
-        "portable"
+        "nsis"
       ],
       "icon": "build/icon.png"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "runAfterFinish": true,
       "shortcutName": "Aqua Launcher",
-      "artifactName": "AquaLauncher-Setup-${version}.exe",
+      "artifactName": "AquaLauncher-${version}.exe",
       "createDesktopShortcut": true
     },
     "mac": {
@@ -79,9 +80,6 @@
     "linux": {
       "icon": "build/icon.png",
       "category": "Game"
-    },
-    "portable": {
-      "artifactName": "AquaLauncher-Portable-${version}.exe"
     },
     "publish": [
       {

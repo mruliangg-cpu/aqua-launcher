@@ -116,7 +116,7 @@ jobs:
       - name: Build (check)
         if: ${{ steps.ver.outputs.publish != 'true' }}
         working-directory: launcher
-        run: npx electron-builder --win nsis portable --x64 --publish never
+        run: npx electron-builder --win nsis --x64 --publish never
       - name: Prepare draft release v${{ steps.ver.outputs.version }}
         if: ${{ steps.ver.outputs.publish == 'true' }}
         shell: bash
@@ -132,7 +132,7 @@ jobs:
         working-directory: launcher
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --win nsis portable --x64 --publish always
+        run: npx electron-builder --win nsis --x64 --publish always
       - name: Attach Aqua Client mod jars (Fabric)
         if: ${{ steps.ver.outputs.publish == 'true' }}
         shell: bash
